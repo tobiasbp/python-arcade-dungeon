@@ -65,24 +65,38 @@ class PlayerShot(arcade.Sprite):
     A shot fired by the Player
     """
 
-    def __init__(self, center_x=0, center_y=0):
+    def __init__(self, start_position, start_angle=90):
         """
         Setup new PlayerShot object
         """
 
         # Set the graphics to use for the sprite
-        super().__init__("images/Lasers/laserBlue01.png", SPRITE_SCALING)
+        # We need to flip it so it matches the mathematical angle/direction
+        super().__init__(
+            filename="images/Lasers/laserBlue01.png",
+            scale=SPRITE_SCALING,
+            flipped_diagonally=True,
+            flipped_horizontally=True,
+            flipped_vertically=False
+        )
 
-        self.center_x = center_x
-        self.center_y = center_y
-        self.change_y = PLAYER_SHOT_SPEED
+        # Shoot points in this direction
+        self.angle = start_angle
+
+        # Shoot spawns/starts here
+        self.position = start_position
+
+        # Shot moves forward
+        self.forward(PLAYER_SHOT_SPEED)
+
 
     def update(self):
         """
         Move the sprite
         """
 
-        # Update y position
+        # Update the position
+        self.center_x += self.change_x
         self.center_y += self.change_y
 
         # Remove shot when over top of screen
@@ -139,8 +153,6 @@ class MyGame(arcade.Window):
             print("No joysticks found")
             self.joystick = None
 
-
-            #self.joystick.
         # Set the background color
         arcade.set_background_color(arcade.color.AMAZON)
 
@@ -225,8 +237,7 @@ class MyGame(arcade.Window):
 
         if key == FIRE_KEY:
             new_shot = PlayerShot(
-                self.player_sprite.center_x,
-                self.player_sprite.center_y
+                self.player_sprite.position
             )
 
             self.player_shot_list.append(new_shot)
