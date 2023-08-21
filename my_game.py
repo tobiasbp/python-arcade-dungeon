@@ -9,6 +9,7 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 
 import arcade
 
+from my_sprites import Player
 
 SPRITE_SCALING = 0.5
 
@@ -24,43 +25,6 @@ PLAYER_START_Y = 50
 PLAYER_SHOT_SPEED = 4
 
 FIRE_KEY = arcade.key.SPACE
-
-
-class Player(arcade.Sprite):
-    """
-    The player
-    """
-
-    def __init__(self, **kwargs):
-        """
-        Setup new Player object
-        """
-
-        # Graphics to use for Player
-        kwargs["filename"] = "images/playerShip1_red.png"
-
-        # How much to scale the graphics
-        kwargs["scale"] = SPRITE_SCALING
-
-        # Pass arguments to class arcade.Sprite
-        super().__init__(**kwargs)
-
-        # The Player's initial score
-        self.score = 0
-
-    def update(self):
-        """
-        Move the sprite
-        """
-
-        # Update center_x
-        self.center_x += self.change_x
-
-        # Don't let the player move off screen
-        if self.left < 0:
-            self.left = 0
-        elif self.right > SCREEN_WIDTH - 1:
-            self.right = SCREEN_WIDTH - 1
 
 
 class PlayerShot(arcade.Sprite):
@@ -166,11 +130,17 @@ class GameView(arcade.View):
         # No of lives
         self.player_lives = PLAYER_LIVES
 
-        # Sprite lists
+        # A list of the shots fired by the player
         self.player_shot_list = arcade.SpriteList()
 
         # Create a Player object
-        self.player = Player(center_x=PLAYER_START_X, center_y=PLAYER_START_Y)
+        self.player = Player(
+            center_x=PLAYER_START_X,
+            center_y=PLAYER_START_Y,
+            min_x_pos=0,
+            max_x_pos=SCREEN_WIDTH,
+            scale=SPRITE_SCALING,
+        )
 
     def on_draw(self):
         """
