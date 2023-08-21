@@ -102,7 +102,7 @@ class GameView(arcade.View):
 
         # Draw players score on screen
         arcade.draw_text(
-            "SCORE: {}".format(self.player_score),  # Text to show
+            f"SCORE: {self.player_score}",  # Text to show
             10,  # X position
             SCREEN_HEIGHT - 20,  # Y positon
             arcade.color.WHITE,  # Color of text
