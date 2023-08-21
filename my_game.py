@@ -9,8 +9,10 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 
 import arcade
 
+# Import sprites from local file my_sprites.py
 from my_sprites import Player, PlayerShot
 
+# Set the scaling of all sprites in the game
 SPRITE_SCALING = 0.5
 
 # Set the size of the screen
