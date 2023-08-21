@@ -44,6 +44,9 @@ class Player(arcade.Sprite):
         # Pass arguments to class arcade.Sprite
         super().__init__(**kwargs)
 
+        # The Player's initial score
+        self.score = 0
+
 
     def update(self):
         """
@@ -104,18 +107,15 @@ class PlayerShot(arcade.Sprite):
             self.kill()
 
 
-class MyGame(arcade.Window):
+class GameView(arcade.View):
     """
-    Main application class.
+    The view with the game itself
     """
 
-    def __init__(self, width, height):
+    def on_show_view(self):
         """
-        Initializer
+        This is run once when we switch to this view
         """
-
-        # Call the parent class initializer
-        super().__init__(width, height)
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
@@ -156,6 +156,8 @@ class MyGame(arcade.Window):
         # Set the background color
         arcade.set_background_color(arcade.color.AMAZON)
 
+        self.setup()
+
     def setup(self):
         """ Set up the game and initialize the variables. """
 
@@ -179,8 +181,8 @@ class MyGame(arcade.Window):
         Render the screen.
         """
 
-        # This command has to happen before we start drawing
-        arcade.start_render()
+        # Clear screen so we can draw new stuff
+        self.clear()
 
         # Draw the player shot
         self.player_shot_list.draw()
@@ -190,7 +192,7 @@ class MyGame(arcade.Window):
 
         # Draw players score on screen
         arcade.draw_text(
-            "SCORE: {}".format(self.player_score),  # Text to show
+            "SCORE: {}".format(self.player_sprite.score),  # Text to show
             10,                  # X position
             SCREEN_HEIGHT - 20,  # Y positon
             arcade.color.WHITE   # Color of text
@@ -220,10 +222,31 @@ class MyGame(arcade.Window):
         # Update the player shots
         self.player_shot_list.update()
 
+        # The game is over when the player scores a 100 points
+        if self.player_sprite.score >= 100:
+            self.game_over()
+
+    def game_over(self):
+        """
+        Call this when the game is over
+        """
+
+        # Create a game over view
+        game_over_view = GameOverView()
+
+        # Pass the players score to the game over view
+        game_over_view.setup(self.player_sprite.score)
+
+        # Change to game over view
+        self.window.show_view(game_over_view)
+
     def on_key_press(self, key, modifiers):
         """
         Called whenever a key is pressed.
         """
+
+        if key == arcade.key.ESCAPE:
+            self.game_over()
 
         # Track state of arrow keys
         if key == arcade.key.UP:
@@ -236,10 +259,15 @@ class MyGame(arcade.Window):
             self.right_pressed = True
 
         if key == FIRE_KEY:
+            # Player gets points for firing?
+            self.player_sprite.score += 10
+
+            # Create the new shot
             new_shot = PlayerShot(
                 self.player_sprite.position
             )
 
+            # Add the new shot to he list of shots
             self.player_shot_list.append(new_shot)
 
     def on_key_release(self, key, modifiers):
@@ -270,13 +298,128 @@ class MyGame(arcade.Window):
     def on_joyhat_motion(self, joystick, hat_x, hat_y):
         print("Joystick hat ({}, {})".format(hat_x, hat_y))
 
+class IntroView(arcade.View):
+    """
+    View to show instructions
+    """
+
+    def on_show_view(self):
+        """
+        This is run once when we switch to this view
+        """
+
+        # Set the background color
+        arcade.set_background_color(arcade.csscolor.DARK_SLATE_BLUE)
+
+        # Reset the viewport, necessary if we have a scrolling game and we need
+        # to reset the viewport back to the start so we can see what we draw.
+        arcade.set_viewport(0, self.window.width, 0, self.window.height)
+
+    def on_draw(self):
+        """
+        Draw this view
+        """
+        self.clear()
+        
+        # Draw some text
+        arcade.draw_text(
+            "Instructions Screen",
+            self.window.width / 2,
+            self.window.height / 2,
+            arcade.color.WHITE,
+            font_size=50,
+            anchor_x="center"
+            )
+        
+        # Draw more text
+        arcade.draw_text(
+            "Press any key to start the game",
+            self.window.width / 2,
+            self.window.height / 2-75,
+            arcade.color.WHITE,
+            font_size=20,
+            anchor_x="center"
+            )
+
+    def on_key_press(self, key: int, modifiers: int):
+        """
+        Start the game when any key is pressed
+        """
+        game_view = GameView()
+        game_view.setup()
+        self.window.show_view(game_view)
+
+class GameOverView(arcade.View):
+    """
+    View to show when the game is over
+    """
+    def setup(self, score: int):
+        """
+        Call this from the game so we can show the score.
+        """
+        self.score = score
+
+    def on_show_view(self):
+        """
+        This is run once when we switch to this view
+        """
+
+        # Set the background color
+        arcade.set_background_color(arcade.csscolor.DARK_GOLDENROD)
+
+        # Reset the viewport, necessary if we have a scrolling game and we need
+        # to reset the viewport back to the start so we can see what we draw.
+        arcade.set_viewport(0, self.window.width, 0, self.window.height)
+
+
+    def on_draw(self):
+        """
+        Draw this view
+        """
+        
+        self.clear()
+        
+        # Draw some text
+        arcade.draw_text(
+            "Game over!",
+            self.window.width / 2,
+            self.window.height / 2,
+            arcade.color.WHITE,
+            font_size=50,
+            anchor_x="center"
+            )
+
+        # Draw player's score
+        arcade.draw_text(
+            f"Your score: {self.score}",
+            self.window.width / 2,
+            self.window.height / 2-75,
+            arcade.color.WHITE,
+            font_size=20,
+            anchor_x="center"
+            )
+
+
+    def on_key_press(self, key: int, modifiers: int):
+        """
+        Return to intro screen when any key is pressed
+        """
+        intro_view = IntroView()
+        self.window.show_view(intro_view)
+
+
 def main():
     """
     Main method
     """
+    # Create a window to hold views
+    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT)
 
-    window = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT)
-    window.setup()
+    # Game starts in the intro view
+    start_view = IntroView()
+
+    window.show_view(start_view)
+
     arcade.run()
 
 
