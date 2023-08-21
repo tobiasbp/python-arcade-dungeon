@@ -9,7 +9,7 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 
 import arcade
 
-from my_sprites import Player
+from my_sprites import Player, PlayerShot
 
 SPRITE_SCALING = 0.5
 
@@ -25,49 +25,6 @@ PLAYER_START_Y = 50
 PLAYER_SHOT_SPEED = 4
 
 FIRE_KEY = arcade.key.SPACE
-
-
-class PlayerShot(arcade.Sprite):
-    """
-    A shot fired by the Player
-    """
-
-    def __init__(self, start_position, start_angle=90):
-        """
-        Setup new PlayerShot object
-        """
-
-        # Set the graphics to use for the sprite
-        # We need to flip it so it matches the mathematical angle/direction
-        super().__init__(
-            filename="images/Lasers/laserBlue01.png",
-            scale=SPRITE_SCALING,
-            flipped_diagonally=True,
-            flipped_horizontally=True,
-            flipped_vertically=False,
-        )
-
-        # Shoot points in this direction
-        self.angle = start_angle
-
-        # Shoot spawns/starts here
-        self.position = start_position
-
-        # Shot moves forward
-        self.forward(PLAYER_SHOT_SPEED)
-
-    def update(self):
-        """
-        Move the sprite
-        """
-
-        # Update the position
-        self.center_x += self.change_x
-        self.center_y += self.change_y
-
-        # Remove shot when over top of screen
-        if self.bottom > SCREEN_HEIGHT:
-            self.kill()
 
 
 class GameView(arcade.View):
@@ -229,7 +186,12 @@ class GameView(arcade.View):
             self.player.score += 10
 
             # Create the new shot
-            new_shot = PlayerShot(self.player.position)
+            new_shot = PlayerShot(
+                center_x=self.player.center_x,
+                center_y=self.player.center_y,
+                max_y_pos=SCREEN_HEIGHT,
+                scale=SPRITE_SCALING,
+            )
 
             # Add the new shot to the list of shots
             self.player_shot_list.append(new_shot)
