@@ -155,6 +155,7 @@ class GameView(arcade.View):
         Called whenever a key is pressed.
         """
 
+        # End the game if the escape key is pressed
         if key == arcade.key.ESCAPE:
             self.game_over()
 
