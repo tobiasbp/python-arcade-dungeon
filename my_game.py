@@ -120,7 +120,7 @@ class GameView(arcade.View):
         self.player_shot_list = None
 
         # Set up the player info
-        self.player_sprite = None
+        self.player = None
         self.player_score = None
         self.player_lives = None
 
@@ -170,7 +170,7 @@ class GameView(arcade.View):
         self.player_shot_list = arcade.SpriteList()
 
         # Create a Player object
-        self.player_sprite = Player(center_x=PLAYER_START_X, center_y=PLAYER_START_Y)
+        self.player = Player(center_x=PLAYER_START_X, center_y=PLAYER_START_Y)
 
     def on_draw(self):
         """
@@ -184,11 +184,11 @@ class GameView(arcade.View):
         self.player_shot_list.draw()
 
         # Draw the player sprite
-        self.player_sprite.draw()
+        self.player.draw()
 
         # Draw players score on screen
         arcade.draw_text(
-            "SCORE: {}".format(self.player_sprite.score),  # Text to show
+            "SCORE: {}".format(self.player.score),  # Text to show
             10,  # X position
             SCREEN_HEIGHT - 20,  # Y positon
             arcade.color.WHITE,  # Color of text
@@ -200,26 +200,26 @@ class GameView(arcade.View):
         """
 
         # Calculate player speed based on the keys pressed
-        self.player_sprite.change_x = 0
+        self.player.change_x = 0
 
         # Move player with keyboard
         if self.left_pressed and not self.right_pressed:
-            self.player_sprite.change_x = -PLAYER_SPEED_X
+            self.player.change_x = -PLAYER_SPEED_X
         elif self.right_pressed and not self.left_pressed:
-            self.player_sprite.change_x = PLAYER_SPEED_X
+            self.player.change_x = PLAYER_SPEED_X
 
         # Move player with joystick if present
         if self.joystick:
-            self.player_sprite.change_x = round(self.joystick.x) * PLAYER_SPEED_X
+            self.player.change_x = round(self.joystick.x) * PLAYER_SPEED_X
 
         # Update player sprite
-        self.player_sprite.update()
+        self.player.update()
 
         # Update the player shots
         self.player_shot_list.update()
 
         # The game is over when the player scores a 100 points
-        if self.player_sprite.score >= 100:
+        if self.player.score >= 100:
             self.game_over()
 
     def game_over(self):
@@ -231,7 +231,7 @@ class GameView(arcade.View):
         game_over_view = GameOverView()
 
         # Pass the players score to the game over view
-        game_over_view.setup(self.player_sprite.score)
+        game_over_view.setup(self.player.score)
 
         # Change to game over view
         self.window.show_view(game_over_view)
@@ -256,10 +256,10 @@ class GameView(arcade.View):
 
         if key == FIRE_KEY:
             # Player gets points for firing?
-            self.player_sprite.score += 10
+            self.player.score += 10
 
             # Create the new shot
-            new_shot = PlayerShot(self.player_sprite.position)
+            new_shot = PlayerShot(self.player.position)
 
             # Add the new shot to he list of shots
             self.player_shot_list.append(new_shot)
