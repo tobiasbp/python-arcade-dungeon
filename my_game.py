@@ -267,7 +267,10 @@ class GameOverView(arcade.View):
     View to show when the game is over
     """
 
-    def __init__(self, window=None, score=-100):
+    def __init__(self, score, window=None):
+        """
+        Create a Gaome Over view. Pass the final score to display.
+        """
         self.score = score
 
         super().__init__(window)
