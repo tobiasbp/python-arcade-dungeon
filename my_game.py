@@ -21,10 +21,10 @@ SCREEN_HEIGHT = 600
 
 # Variables controlling the player
 PLAYER_LIVES = 3
-PLAYER_SPEED_X = 5
+PLAYER_SPEED_X = 200
 PLAYER_START_X = SCREEN_WIDTH / 2
 PLAYER_START_Y = 50
-PLAYER_SHOT_SPEED = 4
+PLAYER_SHOT_SPEED = 300
 
 FIRE_KEY = arcade.key.SPACE
 
@@ -127,10 +127,10 @@ class GameView(arcade.View):
             self.player.change_x = round(self.joystick.x) * PLAYER_SPEED_X
 
         # Update player sprite
-        self.player.update()
+        self.player.on_update(delta_time)
 
         # Update the player shots
-        self.player_shot_list.update()
+        self.player_shot_list.on_update(delta_time)
 
         # The game is over when the player scores a 100 points
         if self.player.score >= 100:
@@ -176,6 +176,7 @@ class GameView(arcade.View):
             new_shot = PlayerShot(
                 center_x=self.player.center_x,
                 center_y=self.player.center_y,
+                speed=PLAYER_SHOT_SPEED,
                 max_y_pos=SCREEN_HEIGHT,
                 scale=SPRITE_SCALING,
             )
