@@ -261,7 +261,7 @@ class GameView(arcade.View):
             # Create the new shot
             new_shot = PlayerShot(self.player.position)
 
-            # Add the new shot to he list of shots
+            # Add the new shot to the list of shots
             self.player_shot_list.append(new_shot)
 
     def on_key_release(self, key, modifiers):
