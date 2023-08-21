@@ -38,14 +38,22 @@ class GameView(arcade.View):
         """
 
         # Variable that will hold a list of shots fired by the player
-        self.player_shot_list = None
+        self.player_shot_list = arcade.SpriteList()
 
         # Set up the player info
-        self.player = None
-        self.player_score = None
-        self.player_lives = None
+        self.player_score = 0
+        self.player_lives = PLAYER_LIVES
 
-        # Track the current state of what key is pressed
+        # Create a Player object
+        self.player = Player(
+            center_x=PLAYER_START_X,
+            center_y=PLAYER_START_Y,
+            min_x_pos=0,
+            max_x_pos=SCREEN_WIDTH,
+            scale=SPRITE_SCALING,
+        )
+
+        # Track the current state of what keys are pressed
         self.left_pressed = False
         self.right_pressed = False
         self.up_pressed = False
@@ -75,29 +83,6 @@ class GameView(arcade.View):
 
         # Set the background color
         arcade.set_background_color(arcade.color.AMAZON)
-
-        self.setup()
-
-    def setup(self):
-        """Set up the game and initialize the variables."""
-
-        # No points when the game starts
-        self.player_score = 0
-
-        # No of lives
-        self.player_lives = PLAYER_LIVES
-
-        # A list of the shots fired by the player
-        self.player_shot_list = arcade.SpriteList()
-
-        # Create a Player object
-        self.player = Player(
-            center_x=PLAYER_START_X,
-            center_y=PLAYER_START_Y,
-            min_x_pos=0,
-            max_x_pos=SCREEN_WIDTH,
-            scale=SPRITE_SCALING,
-        )
 
     def on_draw(self):
         """
@@ -273,7 +258,6 @@ class IntroView(arcade.View):
         Start the game when any key is pressed
         """
         game_view = GameView()
-        game_view.setup()
         self.window.show_view(game_view)
 
 
