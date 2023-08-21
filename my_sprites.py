@@ -15,9 +15,6 @@ class Player(arcade.Sprite):
         self.min_x_pos = min_x_pos
         self.max_x_pos = max_x_pos
 
-        # The Player's initial score
-        self.score = 0
-
         # Pass arguments to class arcade.Sprite
         super().__init__(
             center_x=center_x,

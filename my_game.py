@@ -102,7 +102,7 @@ class GameView(arcade.View):
 
         # Draw players score on screen
         arcade.draw_text(
-            "SCORE: {}".format(self.player.score),  # Text to show
+            "SCORE: {}".format(self.player_score),  # Text to show
             10,  # X position
             SCREEN_HEIGHT - 20,  # Y positon
             arcade.color.WHITE,  # Color of text
@@ -133,7 +133,7 @@ class GameView(arcade.View):
         self.player_shot_list.on_update(delta_time)
 
         # The game is over when the player scores a 100 points
-        if self.player.score >= 100:
+        if self.player_score >= 100:
             self.game_over()
 
     def game_over(self):
@@ -142,10 +142,7 @@ class GameView(arcade.View):
         """
 
         # Create a game over view
-        game_over_view = GameOverView()
-
-        # Pass the players score to the game over view
-        game_over_view.setup(self.player.score)
+        game_over_view = GameOverView(score=self.player_score)
 
         # Change to game over view
         self.window.show_view(game_over_view)
@@ -171,7 +168,7 @@ class GameView(arcade.View):
 
         if key == FIRE_KEY:
             # Player gets points for firing?
-            self.player.score += 10
+            self.player_score += 10
 
             # Create the new shot
             new_shot = PlayerShot(
@@ -270,7 +267,12 @@ class GameOverView(arcade.View):
     View to show when the game is over
     """
 
-    def setup(self, score: int):
+    def __init__(self, window=None, score=-100):
+        self.score = score
+
+        super().__init__(window)
+
+    def setup_old(self, score: int):
         """
         Call this from the game so we can show the score.
         """
