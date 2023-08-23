@@ -23,6 +23,8 @@ class Enemy(arcade.Sprite):
         self.center_x += self.change_x
         self.center_y += self.change_y
 
+        self.cur_hp = min(self.cur_hp, self.max_hp)
+
         if self.cur_hp <= 0:
             self.kill()
 
