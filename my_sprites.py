@@ -1,6 +1,28 @@
 import arcade
 
 
+class Enemy(arcade.Sprite):
+    """
+    parent class for all enemies in the game
+    """
+
+    def __init__(self, filename, center_x, center_y, max_hp, scale=1.0):
+
+        super().__init__(
+            filename=filename,
+            scale=scale,
+            center_x=center_y,
+            center_y=center_x
+        )
+
+        self.max_hp = max_hp
+        self.cur_hp = max_hp
+
+    def on_update(self, delta_time: float = 1 / 60):
+
+        self.center_x += self.change_x
+        self.center_y += self.change_y
+
 class Player(arcade.Sprite):
     """
     The player
