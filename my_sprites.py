@@ -100,6 +100,17 @@ class Enemy(arcade.Sprite):
 
         self.max_hp = max_hp
         self.cur_hp = max_hp
+        self.path = None
+
+    def find_path(self, barrier_list: arcade.AStarBarrierList, target_pos: tuple[int, int]):
+        """
+        calculates a path to the target pos. Sets the sprite's path to this path.
+        """
+
+        self.path = arcade.astar_calculate_path(self.position,
+                                                target_pos,
+                                                barrier_list,
+                                                diagonal_movement=True)
 
     def on_update(self, delta_time: float = 1 / 60):
 
