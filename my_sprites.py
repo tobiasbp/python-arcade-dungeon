@@ -80,44 +80,6 @@ class Enemy(arcade.Sprite):
             self.kill()
 
 
-class Enemy(arcade.Sprite):
-    """
-    parent class for all enemies in the game
-    """
-
-    def __init__(self, filename, center_x, center_y, max_hp, scale=1.0):
-
-        super().__init__(
-            filename=filename,
-            scale=scale,
-            center_x=center_y,
-            center_y=center_x
-        )
-
-        self.max_hp = max_hp
-        self.cur_hp = max_hp
-        self.path = None
-
-    def find_path(self, barrier_list: arcade.AStarBarrierList, target_pos: tuple[int, int]):
-        """
-        calculates a path to the target pos. Sets the sprite's path to this path.
-        """
-
-        self.path = arcade.astar_calculate_path(self.position,
-                                                target_pos,
-                                                barrier_list,
-                                                diagonal_movement=True)
-
-    def on_update(self, delta_time: float = 1 / 60):
-
-        self.center_x += self.change_x
-        self.center_y += self.change_y
-
-        self.cur_hp = min(self.cur_hp, self.max_hp)
-
-        if self.cur_hp <= 0:
-            self.kill()
-
 class Player(arcade.Sprite):
     """
     The player
