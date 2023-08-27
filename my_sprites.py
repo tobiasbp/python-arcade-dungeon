@@ -1,12 +1,12 @@
 import arcade
-
+import math
 
 class Enemy(arcade.Sprite):
     """
     parent class for all enemies in the game
     """
 
-    def __init__(self, filename, center_x, center_y, max_hp, scale=1.0):
+    def __init__(self, filename, center_x, center_y, max_hp, speed, scale=1.0):
 
         super().__init__(
             filename=filename,
@@ -15,29 +15,70 @@ class Enemy(arcade.Sprite):
             center_y=center_x
         )
 
+        # hp
         self.max_hp = max_hp
         self.cur_hp = max_hp
+
+        self.speed = speed
+
+        # pathfinding
         self.path = None
+        self.cur_position = 0  # which point on the path we are heading for.
 
     def find_path(self, barrier_list: arcade.AStarBarrierList, target_pos: tuple[int, int]):
         """
         calculates a path to the target pos. Sets the sprite's path to this path.
+        If an enemy has a path, it will automatically follow it.
         """
 
+        # calculate the path. It will be a list of positions(lists)
         self.path = arcade.astar_calculate_path(self.position,
                                                 target_pos,
                                                 barrier_list,
                                                 diagonal_movement=True)
 
+        # reset this because we are at the start of a new path
+        self.cur_position = 0
+
     def on_update(self, delta_time: float = 1 / 60):
+
+        # follow the path, if present
+        if self.path:
+
+            # next position to move to
+            dest_x = self.path[self.cur_position][0]
+            dest_y = self.path[self.cur_position][1]
+
+            # calculate angle to next point
+            angle_to_dest = arcade.get_angle_degrees(dest_x, dest_y, self.center_x, self.center_y)
+
+            # calculate distance
+            distance_to_dest = arcade.get_distance(dest_x, dest_y, self.center_x, self.center_y)
+
+            # this is so we don't move too far
+            this_move = min(self.speed, distance_to_dest)
+
+            # if we are there, set the next position to move to
+            if distance_to_dest <= self.speed:
+                self.cur_position += 1
+
+                # if we are finished with this path, stand still
+                if self.cur_position >= len(self.path):
+                    self.path = None
+
+            self.change_x = math.cos(angle_to_dest) * this_move
+            self.change_y = math.sin(angle_to_dest) * this_move
 
         self.center_x += self.change_x
         self.center_y += self.change_y
 
+        # keep track of hp
         self.cur_hp = min(self.cur_hp, self.max_hp)
 
+        # check if dead
         if self.cur_hp <= 0:
             self.kill()
+
 
 class Player(arcade.Sprite):
     """
