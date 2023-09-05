@@ -7,7 +7,7 @@ class Enemy(arcade.Sprite):
     parent class for all enemies in the game
     """
 
-    def __init__(self, filename, center_x, center_y, max_hp, speed, scale=1.0):
+    def __init__(self, filename: str, center_x: float, center_y: float, max_hp: int, speed: float, scale=1.0):
 
         super().__init__(
             filename=filename,
@@ -23,8 +23,8 @@ class Enemy(arcade.Sprite):
         self.speed = speed
 
         # pathfinding
-        self.path = None
-        self.cur_position = 0  # which point on the path we are heading for.
+        self.path = []
+        self.cur_path_position = 0  # which point on the path we are heading for.
 
     def find_path(self, barrier_list: arcade.AStarBarrierList, target_pos: tuple[int, int]):
         """
@@ -39,7 +39,7 @@ class Enemy(arcade.Sprite):
                                                 diagonal_movement=True)
 
         # reset this because we are at the start of a new path
-        self.cur_position = 0
+        self.cur_path_position = 0
 
     def on_update(self, delta_time: float = 1 / 60):
 
@@ -47,25 +47,24 @@ class Enemy(arcade.Sprite):
         if self.path:
 
             # next position to move to
-            dest_x = self.path[self.cur_position][0]
-            dest_y = self.path[self.cur_position][1]
+            dest_pos = self.path[self.cur_path_position]
 
             # calculate angle to next point
-            angle_to_dest = arcade.get_angle_degrees(dest_x, dest_y, self.center_x, self.center_y)
+            angle_to_dest = arcade.get_angle_degrees(dest_pos[0], dest_pos[1], self.center_x, self.center_y)
 
             # calculate distance
-            distance_to_dest = arcade.get_distance(dest_x, dest_y, self.center_x, self.center_y)
+            distance_to_dest = arcade.get_distance(dest_pos[0], dest_pos[1], self.center_x, self.center_y)
 
             # this is so we don't move too far
             this_move = min(self.speed, distance_to_dest)
 
             # if we are there, set the next position to move to
             if distance_to_dest <= self.speed:
-                self.cur_position += 1
+                self.cur_path_position += 1
 
                 # if we are finished with this path, stand still
-                if self.cur_position >= len(self.path):
-                    self.path = None
+                if self.cur_path_position >= len(self.path):
+                    self.path = []
 
             self.change_x = math.cos(angle_to_dest) * this_move
             self.change_y = math.sin(angle_to_dest) * this_move
