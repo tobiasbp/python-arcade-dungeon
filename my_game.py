@@ -14,6 +14,8 @@ from my_sprites import Player, PlayerShot
 
 # Set the scaling of all sprites in the game
 SPRITE_SCALING = 0.5
+TILE_SCALING = 2
+GRID_PIXEL_SIZE = SPRITE_SCALING * TILE_SCALING
 
 # Set the size of the screen
 SCREEN_WIDTH = 800
@@ -38,6 +40,25 @@ class GameView(arcade.View):
         """
         This is run once when we switch to this view
         """
+
+        map_name = "images/tiny_dungeon/Tiled/sampleMap.tmx"
+
+        layer_options = {
+            "Dungeon": {"use_spatial_hash": True},
+            "Objects": {"use_spatial_hash": True},
+            "Carts": {"use_spatial_hash": True}
+        }
+
+        self.tile_map = arcade.load_tilemap(
+            map_name, layer_options=layer_options, scaling=TILE_SCALING
+        )
+        self.end_of_map = self.tile_map.width * GRID_PIXEL_SIZE
+
+        # Set wall and coin SpriteLists
+        self.dungeon_list = self.tile_map.sprite_lists["Dungeon"]
+        self.objects_list = self.tile_map.sprite_lists["Objects"]
+        self.carts_list = self.tile_map.sprite_lists["Carts"]
+
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = arcade.SpriteList()
@@ -107,6 +128,11 @@ class GameView(arcade.View):
             SCREEN_HEIGHT - 20,  # Y positon
             arcade.color.WHITE,  # Color of text
         )
+
+        # Draw the background tile lists
+        self.dungeon_list.draw()
+        self.objects_list.draw()
+        self.carts_list.draw()
 
     def on_update(self, delta_time):
         """

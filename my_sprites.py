@@ -19,7 +19,7 @@ class Player(arcade.Sprite):
         super().__init__(
             center_x=center_x,
             center_y=center_y,
-            filename="images/playerShip1_red.png",
+            filename="images/tiny_dungeon/tiles/tile_0109.png",
             scale=scale,
         )
 
