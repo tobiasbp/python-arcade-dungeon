@@ -7,13 +7,13 @@ class Enemy(arcade.Sprite):
     parent class for all enemies in the game
     """
 
-    def __init__(self, filename: str, center_x: float, center_y: float, max_hp: int, speed: float, scale=1.0):
+    def __init__(self, filename: str, center_pos: tuple[float, float], max_hp: int, speed: float, scale=1.0):
 
         super().__init__(
             filename=filename,
             scale=scale,
-            center_x=center_y,
-            center_y=center_x
+            center_x=center_pos[0],
+            center_y=center_pos[1]
         )
 
         # hp
