@@ -54,7 +54,7 @@ def load_tmx(tmx_file, self):
         tmx_file, layer_options=layer_options, scaling=TILE_SCALING
     )
 
-    self.dict_list = {
+    sprite_lists = {
         "background": tile_map.sprite_lists[layer_names[0]],
         "impassable": tile_map.sprite_lists[layer_names[1]],
         "objects-impassable": tile_map.sprite_lists[layer_names[2]],
@@ -62,7 +62,8 @@ def load_tmx(tmx_file, self):
         "pressure-plates": tile_map.sprite_lists[layer_names[4]]
     }
 
-    return xx
+    return sprite_lists
+
 
 class GameView(arcade.View):
     """
