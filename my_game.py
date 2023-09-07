@@ -14,7 +14,7 @@ from my_sprites import Player, PlayerShot
 
 # Set the scaling of all sprites in the game
 SPRITE_SCALING = 0.5
-TILE_SCALING = 2
+TILE_SCALING = 1.9
 GRID_PIXEL_SIZE = SPRITE_SCALING * TILE_SCALING
 
 # Set the size of the screen
@@ -31,6 +31,39 @@ PLAYER_SHOT_SPEED = 300
 FIRE_KEY = arcade.key.SPACE
 
 
+def load_tmx(tmx_file, self):
+
+    layer_names = [
+        "background",
+        "impassable",
+        "objects-impassable",
+        "objects-passable",
+        "pressure-plates"
+    ]
+    # Layer names and use of "special_hash".
+    layer_options = {
+        layer_names[0]: {"use_spatial_hash": True},
+        layer_names[1]: {"use_spatial_hash": True},
+        layer_names[2]: {"use_spatial_hash": True},
+        layer_names[3]: {"use_spatial_hash": True},
+        layer_names[4]: {"use_spatial_hash": True}
+    }
+
+    # Loads the tile-map, layer_options, and how big the tmx is.
+    tile_map = arcade.load_tilemap(
+        tmx_file, layer_options=layer_options, scaling=TILE_SCALING
+    )
+
+    self.dict_list = {
+        "background": tile_map.sprite_lists[layer_names[0]],
+        "impassable": tile_map.sprite_lists[layer_names[1]],
+        "objects-impassable": tile_map.sprite_lists[layer_names[2]],
+        "objects-passable": tile_map.sprite_lists[layer_names[3]],
+        "pressure-plates": tile_map.sprite_lists[layer_names[4]]
+    }
+
+    return xx
+
 class GameView(arcade.View):
     """
     The view with the game itself
@@ -41,24 +74,8 @@ class GameView(arcade.View):
         This is run once when we switch to this view
         """
 
-        map_name = "images/tiny_dungeon/Tiled/sampleMap.tmx"
-
-        layer_options = {
-            "Dungeon": {"use_spatial_hash": True},
-            "Objects": {"use_spatial_hash": True},
-            "Carts": {"use_spatial_hash": True}
-        }
-
-        self.tile_map = arcade.load_tilemap(
-            map_name, layer_options=layer_options, scaling=TILE_SCALING
-        )
-        self.end_of_map = self.tile_map.width * GRID_PIXEL_SIZE
-
-        # Set wall and coin SpriteLists
-        self.dungeon_list = self.tile_map.sprite_lists["Dungeon"]
-        self.objects_list = self.tile_map.sprite_lists["Objects"]
-        self.carts_list = self.tile_map.sprite_lists["Carts"]
-
+        # Load the map
+        load_tmx("images/tiny_dungeon/Tiled/sampleMap.tmx", self)
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = arcade.SpriteList()
@@ -130,9 +147,11 @@ class GameView(arcade.View):
         )
 
         # Draw the background tile lists
-        self.dungeon_list.draw()
-        self.objects_list.draw()
-        self.carts_list.draw()
+        # self.background_list.draw()
+        # self.impassable_list.draw()
+        # self.objects_impassable_list.draw()
+        # self.objects_passable_list.draw()
+        # self.pressure_plates_list.draw()
 
     def on_update(self, delta_time):
         """
