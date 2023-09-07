@@ -31,7 +31,7 @@ PLAYER_SHOT_SPEED = 300
 FIRE_KEY = arcade.key.SPACE
 
 
-def load_tmx(tmx_file, self):
+def load_tmx(tmx_file, self, tile_scaling):
 
     layer_names = [
         "background",
@@ -51,7 +51,7 @@ def load_tmx(tmx_file, self):
 
     # Loads the tile-map, layer_options, and how big the tmx is.
     tile_map = arcade.load_tilemap(
-        tmx_file, layer_options=layer_options, scaling=TILE_SCALING
+        tmx_file, layer_options=layer_options, scaling=tile_scaling
     )
 
     sprite_lists = {
@@ -76,7 +76,7 @@ class GameView(arcade.View):
         """
 
         # Load the map
-        load_tmx("images/tiny_dungeon/Tiled/sampleMap.tmx", self)
+        load_tmx("images/tiny_dungeon/Tiled/sampleMap.tmx", self, TILE_SCALING)
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = arcade.SpriteList()
