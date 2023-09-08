@@ -31,7 +31,7 @@ PLAYER_SHOT_SPEED = 300
 FIRE_KEY = arcade.key.SPACE
 
 
-def load_tmx(tmx_file, self, tile_scaling):
+def load_tmx(tmx_file, scaling):
 
     layer_names = [
         "background",
@@ -51,15 +51,15 @@ def load_tmx(tmx_file, self, tile_scaling):
 
     # Loads the tile-map, layer_options, and how big the tmx is.
     tile_map = arcade.load_tilemap(
-        tmx_file, layer_options=layer_options, scaling=tile_scaling
+        tmx_file, layer_options=layer_options, scaling=scaling
     )
 
     sprite_lists = {
-        "background": tile_map.sprite_lists[layer_names[0]],
-        "impassable": tile_map.sprite_lists[layer_names[1]],
-        "objects-impassable": tile_map.sprite_lists[layer_names[2]],
-        "objects-passable": tile_map.sprite_lists[layer_names[3]],
-        "pressure-plates": tile_map.sprite_lists[layer_names[4]]
+        "background": tile_map.sprite_lists[layer_options[0]: {"use_spatial_hash": True}],
+        "impassable": tile_map.sprite_lists[layer_options[1]: {"use_spatial_hash": True}],
+        "objects-impassable": tile_map.sprite_lists[layer_options[2]: {"use_spatial_hash": True}],
+        "objects-passable": tile_map.sprite_lists[layer_options[3]: {"use_spatial_hash": True}],
+        "pressure-plates": tile_map.sprite_lists[layer_options[4]: {"use_spatial_hash": True}]
     }
 
     return sprite_lists
@@ -76,7 +76,7 @@ class GameView(arcade.View):
         """
 
         # Load the map
-        load_tmx("images/tiny_dungeon/Tiled/sampleMap.tmx", self, TILE_SCALING)
+        self.map_dict = load_tmx("images/tiny_dungeon/Tiled/sampleMap.tmx", TILE_SCALING)
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = arcade.SpriteList()
@@ -148,11 +148,8 @@ class GameView(arcade.View):
         )
 
         # Draw the background tile lists
-        # self.background_list.draw()
-        # self.impassable_list.draw()
-        # self.objects_impassable_list.draw()
-        # self.objects_passable_list.draw()
-        # self.pressure_plates_list.draw()
+        for i in self.map_dict:
+            self.map_dict[i].draw()
 
     def on_update(self, delta_time):
         """
