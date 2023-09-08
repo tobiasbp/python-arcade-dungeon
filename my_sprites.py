@@ -17,7 +17,7 @@ class Enemy(arcade.Sprite):
         )
 
         # hp
-        self.max_hp = max_hp
+        self._max_hp = max_hp
         self.cur_hp = max_hp
 
         self.speed = speed
@@ -25,6 +25,10 @@ class Enemy(arcade.Sprite):
         # pathfinding
         self.path = []
         self.cur_path_position = 0  # which point on the path we are heading for.
+
+    @property
+    def max_hp(self):
+        return self._max_hp
 
     def find_path(self, barrier_list: arcade.AStarBarrierList, target_pos: tuple[int, int]):
         """
