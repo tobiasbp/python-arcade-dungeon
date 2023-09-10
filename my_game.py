@@ -13,13 +13,14 @@ import arcade
 from my_sprites import Player, PlayerShot
 
 # Set the scaling of all sprites in the game
-SPRITE_SCALING = 0.5
-TILE_SCALING = 1.9
-GRID_PIXEL_SIZE = SPRITE_SCALING * TILE_SCALING
+SCALING = 2
+
+# Tiles are squares
+TILE_SIZE = 16
 
 # Set the size of the screen
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 30 * TILE_SIZE * SCALING
+SCREEN_HEIGHT = 30 * TILE_SIZE * SCALING
 
 # Variables controlling the player
 PLAYER_LIVES = 3
@@ -29,40 +30,6 @@ PLAYER_START_Y = 50
 PLAYER_SHOT_SPEED = 300
 
 FIRE_KEY = arcade.key.SPACE
-
-
-def load_tmx(tmx_file, scaling):
-
-    layer_names = [
-        "background",
-        "impassable",
-        "objects-impassable",
-        "objects-passable",
-        "pressure-plates"
-    ]
-    # Layer names and use of "special_hash".
-    layer_options = {
-        layer_names[0]: {"use_spatial_hash": True},
-        layer_names[1]: {"use_spatial_hash": True},
-        layer_names[2]: {"use_spatial_hash": True},
-        layer_names[3]: {"use_spatial_hash": True},
-        layer_names[4]: {"use_spatial_hash": True}
-    }
-
-    # Loads the tile-map, layer_options, and how big the tmx is.
-    tile_map = arcade.load_tilemap(
-        tmx_file, layer_options=layer_options, scaling=scaling
-    )
-
-    sprite_lists = {
-        "background": tile_map.sprite_lists[layer_options[0]: {"use_spatial_hash": True}],
-        "impassable": tile_map.sprite_lists[layer_options[1]: {"use_spatial_hash": True}],
-        "objects-impassable": tile_map.sprite_lists[layer_options[2]: {"use_spatial_hash": True}],
-        "objects-passable": tile_map.sprite_lists[layer_options[3]: {"use_spatial_hash": True}],
-        "pressure-plates": tile_map.sprite_lists[layer_options[4]: {"use_spatial_hash": True}]
-    }
-
-    return sprite_lists
 
 
 class GameView(arcade.View):
@@ -76,7 +43,12 @@ class GameView(arcade.View):
         """
 
         # Load the map
-        self.map_dict = load_tmx("images/tiny_dungeon/Tiled/sampleMap.tmx", TILE_SCALING)
+        # Spatial hashing is good for calculating collisions for static sprites (like the ones in this map)
+        self.tilemap = arcade.load_tilemap(
+            "data/rooms/dungeon/room_0.tmx",
+            use_spatial_hash=True,
+            scaling=SCALING
+        )
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = arcade.SpriteList()
@@ -91,7 +63,7 @@ class GameView(arcade.View):
             center_y=PLAYER_START_Y,
             min_x_pos=0,
             max_x_pos=SCREEN_WIDTH,
-            scale=SPRITE_SCALING,
+            scale=SCALING,
         )
 
         # Track the current state of what keys are pressed
@@ -133,12 +105,6 @@ class GameView(arcade.View):
         # Clear screen so we can draw new stuff
         self.clear()
 
-        # Draw the player shot
-        self.player_shot_list.draw()
-
-        # Draw the player sprite
-        self.player.draw()
-
         # Draw players score on screen
         arcade.draw_text(
             f"SCORE: {self.player_score}",  # Text to show
@@ -147,9 +113,15 @@ class GameView(arcade.View):
             arcade.color.WHITE,  # Color of text
         )
 
-        # Draw the background tile lists
-        for i in self.map_dict:
-            self.map_dict[i].draw()
+        # Draw the the spritelists in the tilemap
+        for sprite_list in self.tilemap.sprite_lists.values():
+            sprite_list.draw()
+
+        # Draw the player shot
+        self.player_shot_list.draw()
+
+        # Draw the player sprite
+        self.player.draw()
 
     def on_update(self, delta_time):
         """
