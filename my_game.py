@@ -90,7 +90,7 @@ class GameView(arcade.View):
 
         # Ensure that no tile on the background layer collides with the impassibles layer
         # We want to be able to spawn enemies on the backgrounds layer, so we must ensure
-        # that the spawn point is not impassable 
+        # that the spawn point is not impassable
         for background_tile in self.tilemap.sprite_lists["background"]:
             colliding_tiles = background_tile.collides_with_list(self.tilemap.sprite_lists["impassable"])
             assert len(colliding_tiles) == 0, f"A tile on layer 'background' collides with a tile on layer 'impassable' at position {background_tile.position}"
