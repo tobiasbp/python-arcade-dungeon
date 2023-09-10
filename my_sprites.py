@@ -19,7 +19,7 @@ class Player(arcade.Sprite):
         super().__init__(
             center_x=center_x,
             center_y=center_y,
-            filename="images/playerShip1_red.png",
+            filename="images/tiny_dungeon/Tiles/tile_0109.png",
             scale=scale,
         )
 
@@ -54,7 +54,7 @@ class PlayerShot(arcade.Sprite):
             center_x=center_x,
             center_y=center_y,
             scale=scale,
-            filename="images/Lasers/laserBlue01.png",
+            filename="images/tiny_dungeon/Tiles/tile_0109.png",
             flipped_diagonally=True,
             flipped_horizontally=True,
             flipped_vertically=False,

@@ -8,16 +8,27 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 """
 
 import arcade
+from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
 from my_sprites import Player, PlayerShot
 
 # Set the scaling of all sprites in the game
-SPRITE_SCALING = 0.5
+SCALING = 2
+
+# Tiles are squares
+TILE_SIZE = 16
+
+# Move the map down from the top left corner by this much
+# This will create an area on the screen for score etc.
+GUI_HEIGHT = 2 * TILE_SIZE * SCALING
+
+MAP_WIDTH_TILES = 30
+MAP_HEIGHT_TILES = 30
 
 # Set the size of the screen
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = MAP_WIDTH_TILES * TILE_SIZE * SCALING
+SCREEN_HEIGHT = MAP_HEIGHT_TILES * TILE_SIZE * SCALING + GUI_HEIGHT
 
 # Variables controlling the player
 PLAYER_LIVES = 3
@@ -39,6 +50,21 @@ class GameView(arcade.View):
         This is run once when we switch to this view
         """
 
+        # Create a TileMap with walls, objects etc.
+        # Spatial hashing is good for calculating collisions for static sprites (like the ones in this map)
+        self.tilemap = arcade.tilemap.TileMap(
+            map_file="data/rooms/dungeon/room_0.tmx",
+            use_spatial_hash=True,
+            scaling=SCALING,
+            offset=Vec2(0,0)
+        )
+
+        # Make sure the map we load is as expected
+        assert self.tilemap.tile_width == TILE_SIZE, f"Width of tiles in map is {self.tilemap.tile_width}, it should be {TILE_SIZE}."
+        assert self.tilemap.tile_height == TILE_SIZE, f"Heigh of tiles in map is {self.tilemap.tile_height}, it should be {TILE_SIZE}."
+        assert self.tilemap.width == MAP_WIDTH_TILES, f"Width of map is {self.tilemap.width}, it should be {MAP_WIDTH_TILES}."
+        assert self.tilemap.height == MAP_HEIGHT_TILES, f"Height of map is {self.tilemap.width}, it should be {MAP_HEIGHT_TILES}."
+
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = arcade.SpriteList()
 
@@ -52,7 +78,7 @@ class GameView(arcade.View):
             center_y=PLAYER_START_Y,
             min_x_pos=0,
             max_x_pos=SCREEN_WIDTH,
-            scale=SPRITE_SCALING,
+            scale=SCALING,
         )
 
         # Track the current state of what keys are pressed
@@ -84,7 +110,7 @@ class GameView(arcade.View):
             self.joystick = None
 
         # Set the background color
-        arcade.set_background_color(arcade.color.AMAZON)
+        arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
         """
@@ -94,12 +120,6 @@ class GameView(arcade.View):
         # Clear screen so we can draw new stuff
         self.clear()
 
-        # Draw the player shot
-        self.player_shot_list.draw()
-
-        # Draw the player sprite
-        self.player.draw()
-
         # Draw players score on screen
         arcade.draw_text(
             f"SCORE: {self.player_score}",  # Text to show
@@ -107,6 +127,16 @@ class GameView(arcade.View):
             SCREEN_HEIGHT - 20,  # Y positon
             arcade.color.WHITE,  # Color of text
         )
+
+        # Draw the the spritelists in the tilemap
+        for sprite_list in self.tilemap.sprite_lists.values():
+            sprite_list.draw()
+
+        # Draw the player shot
+        self.player_shot_list.draw()
+
+        # Draw the player sprite
+        self.player.draw()
 
     def on_update(self, delta_time):
         """
@@ -176,7 +206,7 @@ class GameView(arcade.View):
                 center_y=self.player.center_y,
                 speed=PLAYER_SHOT_SPEED,
                 max_y_pos=SCREEN_HEIGHT,
-                scale=SPRITE_SCALING,
+                scale=SCALING,
             )
 
             # Add the new shot to the list of shots
