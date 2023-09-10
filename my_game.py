@@ -191,7 +191,7 @@ class GameView(arcade.View):
                 center_y=self.player.center_y,
                 speed=PLAYER_SHOT_SPEED,
                 max_y_pos=SCREEN_HEIGHT,
-                scale=SPRITE_SCALING,
+                scale=SCALING,
             )
 
             # Add the new shot to the list of shots
