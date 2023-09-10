@@ -8,6 +8,7 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 """
 
 import arcade
+from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
 from my_sprites import Player, PlayerShot
@@ -18,9 +19,13 @@ SCALING = 2
 # Tiles are squares
 TILE_SIZE = 16
 
+# Move the map down from the top left corner by this much
+# This will create an area on the screen for score etc.
+GUI_HEIGHT = 1 * TILE_SIZE * SCALING
+
 # Set the size of the screen
 SCREEN_WIDTH = 30 * TILE_SIZE * SCALING
-SCREEN_HEIGHT = 30 * TILE_SIZE * SCALING
+SCREEN_HEIGHT = 30 * TILE_SIZE * SCALING + GUI_HEIGHT
 
 # Variables controlling the player
 PLAYER_LIVES = 3
@@ -42,12 +47,13 @@ class GameView(arcade.View):
         This is run once when we switch to this view
         """
 
-        # Load the map
+        # Create a TileMap with walls, objects etc.
         # Spatial hashing is good for calculating collisions for static sprites (like the ones in this map)
-        self.tilemap = arcade.load_tilemap(
-            "data/rooms/dungeon/room_0.tmx",
+        self.tilemap = arcade.tilemap.TileMap(
+            map_file="data/rooms/dungeon/room_0.tmx",
             use_spatial_hash=True,
-            scaling=SCALING
+            scaling=SCALING,
+            offset=Vec2(0,-1 * GUI_HEIGHT)
         )
 
         # Variable that will hold a list of shots fired by the player
@@ -95,7 +101,7 @@ class GameView(arcade.View):
             self.joystick = None
 
         # Set the background color
-        arcade.set_background_color(arcade.color.AMAZON)
+        arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
         """
