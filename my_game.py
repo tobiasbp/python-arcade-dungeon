@@ -21,11 +21,14 @@ TILE_SIZE = 16
 
 # Move the map down from the top left corner by this much
 # This will create an area on the screen for score etc.
-GUI_HEIGHT = 1 * TILE_SIZE * SCALING
+GUI_HEIGHT = 2 * TILE_SIZE * SCALING
+
+MAP_WIDTH_TILES = 30
+MAP_HEIGHT_TILES = 30
 
 # Set the size of the screen
-SCREEN_WIDTH = 30 * TILE_SIZE * SCALING
-SCREEN_HEIGHT = 30 * TILE_SIZE * SCALING + GUI_HEIGHT
+SCREEN_WIDTH = MAP_WIDTH_TILES * TILE_SIZE * SCALING
+SCREEN_HEIGHT = MAP_HEIGHT_TILES * TILE_SIZE * SCALING + GUI_HEIGHT
 
 # Variables controlling the player
 PLAYER_LIVES = 3
@@ -53,8 +56,14 @@ class GameView(arcade.View):
             map_file="data/rooms/dungeon/room_0.tmx",
             use_spatial_hash=True,
             scaling=SCALING,
-            offset=Vec2(0,-1 * GUI_HEIGHT)
+            offset=Vec2(0,0)
         )
+
+        # Make sure the map we load is as expected
+        assert self.tilemap.tile_width == TILE_SIZE, f"Width of tiles in map is {self.tilemap.tile_width}, it should be {TILE_SIZE}."
+        assert self.tilemap.tile_height == TILE_SIZE, f"Heigh of tiles in map is {self.tilemap.tile_height}, it should be {TILE_SIZE}."
+        assert self.tilemap.width == MAP_WIDTH_TILES, f"Width of map is {self.tilemap.width}, it should be {MAP_WIDTH_TILES}."
+        assert self.tilemap.height == MAP_HEIGHT_TILES, f"Height of map is {self.tilemap.width}, it should be {MAP_HEIGHT_TILES}."
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = arcade.SpriteList()
