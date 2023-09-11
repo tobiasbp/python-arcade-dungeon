@@ -16,6 +16,9 @@ from my_sprites import Player, PlayerShot
 # Set the scaling of all sprites in the game
 SCALING = 2
 
+# Draw bitmaps without smooth interpolation
+DRAW_PIXELATED = True
+
 # Tiles are squares
 TILE_SIZE = 16
 
@@ -130,13 +133,13 @@ class GameView(arcade.View):
 
         # Draw the the spritelists in the tilemap
         for sprite_list in self.tilemap.sprite_lists.values():
-            sprite_list.draw()
+            sprite_list.draw(pixelated=DRAW_PIXELATED)
 
         # Draw the player shot
-        self.player_shot_list.draw()
+        self.player_shot_list.draw(pixelated=DRAW_PIXELATED)
 
         # Draw the player sprite
-        self.player.draw()
+        self.player.draw(pixelated=DRAW_PIXELATED)
 
     def on_update(self, delta_time):
         """
