@@ -35,7 +35,7 @@ SCREEN_HEIGHT = MAP_HEIGHT_TILES * TILE_SIZE * SCALING + GUI_HEIGHT
 
 # Variables controlling the player
 PLAYER_LIVES = 3
-PLAYER_SPEED_X = 200
+PLAYER_SPEED = 5
 PLAYER_START_X = SCREEN_WIDTH / 2
 PLAYER_START_Y = 50
 PLAYER_SHOT_SPEED = 300
@@ -96,6 +96,12 @@ class GameView(arcade.View):
             min_x_pos=0,
             max_x_pos=SCREEN_WIDTH,
             scale=SCALING,
+        )
+
+        # Register player and walls with physics engine
+        self.physics_engine =  arcade.PhysicsEngineSimple(
+            player_sprite=self.player,
+            walls = self.tilemap.sprite_lists["impassable"]
         )
 
         # Track the current state of what keys are pressed
@@ -165,21 +171,27 @@ class GameView(arcade.View):
         Movement and game logic
         """
 
-        # Calculate player speed based on the keys pressed
+        # Player has no speed unless buttons are pressed
         self.player.change_x = 0
+        self.player.change_y = 0
 
-        # Move player with keyboard
+        # Set speed for player with keyboard
         if self.left_pressed and not self.right_pressed:
-            self.player.change_x = -PLAYER_SPEED_X
+            self.player.change_x = -PLAYER_SPEED
         elif self.right_pressed and not self.left_pressed:
-            self.player.change_x = PLAYER_SPEED_X
+            self.player.change_x = PLAYER_SPEED
+        elif self.up_pressed and not self.down_pressed:
+            self.player.change_y = PLAYER_SPEED
+        elif self.down_pressed and not self.up_pressed:
+            self.player.change_y = -PLAYER_SPEED
 
         # Move player with joystick if present
         if self.joystick:
-            self.player.change_x = round(self.joystick.x) * PLAYER_SPEED_X
+            self.player.change_x = round(self.joystick.x) * PLAYER_SPEED
 
-        # Update player sprite
-        self.player.on_update(delta_time)
+        # Update the physics engine (including the player)
+        # Return all sprites involved in collissions
+        colliding_sprites = self.physics_engine.update()
 
         # Update the player shots
         self.player_shot_list.on_update(delta_time)
