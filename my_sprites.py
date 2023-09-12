@@ -53,7 +53,7 @@ class Enemy(arcade.Sprite):
             dest_pos = self.path[self.cur_path_position]
 
             # calculate angle to next point
-            angle_to_dest = arcade.get_angle_degrees(dest_pos[0], dest_pos[1], self.center_x, self.center_y)
+            angle_to_dest = arcade.get_angle_radians(dest_pos[0], dest_pos[1], self.center_x, self.center_y)
 
             # calculate distance
             distance_to_dest = arcade.get_distance(dest_pos[0], dest_pos[1], self.center_x, self.center_y)
@@ -66,11 +66,12 @@ class Enemy(arcade.Sprite):
                 self.cur_path_position += 1
 
                 # if we are finished with this path, stand still
-                if self.cur_path_position >= len(self.path):
+                if self.cur_path_position == len(self.path):
                     self.path = []
 
-            self.change_x = math.cos(angle_to_dest) * this_move
-            self.change_y = math.sin(angle_to_dest) * this_move
+            # testing shows that we need to reverse the direction...
+            self.change_x = -math.sin(angle_to_dest) * this_move
+            self.change_y = -math.cos(angle_to_dest) * this_move
 
         self.center_x += self.change_x
         self.center_y += self.change_y

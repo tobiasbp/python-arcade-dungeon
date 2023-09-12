@@ -11,7 +11,7 @@ import arcade
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
-from my_sprites import Player, PlayerShot
+from my_sprites import Player, PlayerShot, Enemy
 
 # Set the scaling of all sprites in the game
 SCALING = 2
@@ -84,6 +84,25 @@ class GameView(arcade.View):
             scale=SCALING,
         )
 
+        self.tilemap_barriers = arcade.AStarBarrierList(
+            moving_sprite=self.player,
+            blocking_sprites=self.tilemap.sprite_lists["impassable"],
+            grid_size=int(self.tilemap.tile_width),  # must be int to avoid rounding errors
+            left=0,
+            right=SCREEN_WIDTH,
+            bottom=0,
+            top=SCREEN_HEIGHT
+        )
+
+        # create a sample enemy
+        self.sample_enemy = Enemy(
+            filename="images/tiny_dungeon/Tiles/tile_0087.png",
+            center_pos=(200, 200),
+            max_hp=10,
+            speed=1,
+            scale=SCALING
+        )
+
         # Track the current state of what keys are pressed
         self.left_pressed = False
         self.right_pressed = False
@@ -141,6 +160,8 @@ class GameView(arcade.View):
         # Draw the player sprite
         self.player.draw(pixelated=DRAW_PIXELATED)
 
+        self.sample_enemy.draw(pixelated=DRAW_PIXELATED)
+
     def on_update(self, delta_time):
         """
         Movement and game logic
@@ -161,6 +182,8 @@ class GameView(arcade.View):
 
         # Update player sprite
         self.player.on_update(delta_time)
+
+        self.sample_enemy.on_update()
 
         # Update the player shots
         self.player_shot_list.on_update(delta_time)
