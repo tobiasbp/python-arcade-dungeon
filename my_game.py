@@ -191,6 +191,7 @@ class GameView(arcade.View):
 
         # Update the physics engine (including the player)
         # Return all sprites involved in collissions
+        # FIXME: simple physics does not use delta_time. Has no on_update() method.
         colliding_sprites = self.physics_engine.update()
 
         # Update the player shots
