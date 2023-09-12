@@ -145,9 +145,14 @@ class GameView(arcade.View):
             arcade.color.WHITE,  # Color of text
         )
 
-        # Draw the the spritelists in the tilemap
-        for sprite_list in self.tilemap.sprite_lists.values():
-            sprite_list.draw(pixelated=DRAW_PIXELATED)
+        # Draw the the sprite list from the map if configured to be drawn
+        for layer_name, layer_sprites in self.tilemap.sprite_lists.items():
+            if MAP_LAYER_CONFIG[layer_name].get("draw", True):
+                if MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
+                    # FIXME: Add logic for drawing stuff that has line of sight here
+                    pass
+                else:
+                    layer_sprites.draw(pixelated=DRAW_PIXELATED)
 
         # Draw the player shot
         self.player_shot_list.draw(pixelated=DRAW_PIXELATED)
