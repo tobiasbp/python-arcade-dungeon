@@ -149,7 +149,7 @@ class GameView(arcade.View):
         for layer_name, layer_sprites in self.tilemap.sprite_lists.items():
             if MAP_LAYER_CONFIG[layer_name].get("draw", True):
                 if MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
-                    # FIXME: Add logic for drawing stuff that has line of sight here
+                    # FIXME: Add logic for drawing stuff that should only be drawn if players have line of sight here
                     pass
                 else:
                     layer_sprites.draw(pixelated=DRAW_PIXELATED)
