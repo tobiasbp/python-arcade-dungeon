@@ -42,6 +42,18 @@ PLAYER_SHOT_SPEED = 300
 
 FIRE_KEY = arcade.key.SPACE
 
+# All layers configured must exist in the map file.
+# line_of_sight: Should sprites only be drawn if they are vissible to a player?
+# draw: Should the sprites on this layer be drawn?. Config layers, like spawn points, should probably not be drawn
+# passable: Can players and enemies can move through sprites on this layer?
+MAP_LAYER_CONFIG = {
+ "background": {"line_of_sight": False, "draw": True, "passable": True},
+ "impassable": {"line_of_sight": False, "draw": True, "passable": False},
+ "objects-passable": {"line_of_sight": True, "draw": True, "passable": True},
+ "objects-impassable": {"line_of_sight": True, "draw": True, "passable": False},
+ "pressure-plates": {"line_of_sight": True, "draw": True, "passable": True},
+}
+
 
 class GameView(arcade.View):
     """
@@ -67,6 +79,8 @@ class GameView(arcade.View):
         assert self.tilemap.tile_height == TILE_SIZE, f"Heigh of tiles in map is {self.tilemap.tile_height}, it should be {TILE_SIZE}."
         assert self.tilemap.width == MAP_WIDTH_TILES, f"Width of map is {self.tilemap.width}, it should be {MAP_WIDTH_TILES}."
         assert self.tilemap.height == MAP_HEIGHT_TILES, f"Height of map is {self.tilemap.width}, it should be {MAP_HEIGHT_TILES}."
+        for layer_name in MAP_LAYER_CONFIG.keys():
+            assert layer_name in self.tilemap.sprite_lists.keys(), f"Layer name '{layer_name}' not in tilemap."
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = arcade.SpriteList()
