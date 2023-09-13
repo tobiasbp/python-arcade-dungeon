@@ -140,14 +140,6 @@ class GameView(arcade.View):
         # Clear screen so we can draw new stuff
         self.clear()
 
-        # Draw players score on screen
-        arcade.draw_text(
-            f"SCORE: {self.player_score}",  # Text to show
-            10,  # X position
-            SCREEN_HEIGHT - 20,  # Y positon
-            arcade.color.WHITE,  # Color of text
-        )
-
         # Draw the the sprite list from the map if configured to be drawn
         for layer_name, layer_sprites in self.tilemap.sprite_lists.items():
             if MAP_LAYER_CONFIG[layer_name].get("draw", True):
