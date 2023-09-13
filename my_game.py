@@ -29,6 +29,9 @@ GUI_HEIGHT = 2 * TILE_SIZE * SCALING
 MAP_WIDTH_TILES = 30
 MAP_HEIGHT_TILES = 30
 
+# Fonts
+MAIN_FONT_NAME = "Kenney Pixel"
+
 # Set the size of the screen
 SCREEN_WIDTH = MAP_WIDTH_TILES * TILE_SIZE * SCALING
 SCREEN_HEIGHT = MAP_HEIGHT_TILES * TILE_SIZE * SCALING + GUI_HEIGHT
@@ -137,14 +140,6 @@ class GameView(arcade.View):
         # Clear screen so we can draw new stuff
         self.clear()
 
-        # Draw players score on screen
-        arcade.draw_text(
-            f"SCORE: {self.player_score}",  # Text to show
-            10,  # X position
-            SCREEN_HEIGHT - 20,  # Y positon
-            arcade.color.WHITE,  # Color of text
-        )
-
         # Draw the the sprite list from the map if configured to be drawn
         for layer_name, layer_sprites in self.tilemap.sprite_lists.items():
             if MAP_LAYER_CONFIG[layer_name].get("draw", True):
@@ -159,6 +154,17 @@ class GameView(arcade.View):
 
         # Draw the player sprite
         self.player.draw(pixelated=DRAW_PIXELATED)
+
+        # Draw players score on screen
+        arcade.draw_text(
+            f"SCORE: {self.player_score}",  # Text to show
+            10,  # X position
+            SCREEN_HEIGHT - 20,  # Y positon
+            arcade.color.WHITE,  # Color of text
+            font_size=TILE_SIZE,
+            font_name=MAIN_FONT_NAME,
+            bold=True,
+        )
 
     def on_update(self, delta_time):
         """
@@ -183,10 +189,6 @@ class GameView(arcade.View):
 
         # Update the player shots
         self.player_shot_list.on_update(delta_time)
-
-        # The game is over when the player scores a 100 points
-        if self.player_score >= 100:
-            self.game_over()
 
     def game_over(self):
         """
@@ -220,7 +222,7 @@ class GameView(arcade.View):
 
         if key == FIRE_KEY:
             # Player gets points for firing?
-            self.player_score += 10
+            self.player_score += 5
 
             # Create the new shot
             new_shot = PlayerShot(
@@ -293,7 +295,9 @@ class IntroView(arcade.View):
             self.window.height / 2,
             arcade.color.WHITE,
             font_size=50,
+            font_name=MAIN_FONT_NAME,
             anchor_x="center",
+            bold=True
         )
 
         # Draw more text
@@ -303,6 +307,7 @@ class IntroView(arcade.View):
             self.window.height / 2 - 75,
             arcade.color.WHITE,
             font_size=20,
+            font_name=MAIN_FONT_NAME,
             anchor_x="center",
         )
 
@@ -359,7 +364,9 @@ class GameOverView(arcade.View):
             self.window.height / 2,
             arcade.color.WHITE,
             font_size=50,
+            font_name=MAIN_FONT_NAME,
             anchor_x="center",
+            bold=True
         )
 
         # Draw player's score
@@ -369,6 +376,7 @@ class GameOverView(arcade.View):
             self.window.height / 2 - 75,
             arcade.color.WHITE,
             font_size=20,
+            font_name=MAIN_FONT_NAME,
             anchor_x="center",
         )
 
