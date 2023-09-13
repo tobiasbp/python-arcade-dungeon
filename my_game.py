@@ -251,7 +251,7 @@ class IntroView(arcade.View):
     View to show instructions
     """
 
-    def on_show_view(self, fullscreen=True):
+    def on_show_view(self):
         """
         This is run once when we switch to this view
         """
