@@ -14,7 +14,7 @@ from pyglet.math import Vec2
 from my_sprites import Player, PlayerShot
 
 # Set the scaling of all sprites in the game
-SCALING = 1
+SCALING = 2
 
 # Draw bitmaps without smooth interpolation
 DRAW_PIXELATED = True
@@ -30,7 +30,7 @@ MAP_WIDTH_TILES = 30
 MAP_HEIGHT_TILES = 30
 
 # Fonts
-MAIN_FONT = "Kenney Pixel"
+MAIN_FONT_NAME = "Kenney Pixel"
 
 # Set the size of the screen
 SCREEN_WIDTH = MAP_WIDTH_TILES * TILE_SIZE * SCALING
@@ -127,7 +127,6 @@ class GameView(arcade.View):
         self.clear()
 
         # Draw the the spritelists in the tilemap
-
         for sprite_list in self.tilemap.sprite_lists.values():
             sprite_list.draw(pixelated=DRAW_PIXELATED)
 
@@ -144,7 +143,7 @@ class GameView(arcade.View):
             SCREEN_HEIGHT - 20,  # Y positon
             arcade.color.WHITE,  # Color of text
             font_size=TILE_SIZE,
-            font_name=MAIN_FONT,
+            font_name=MAIN_FONT_NAME,
             bold=True,
         )
 
@@ -277,7 +276,7 @@ class IntroView(arcade.View):
             self.window.height / 2,
             arcade.color.WHITE,
             font_size=50,
-            font_name=MAIN_FONT,
+            font_name=MAIN_FONT_NAME,
             anchor_x="center",
             bold=True
         )
@@ -289,7 +288,7 @@ class IntroView(arcade.View):
             self.window.height / 2 - 75,
             arcade.color.WHITE,
             font_size=20,
-            font_name=MAIN_FONT,
+            font_name=MAIN_FONT_NAME,
             anchor_x="center",
         )
 
@@ -346,7 +345,7 @@ class GameOverView(arcade.View):
             self.window.height / 2,
             arcade.color.WHITE,
             font_size=50,
-            font_name=MAIN_FONT,
+            font_name=MAIN_FONT_NAME,
             anchor_x="center",
             bold=True
         )
@@ -358,7 +357,7 @@ class GameOverView(arcade.View):
             self.window.height / 2 - 75,
             arcade.color.WHITE,
             font_size=20,
-            font_name=MAIN_FONT,
+            font_name=MAIN_FONT_NAME,
             anchor_x="center",
         )
 
