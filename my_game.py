@@ -29,6 +29,9 @@ GUI_HEIGHT = 2 * TILE_SIZE * SCALING
 MAP_WIDTH_TILES = 30
 MAP_HEIGHT_TILES = 30
 
+# Fonts
+MAIN_FONT_NAME = "Kenney Pixel"
+
 # Set the size of the screen
 SCREEN_WIDTH = MAP_WIDTH_TILES * TILE_SIZE * SCALING
 SCREEN_HEIGHT = MAP_HEIGHT_TILES * TILE_SIZE * SCALING + GUI_HEIGHT
@@ -41,6 +44,18 @@ PLAYER_START_Y = 50
 PLAYER_SHOT_SPEED = 300
 
 FIRE_KEY = arcade.key.SPACE
+
+# All layers configured must exist in the map file.
+# line_of_sight: Should sprites only be drawn if they are vissible to a player?
+# draw: Should the sprites on this layer be drawn?. Config layers, like spawn points, should probably not be drawn
+# passable: Can players and enemies can move through sprites on this layer?
+MAP_LAYER_CONFIG = {
+ "background": {"line_of_sight": False, "draw": True, "passable": True},
+ "impassable": {"line_of_sight": False, "draw": True, "passable": False},
+ "objects-passable": {"line_of_sight": True, "draw": True, "passable": True},
+ "objects-impassable": {"line_of_sight": True, "draw": True, "passable": False},
+ "pressure-plates": {"line_of_sight": True, "draw": True, "passable": True},
+}
 
 
 class GameView(arcade.View):
@@ -67,6 +82,8 @@ class GameView(arcade.View):
         assert self.tilemap.tile_height == TILE_SIZE, f"Heigh of tiles in map is {self.tilemap.tile_height}, it should be {TILE_SIZE}."
         assert self.tilemap.width == MAP_WIDTH_TILES, f"Width of map is {self.tilemap.width}, it should be {MAP_WIDTH_TILES}."
         assert self.tilemap.height == MAP_HEIGHT_TILES, f"Height of map is {self.tilemap.width}, it should be {MAP_HEIGHT_TILES}."
+        for layer_name in MAP_LAYER_CONFIG.keys():
+            assert layer_name in self.tilemap.sprite_lists.keys(), f"Layer name '{layer_name}' not in tilemap."
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = arcade.SpriteList()
@@ -142,13 +159,32 @@ class GameView(arcade.View):
         # Clear screen so we can draw new stuff
         self.clear()
 
+        # Draw the the sprite list from the map if configured to be drawn
+        for layer_name, layer_sprites in self.tilemap.sprite_lists.items():
+            if MAP_LAYER_CONFIG[layer_name].get("draw", True):
+                if MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
+                    # FIXME: Add logic for drawing stuff that should only be drawn if players have line of sight here
+                    pass
+                else:
+                    layer_sprites.draw(pixelated=DRAW_PIXELATED)
+
+        # Draw the player shot
+        self.player_shot_list.draw(pixelated=DRAW_PIXELATED)
+
+        # Draw the player sprite
+        self.player.draw(pixelated=DRAW_PIXELATED)
+
         # Draw players score on screen
         arcade.draw_text(
             f"SCORE: {self.player_score}",  # Text to show
             10,  # X position
             SCREEN_HEIGHT - 20,  # Y positon
             arcade.color.WHITE,  # Color of text
+            font_size=TILE_SIZE,
+            font_name=MAIN_FONT_NAME,
+            bold=True,
         )
+
 
         # Draw the the spritelists in the tilemap
         for sprite_list in self.tilemap.sprite_lists.values():
@@ -188,10 +224,6 @@ class GameView(arcade.View):
         # Update the player shots
         self.player_shot_list.on_update(delta_time)
 
-        # The game is over when the player scores a 100 points
-        if self.player_score >= 100:
-            self.game_over()
-
     def game_over(self):
         """
         Call this when the game is over
@@ -224,7 +256,7 @@ class GameView(arcade.View):
 
         if key == FIRE_KEY:
             # Player gets points for firing?
-            self.player_score += 10
+            self.player_score += 5
 
             # Create the new shot
             new_shot = PlayerShot(
@@ -297,7 +329,9 @@ class IntroView(arcade.View):
             self.window.height / 2,
             arcade.color.WHITE,
             font_size=50,
+            font_name=MAIN_FONT_NAME,
             anchor_x="center",
+            bold=True
         )
 
         # Draw more text
@@ -307,6 +341,7 @@ class IntroView(arcade.View):
             self.window.height / 2 - 75,
             arcade.color.WHITE,
             font_size=20,
+            font_name=MAIN_FONT_NAME,
             anchor_x="center",
         )
 
@@ -363,7 +398,9 @@ class GameOverView(arcade.View):
             self.window.height / 2,
             arcade.color.WHITE,
             font_size=50,
+            font_name=MAIN_FONT_NAME,
             anchor_x="center",
+            bold=True
         )
 
         # Draw player's score
@@ -373,6 +410,7 @@ class GameOverView(arcade.View):
             self.window.height / 2 - 75,
             arcade.color.WHITE,
             font_size=20,
+            font_name=MAIN_FONT_NAME,
             anchor_x="center",
         )
 
