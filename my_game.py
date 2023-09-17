@@ -184,8 +184,9 @@ class GameView(arcade.View):
             self.player.change_y = -PLAYER_SPEED
 
         # Move player with joystick if present
-        if self.joystick:
-            self.player.change_x = round(self.joystick.x) * PLAYER_SPEED
+        # FIXME: Implement joystick movement on x and y axis
+        # if self.joystick:
+        #    self.player.change_x = round(self.joystick.x) * PLAYER_SPEED
 
         # Update the physics engine (including the player)
         # Return all sprites involved in collissions
