@@ -169,22 +169,19 @@ class GameView(arcade.View):
         Movement and game logic
         """
 
-        # Set x/y speed for player with arrow keys
-        # Left/right
+        # Player does not move unless keys are held
+        self.player.change_x = 0
+        self.player.change_y = 0
+
+        # Move player on x or y axis
         if self.left_pressed and not self.right_pressed:
             self.player.change_x = -PLAYER_SPEED
         elif self.right_pressed and not self.left_pressed:
             self.player.change_x = PLAYER_SPEED
-        else:
-            self.player.change_x = 0
-
-        # Up/down
-        if self.up_pressed and not self.down_pressed:
+        elif self.up_pressed and not self.down_pressed:
             self.player.change_y = PLAYER_SPEED
         elif self.down_pressed and not self.up_pressed:
             self.player.change_y = -PLAYER_SPEED
-        else:
-            self.player.change_y = 0
 
         # Move player with joystick if present
         if self.joystick:
