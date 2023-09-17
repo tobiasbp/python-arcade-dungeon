@@ -59,7 +59,7 @@ class Enemy(arcade.Sprite):
             distance_to_dest = arcade.get_distance(dest_pos[0], dest_pos[1], self.center_x, self.center_y)
 
             # this is so we don't move too far
-            this_move = min(self.speed, distance_to_dest)
+            this_move_length = min(self.speed, distance_to_dest)
 
             # if we are there, set the next position to move to
             if distance_to_dest <= self.speed:
@@ -70,16 +70,16 @@ class Enemy(arcade.Sprite):
                     self.path = []
 
             # testing shows that we need to reverse the direction...
-            self.change_x = -math.sin(angle_to_dest) * this_move
-            self.change_y = -math.cos(angle_to_dest) * this_move
+            self.change_x = -math.sin(angle_to_dest) * this_move_length
+            self.change_y = -math.cos(angle_to_dest) * this_move_length
 
         self.center_x += self.change_x
         self.center_y += self.change_y
 
-        # keep track of hp
+        # make sure hp cannot exceed max_hp
         self.cur_hp = min(self.cur_hp, self.max_hp)
 
-        # check if dead
+        # remove the sprite if hp is 0 or less
         if self.cur_hp <= 0:
             self.kill()
 
