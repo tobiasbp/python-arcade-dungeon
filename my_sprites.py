@@ -3,7 +3,13 @@ import math
 
 class Enemy(arcade.Sprite):
     """
-    parent class for all enemies in the game
+    parent class for all enemies in the game. Features include pathfinding, hp management and movement
+
+    :param filename: path to the file used as graphics for the sprite.
+    :param center_pos: tuple containing the x and y coordinate to create the sprite at.
+    :param max_hp: the max hp for the enemy. Also determines starting hp.
+    :param speed: the movement speed for the sprite in px/update.
+    :param scale: the size multiplier for the graphics/hitbox of the sprite.
     """
 
     def __init__(self, filename: str, center_pos: tuple[float, float], max_hp: int, speed: float, scale=1.0):
