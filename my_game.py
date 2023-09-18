@@ -101,6 +101,7 @@ class GameView(arcade.View):
             scale=SCALING,
         )
 
+        # Create a list of barriers from the tilemap. Used in enemy pathfinding
         self.tilemap_barriers = arcade.AStarBarrierList(
             moving_sprite=self.player,
             blocking_sprites=self.tilemap.sprite_lists["impassable"],
