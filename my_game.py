@@ -85,6 +85,8 @@ class GameView(arcade.View):
         for layer_name in MAP_LAYER_CONFIG.keys():
             assert layer_name in self.tilemap.sprite_lists.keys(), f"Layer name '{layer_name}' not in tilemap."
 
+        # To check the coordinates, if something collides with the background
+        # Made the
         for background_tile in self.tilemap.sprite_lists["background"]:
             if background_tile.collides_with_list(self.tilemap.sprite_lists["impassable"]):
                 print(f"Something collides at X:{background_tile.center_x}, Y:{background_tile.center_y}")
