@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.9" tiledversion="1.9.2" orientation="orthogonal" renderorder="right-down" width="30" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="16" nextobjectid="1">
  <tileset firstgid="1" source="sheet.tsx"/>
- <layer id="1" name="background" width="30" height="30" locked="1">
+ <layer id="1" name="background" width="30" height="30">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,41,41,41,41,41,47,48,41,41,41,0,0,0,0,0,0,0,0,0,0,0,
@@ -35,7 +35,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="2" name="impassable" width="30" height="30" locked="1">
+ <layer id="2" name="impassable" width="30" height="30">
   <data encoding="csv">
 1,1,1,1,1,1,1,1,2,3,3,3,7,3,3,3,3,7,3,4,1,1,25,1,1,1,1,1,1,1,
 1,25,1,1,1,25,1,1,14,0,0,0,19,0,47,48,0,19,0,17,4,1,1,1,13,1,1,25,1,1,
@@ -103,7 +103,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="8" name="objects-impassable" width="30" height="30" locked="1">
+ <layer id="8" name="objects-impassable" width="30" height="30">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -137,7 +137,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="15" name="pressure-plates" width="30" height="30" locked="1">
+ <layer id="15" name="pressure-plates" width="30" height="30">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
