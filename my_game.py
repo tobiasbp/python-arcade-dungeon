@@ -11,10 +11,10 @@ import arcade
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
-from my_sprites import Player, PlayerShot, Enemy
+from my_sprites import Player, PlayerShot
 
 # Set the scaling of all sprites in the game
-SCALING = 1
+SCALING = 2
 
 # Draw bitmaps without smooth interpolation
 DRAW_PIXELATED = True
@@ -38,7 +38,9 @@ SCREEN_HEIGHT = MAP_HEIGHT_TILES * TILE_SIZE * SCALING + GUI_HEIGHT
 
 # Variables controlling the player
 PLAYER_LIVES = 3
-PLAYER_SPEED = 5
+PLAYER_SPEED = 20
+PLAYER_START_X = SCREEN_WIDTH / 2
+PLAYER_START_Y = 50
 PLAYER_SHOT_SPEED = 300
 
 FIRE_KEY = arcade.key.SPACE
@@ -48,13 +50,11 @@ FIRE_KEY = arcade.key.SPACE
 # draw: Should the sprites on this layer be drawn?. Config layers, like spawn points, should probably not be drawn
 # passable: Can players and enemies can move through sprites on this layer?
 MAP_LAYER_CONFIG = {
-    "background": {"line_of_sight": False, "draw": True, "passable": True},
-    "impassable": {"line_of_sight": False, "draw": True, "passable": False},
-    "objects-passable": {"line_of_sight": True, "draw": True, "passable": True},
-    "objects-impassable": {"line_of_sight": True, "draw": True, "passable": False},
-    "pressure-plates": {"line_of_sight": True, "draw": True, "passable": True},
-    "players": {"line_of_sight": False, "draw": True, "passable": True},
-    "enemies": {"line_of_sight": False, "draw": True, "passable": True}
+ "background": {"line_of_sight": False, "draw": True, "passable": True},
+ "impassable": {"line_of_sight": False, "draw": True, "passable": False},
+ "objects-passable": {"line_of_sight": True, "draw": True, "passable": True},
+ "objects-impassable": {"line_of_sight": True, "draw": True, "passable": False},
+ "pressure-plates": {"line_of_sight": True, "draw": True, "passable": True},
 }
 
 
@@ -85,13 +85,6 @@ class GameView(arcade.View):
         for layer_name in MAP_LAYER_CONFIG.keys():
             assert layer_name in self.tilemap.sprite_lists.keys(), f"Layer name '{layer_name}' not in tilemap."
 
-        # Ensure that no tile on the background layer collides with the impassibles layer
-        # We want to be able to spawn enemies on the backgrounds layer, so we must ensure
-        # that the spawn point is not impassable 
-        for background_tile in self.tilemap.sprite_lists["background"]:
-            colliding_tiles = background_tile.collides_with_list(self.tilemap.sprite_lists["impassable"])
-            assert len(colliding_tiles) == 0, f"A tile on layer 'background' collides with a tile on layer 'impassable' at position {background_tile.position}"
-
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = arcade.SpriteList()
 
@@ -101,33 +94,16 @@ class GameView(arcade.View):
 
         # Create a Player object
         self.player = Player(
-            center_x=self.tilemap.sprite_lists["players"][0].center_x,
-            center_y=self.tilemap.sprite_lists["players"][0].center_y,
+            center_x=PLAYER_START_X,
+            center_y=PLAYER_START_Y,
             scale=SCALING,
         )
 
-        # create a sample enemy
-        self.sample_enemy = Enemy(
-            filename="images/tiny_dungeon/Tiles/tile_0087.png",
-            center_pos=(200, 200),
-            max_hp=10,
-            speed=1,
-            impassables=self.tilemap.sprite_lists["impassable"],
-            grid_size=int(self.tilemap.tile_width),
-            boundary_left=0,
-            boundary_right=SCREEN_WIDTH,
-            boundary_bottom=0,
-            boundary_top=SCREEN_HEIGHT,
-            scale=SCALING
-        )
-        
         # Register player and walls with physics engine
         self.physics_engine =  arcade.PhysicsEngineSimple(
             player_sprite=self.player,
             walls = self.tilemap.sprite_lists["impassable"]
         )
-
-        self.sample_enemy.go_to_position((100, 100))
 
         # Track the current state of what keys are pressed
         self.left_pressed = False
@@ -172,8 +148,13 @@ class GameView(arcade.View):
         for layer_name, layer_sprites in self.tilemap.sprite_lists.items():
             if MAP_LAYER_CONFIG[layer_name].get("draw", True):
                 if MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
-                    # FIXME: Add logic for drawing stuff that should only be drawn if players have line of sight here
-                    pass
+                    for o in layer_sprites:
+                        if arcade.has_line_of_sight(
+                                point_1 = o.position,
+                                point_2 = self.player.position,
+                                walls = self.tilemap.sprite_lists["impassable"]
+                        ):
+                            o.draw(pixelated=DRAW_PIXELATED)
                 else:
                     layer_sprites.draw(pixelated=DRAW_PIXELATED)
 
@@ -193,14 +174,6 @@ class GameView(arcade.View):
             font_name=MAIN_FONT_NAME,
             bold=True,
         )
-
-        # Draw the player shot
-        self.player_shot_list.draw(pixelated=DRAW_PIXELATED)
-
-        # Draw the player sprite
-        self.player.draw(pixelated=DRAW_PIXELATED)
-
-        self.sample_enemy.draw(pixelated=DRAW_PIXELATED)
 
     def on_update(self, delta_time):
         """
@@ -230,8 +203,6 @@ class GameView(arcade.View):
         # Return all sprites involved in collissions
         # FIXME: simple physics does not use delta_time. Has no on_update() method.
         colliding_sprites = self.physics_engine.update()
-
-        self.sample_enemy.on_update()
 
         # Update the player shots
         self.player_shot_list.on_update(delta_time)
