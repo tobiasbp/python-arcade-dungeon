@@ -56,7 +56,7 @@ class Enemy(arcade.Sprite):
     def max_hp(self):
         return self._max_hp
 
-    def find_path(self, target_pos: tuple[int, int]):
+    def go_to_point(self, target_pos: tuple[int, int]):
         """
         calculates a path to the target pos. Sets the sprite's path to this path.
         If an enemy has a path, it will automatically follow it.

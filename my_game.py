@@ -120,7 +120,7 @@ class GameView(arcade.View):
             walls = self.tilemap.sprite_lists["impassable"]
         )
 
-        self.sample_enemy.find_path((100, 100))
+        self.sample_enemy.go_to_point((100, 100))
 
         # Track the current state of what keys are pressed
         self.left_pressed = False
