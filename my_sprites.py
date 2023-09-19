@@ -12,7 +12,17 @@ class Enemy(arcade.Sprite):
     :param scale: the size multiplier for the graphics/hitbox of the sprite.
     """
 
-    def __init__(self, filename: str, center_pos: tuple[float, float], max_hp: int, speed: float, scale=1.0):
+    def __init__(
+            self, filename: str,
+            center_pos: tuple[float, float],
+            max_hp: int, speed: float,
+            impassables: arcade.SpriteList,
+            grid_size: int,
+            boundary_left: int,
+            boundary_right: int,
+            boundary_bottom: int,
+            boundary_top: int,
+            scale=1.0):
 
         super().__init__(
             filename=filename,
@@ -31,20 +41,32 @@ class Enemy(arcade.Sprite):
         self.path = []
         self.cur_path_position = 0  # which point on the path we are heading for.
 
+        # create our own map of barriers
+        self.barriers = arcade.AStarBarrierList(
+            moving_sprite=self,
+            blocking_sprites=impassables,
+            grid_size=grid_size,
+            left=boundary_left,
+            right=boundary_right,
+            bottom=boundary_bottom,
+            top=boundary_top
+        )
+
     @property
     def max_hp(self):
         return self._max_hp
 
-    def find_path(self, barrier_list: arcade.AStarBarrierList, target_pos: tuple[int, int]):
+    def find_path(self, target_pos: tuple[int, int]):
         """
         calculates a path to the target pos. Sets the sprite's path to this path.
         If an enemy has a path, it will automatically follow it.
+        If no barrier list is given, use the sprites own barriers.
         """
 
         # calculate the path. It will be a list of positions(lists)
         self.path = arcade.astar_calculate_path(self.position,
                                                 target_pos,
-                                                barrier_list,
+                                                self.barriers,
                                                 diagonal_movement=True)
 
         # reset this because we are at the start of a new path

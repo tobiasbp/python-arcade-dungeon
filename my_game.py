@@ -101,25 +101,22 @@ class GameView(arcade.View):
             scale=SCALING,
         )
 
-        # Create a list of barriers from the tilemap. Used in enemy pathfinding
-        self.tilemap_barriers = arcade.AStarBarrierList(
-            moving_sprite=self.player,
-            blocking_sprites=self.tilemap.sprite_lists["impassable"],
-            grid_size=int(self.tilemap.tile_width),  # must be int to avoid rounding errors
-            left=0,
-            right=SCREEN_WIDTH,
-            bottom=0,
-            top=SCREEN_HEIGHT
-        )
-
         # create a sample enemy
         self.sample_enemy = Enemy(
             filename="images/tiny_dungeon/Tiles/tile_0087.png",
             center_pos=(200, 200),
             max_hp=10,
             speed=1,
+            impassables=self.tilemap.sprite_lists["impassable"],
+            grid_size=int(self.tilemap.tile_width),
+            boundary_left=0,
+            boundary_right=SCREEN_WIDTH,
+            boundary_bottom=0,
+            boundary_top=SCREEN_HEIGHT,
             scale=SCALING
         )
+
+        self.sample_enemy.find_path((100, 100))
 
         # Track the current state of what keys are pressed
         self.left_pressed = False
