@@ -97,9 +97,10 @@ class Enemy(arcade.Sprite):
                 if self.cur_path_position == len(self.path):
                     self.path = []
 
-            # testing shows that we need to reverse the direction...
-            self.change_x = -math.sin(angle_to_dest) * this_move_length
-            self.change_y = -math.cos(angle_to_dest) * this_move_length
+            else:
+                # testing shows that we need to reverse the direction...
+                self.change_x = -math.sin(angle_to_dest) * this_move_length
+                self.change_y = -math.cos(angle_to_dest) * this_move_length
 
         self.center_x += self.change_x
         self.center_y += self.change_y
