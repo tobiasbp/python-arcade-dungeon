@@ -14,7 +14,7 @@ from pyglet.math import Vec2
 from my_sprites import Player, PlayerShot, Enemy
 
 # Set the scaling of all sprites in the game
-SCALING = 2
+SCALING = 1
 
 # Draw bitmaps without smooth interpolation
 DRAW_PIXELATED = True

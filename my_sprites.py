@@ -104,6 +104,10 @@ class Enemy(arcade.Sprite):
         self.center_x += self.change_x
         self.center_y += self.change_y
 
+        # reset movement vectors, so we stop when a path is finished
+        self.change_x = 0
+        self.change_y = 0
+
         # make sure hp cannot exceed max_hp
         self.cur_hp = min(self.cur_hp, self.max_hp)
 
