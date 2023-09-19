@@ -85,11 +85,12 @@ class GameView(arcade.View):
         for layer_name in MAP_LAYER_CONFIG.keys():
             assert layer_name in self.tilemap.sprite_lists.keys(), f"Layer name '{layer_name}' not in tilemap."
 
-        # To check the coordinates, if something collides with the background
-        # Made the
+        # Ensure that no tile on the background layer collides with the impassibles layer
+        # We want to be able to spawn enemies on the backgrounds layer, so we must ensure
+        # that the spawn point is not impassable 
         for background_tile in self.tilemap.sprite_lists["background"]:
-            if background_tile.collides_with_list(self.tilemap.sprite_lists["impassable"]):
-                print(f"Something collides at X:{background_tile.center_x}, Y:{background_tile.center_y}")
+            colliding_tiles = background_tile.collides_with_list(self.tilemap.sprite_lists["impassable"])
+            assert len(colliding_tiles) == 0, f"A tile on layer 'background' collides with a tile on layer 'impassable' at position {background_tile.position}"
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = arcade.SpriteList()
