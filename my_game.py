@@ -187,11 +187,6 @@ class GameView(arcade.View):
             bold=True,
         )
 
-
-        # Draw the the spritelists in the tilemap
-        for sprite_list in self.tilemap.sprite_lists.values():
-            sprite_list.draw(pixelated=DRAW_PIXELATED)
-
         # Draw the player shot
         self.player_shot_list.draw(pixelated=DRAW_PIXELATED)
 
