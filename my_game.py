@@ -55,7 +55,7 @@ MAP_LAYER_CONFIG = {
     "objects-passable": {"line_of_sight": True, "draw": True, "passable": True},
     "objects-impassable": {"line_of_sight": True, "draw": True, "passable": False},
     "pressure-plates": {"line_of_sight": True, "draw": True, "passable": True},
-    # Do we draw the layer below as it's spawn-points?
+    # NOTICE: Do we draw the layer below as it's spawn-points?
     "players": {"line_of_sight": True, "draw": True, "passable": True},
     "enemies": {"line_of_sight": True, "draw": True, "passable": True}
 }
@@ -77,7 +77,7 @@ class GameView(arcade.View):
             map_file="data/rooms/dungeon/room_0.tmx",
             use_spatial_hash=True,
             scaling=SCALING,
-            offset=Vec2(0, 0)
+            offset=Vec2(0,0)
         )
 
         # Make sure the map we load is as expected
@@ -93,8 +93,7 @@ class GameView(arcade.View):
         # that the spawn point is not impassable 
         for background_tile in self.tilemap.sprite_lists["background"]:
             colliding_tiles = background_tile.collides_with_list(self.tilemap.sprite_lists["impassable"])
-            assert len(
-                colliding_tiles) == 0, f"A tile on layer 'background' collides with a tile on layer 'impassable' at position {background_tile.position}"
+            assert len(colliding_tiles) == 0, f"A tile on layer 'background' collides with a tile on layer 'impassable' at position {background_tile.position}"
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = arcade.SpriteList()
@@ -111,9 +110,9 @@ class GameView(arcade.View):
         )
 
         # Register player and walls with physics engine
-        self.physics_engine = arcade.PhysicsEngineSimple(
+        self.physics_engine =  arcade.PhysicsEngineSimple(
             player_sprite=self.player,
-            walls=self.tilemap.sprite_lists["impassable"]
+            walls = self.tilemap.sprite_lists["impassable"]
         )
 
         # Track the current state of what keys are pressed
