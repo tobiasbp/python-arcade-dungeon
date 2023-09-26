@@ -3,7 +3,7 @@ Simple program to show moving a sprite with the keyboard.
 
 This program uses the Arcade library found at http://arcade.academy
 
-Artwork from https://kenney.nl/assets/space-shooter-redux
+Artwork from https://kenney.nl/assets/space-shooter-redux..          Made The..
 
 """
 
@@ -14,7 +14,7 @@ from pyglet.math import Vec2
 from my_sprites import Player, PlayerShot
 
 # Set the scaling of all sprites in the game
-SCALING = 2
+SCALING = 1
 
 # Draw bitmaps without smooth interpolation
 DRAW_PIXELATED = True
@@ -39,8 +39,6 @@ SCREEN_HEIGHT = MAP_HEIGHT_TILES * TILE_SIZE * SCALING + GUI_HEIGHT
 # Variables controlling the player
 PLAYER_LIVES = 3
 PLAYER_SPEED = 5
-PLAYER_START_X = SCREEN_WIDTH / 2
-PLAYER_START_Y = 50
 PLAYER_SHOT_SPEED = 300
 
 FIRE_KEY = arcade.key.SPACE
@@ -103,8 +101,8 @@ class GameView(arcade.View):
 
         # Create a Player object
         self.player = Player(
-            center_x=PLAYER_START_X,
-            center_y=PLAYER_START_Y,
+            center_x=self.tilemap.sprite_lists["players"][0].center_x,
+            center_y=self.tilemap.sprite_lists["players"][0].center_y,
             scale=SCALING,
         )
 
