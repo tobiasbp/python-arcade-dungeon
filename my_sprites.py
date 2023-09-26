@@ -35,7 +35,7 @@ class Enemy(arcade.Sprite):
 
         # hp
         self._max_hp = max_hp
-        self.cur_hp = max_hp
+        self._hp = max_hp
 
         self.speed = speed
 
@@ -57,6 +57,14 @@ class Enemy(arcade.Sprite):
     @property
     def max_hp(self):
         return self._max_hp
+
+    @property
+    def hp(self):
+        return self._max_hp
+
+    @hp.setter
+    def hp(self, new_hp):
+        self._hp = min(new_hp, self.max_hp)
 
     def go_to_position(self, target_pos: tuple[int, int]):
         """
@@ -109,9 +117,6 @@ class Enemy(arcade.Sprite):
                 # testing shows that we need to reverse the direction...
                 self.center_x += -math.sin(angle_to_dest) * this_move_length
                 self.center_y += -math.cos(angle_to_dest) * this_move_length
-
-        # make sure hp cannot exceed max_hp
-        self.cur_hp = min(self.cur_hp, self.max_hp)
 
         # remove the sprite if hp is 0 or less
         if self.cur_hp <= 0:
