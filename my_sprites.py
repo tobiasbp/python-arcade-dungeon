@@ -74,8 +74,14 @@ class Enemy(arcade.Sprite):
 
     def on_update(self, delta_time: float = 1 / 60):
 
+        if not self.path:
+
+            # reset movement vectors, so we stop when a path is finished
+            self.change_x = 0
+            self.change_y = 0
+
         # follow the path, if present
-        if self.path:
+        else:
 
             # next position to move to
             dest_pos = self.path[self.cur_path_position]
@@ -99,15 +105,8 @@ class Enemy(arcade.Sprite):
 
             else:
                 # testing shows that we need to reverse the direction...
-                self.change_x = -math.sin(angle_to_dest) * this_move_length
-                self.change_y = -math.cos(angle_to_dest) * this_move_length
-
-        self.center_x += self.change_x
-        self.center_y += self.change_y
-
-        # reset movement vectors, so we stop when a path is finished
-        self.change_x = 0
-        self.change_y = 0
+                self.center_x += -math.sin(angle_to_dest) * this_move_length
+                self.center_y += -math.cos(angle_to_dest) * this_move_length
 
         # make sure hp cannot exceed max_hp
         self.cur_hp = min(self.cur_hp, self.max_hp)
