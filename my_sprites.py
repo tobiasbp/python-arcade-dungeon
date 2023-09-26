@@ -119,7 +119,7 @@ class Enemy(arcade.Sprite):
                 self.center_y += -math.cos(angle_to_dest) * this_move_length
 
         # remove the sprite if hp is 0 or less
-        if self.cur_hp <= 0:
+        if self.hp <= 0:
             self.kill()
 
 
