@@ -11,10 +11,10 @@ import arcade
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
-from my_sprites import Player, PlayerShot
+from my_sprites import Player, PlayerShot, Enemy
 
 # Set the scaling of all sprites in the game
-SCALING = 2
+SCALING = 1
 
 # Draw bitmaps without smooth interpolation
 DRAW_PIXELATED = True
@@ -108,11 +108,28 @@ class GameView(arcade.View):
             scale=SCALING,
         )
 
+        # create a sample enemy
+        self.sample_enemy = Enemy(
+            filename="images/tiny_dungeon/Tiles/tile_0087.png",
+            center_pos=(200, 200),
+            max_hp=10,
+            speed=1,
+            impassables=self.tilemap.sprite_lists["impassable"],
+            grid_size=int(self.tilemap.tile_width),
+            boundary_left=0,
+            boundary_right=SCREEN_WIDTH,
+            boundary_bottom=0,
+            boundary_top=SCREEN_HEIGHT,
+            scale=SCALING
+        )
+        
         # Register player and walls with physics engine
         self.physics_engine =  arcade.PhysicsEngineSimple(
             player_sprite=self.player,
             walls = self.tilemap.sprite_lists["impassable"]
         )
+
+        self.sample_enemy.go_to_position((100, 100))
 
         # Track the current state of what keys are pressed
         self.left_pressed = False
@@ -179,6 +196,14 @@ class GameView(arcade.View):
             bold=True,
         )
 
+        # Draw the player shot
+        self.player_shot_list.draw(pixelated=DRAW_PIXELATED)
+
+        # Draw the player sprite
+        self.player.draw(pixelated=DRAW_PIXELATED)
+
+        self.sample_enemy.draw(pixelated=DRAW_PIXELATED)
+
     def on_update(self, delta_time):
         """
         Movement and game logic
@@ -207,6 +232,8 @@ class GameView(arcade.View):
         # Return all sprites involved in collissions
         # FIXME: simple physics does not use delta_time. Has no on_update() method.
         colliding_sprites = self.physics_engine.update()
+
+        self.sample_enemy.on_update()
 
         # Update the player shots
         self.player_shot_list.on_update(delta_time)
