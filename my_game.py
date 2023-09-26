@@ -50,11 +50,13 @@ FIRE_KEY = arcade.key.SPACE
 # draw: Should the sprites on this layer be drawn?. Config layers, like spawn points, should probably not be drawn
 # passable: Can players and enemies can move through sprites on this layer?
 MAP_LAYER_CONFIG = {
- "background": {"line_of_sight": False, "draw": True, "passable": True},
- "impassable": {"line_of_sight": False, "draw": True, "passable": False},
- "objects-passable": {"line_of_sight": True, "draw": True, "passable": True},
- "objects-impassable": {"line_of_sight": True, "draw": True, "passable": False},
- "pressure-plates": {"line_of_sight": True, "draw": True, "passable": True},
+    "background": {"line_of_sight": False, "draw": True, "passable": True},
+    "impassable": {"line_of_sight": False, "draw": True, "passable": False},
+    "objects-passable": {"line_of_sight": True, "draw": True, "passable": True},
+    "objects-impassable": {"line_of_sight": True, "draw": True, "passable": False},
+    "pressure-plates": {"line_of_sight": True, "draw": True, "passable": True},
+    "players": {"line_of_sight": False, "draw": True, "passable": True},
+    "enemies": {"line_of_sight": False, "draw": True, "passable": True}
 }
 
 
