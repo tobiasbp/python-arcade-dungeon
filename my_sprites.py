@@ -260,6 +260,7 @@ class Player(arcade.Sprite):
         super().__init__(
             center_x=center_x,
             center_y=center_y,
+            filename="images/tiny_dungeon/Tiles/tile_0109.png",
             scale=scale,
         )
 
@@ -775,3 +776,59 @@ class Weapon(arcade.Sprite):
 
             # Time passes
             self._time_to_idle -= 0.03
+
+class HealthBar(arcade.Sprite):
+
+    def __init__(self, center_x=0, center_y=0, bar_width=100, bar_height=25, scale=1):
+
+        super().__init__(
+            center_x=center_x,
+            center_y=center_y,
+            scale=scale,
+        )
+
+        # variable controlling length of fullness of health bar
+        self._percentage = 100
+
+        self._bar_width = bar_width
+        self._bar_height = bar_height
+
+        """
+        static bar behind the dynamic bar
+        """
+        self._background_bar = arcade.SpriteSolidColor(
+            self._bar_width,
+            self._bar_height,
+            arcade.color.RED
+        )
+        """
+        bar changing depending on the percentage variable
+        """
+        self._full_bar = arcade.SpriteSolidColor(
+            self._bar_width,
+            self._bar_height,
+            arcade.color.GREEN
+        )
+
+    @property
+    def background_bar(self):
+        return self._background_bar
+
+    @property
+    def full_bar(self):
+        return self._full_bar
+
+    @property
+    def percentage(self):
+        return self._percentage
+
+    @percentage.setter
+    def percentage(self, new_percentage):
+        # Set the size of the bar
+        self._percentage = new_percentage
+
+        self._full_bar = arcade.SpriteSolidColor(
+            self._bar_width * (new_percentage / 100),
+            self._bar_height,
+            arcade.color.GREEN
+        )
