@@ -3,7 +3,7 @@ Simple program to show moving a sprite with the keyboard.
 
 This program uses the Arcade library found at http://arcade.academy
 
-Artwork from https://kenney.nl/assets/space-shooter-redux..          Made The..
+Artwork from https://kenney.nl/assets/space-shooter-redux..
 
 """
 
