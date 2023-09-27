@@ -207,11 +207,28 @@ class GameView(arcade.View):
         Movement and game logic
         """
 
-        # Set x/y speed for the player
-        self.player.update()
+        # Player does not move unless keys are held
+        self.player.change_x = 0
+        self.player.change_y = 0
+
+        # Move player on x or y axis
+        if self.left_pressed and not self.right_pressed:
+            self.player.change_x = -PLAYER_SPEED
+        elif self.right_pressed and not self.left_pressed:
+            self.player.change_x = PLAYER_SPEED
+        elif self.up_pressed and not self.down_pressed:
+            self.player.change_y = PLAYER_SPEED
+        elif self.down_pressed and not self.up_pressed:
+            self.player.change_y = -PLAYER_SPEED
+
+        # Move player with joystick if present
+        # FIXME: Implement joystick movement on x and y axis
+        # if self.joystick:
+        #    self.player.change_x = round(self.joystick.x) * PLAYER_SPEED
 
         # Update the physics engine (including the player)
         # Return all sprites involved in collissions
+        # FIXME: simple physics does not use delta_time. Has no on_update() method.
         colliding_sprites = self.physics_engine.update()
 
         self.sample_enemy.on_update()
@@ -231,11 +248,23 @@ class GameView(arcade.View):
         self.window.show_view(game_over_view)
 
     def on_key_press(self, key, modifiers):
-        self.player.on_key_press(key, modifiers)
+        """
+        Called whenever a key is pressed.
+        """
 
         # End the game if the escape key is pressed
         if key == arcade.key.ESCAPE:
             self.game_over()
+
+        # Track state of arrow keys
+        if key == arcade.key.UP:
+            self.up_pressed = True
+        elif key == arcade.key.DOWN:
+            self.down_pressed = True
+        elif key == arcade.key.LEFT:
+            self.left_pressed = True
+        elif key == arcade.key.RIGHT:
+            self.right_pressed = True
 
         if key == FIRE_KEY:
             # Player gets points for firing?
@@ -254,7 +283,18 @@ class GameView(arcade.View):
             self.player_shot_list.append(new_shot)
 
     def on_key_release(self, key, modifiers):
-        self.player.on_key_release(key, modifiers)
+        """
+        Called whenever a key is released.
+        """
+
+        if key == arcade.key.UP:
+            self.up_pressed = False
+        elif key == arcade.key.DOWN:
+            self.down_pressed = False
+        elif key == arcade.key.LEFT:
+            self.left_pressed = False
+        elif key == arcade.key.RIGHT:
+            self.right_pressed = False
 
     def on_joybutton_press(self, joystick, button_no):
         print("Button pressed:", button_no)
