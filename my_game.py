@@ -214,8 +214,10 @@ class GameView(arcade.View):
         # Move player on x or y axis
         if self.left_pressed and not self.right_pressed:
             self.player.change_x = -PLAYER_SPEED
+            self.player.width = -17
         elif self.right_pressed and not self.left_pressed:
             self.player.change_x = PLAYER_SPEED
+            self.player.width = 17
         elif self.up_pressed and not self.down_pressed:
             self.player.change_y = PLAYER_SPEED
         elif self.down_pressed and not self.up_pressed:
