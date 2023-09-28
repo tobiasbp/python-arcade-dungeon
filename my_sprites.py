@@ -121,7 +121,18 @@ class Player(arcade.Sprite):
     The player
     """
 
-    def __init__(self, center_x=0, center_y=0, scale=1):
+    def __init__(
+            self,
+            center_x=0,
+            center_y=0,
+            speed=2,
+            scale=1,
+            key_up=arcade.key.UP,
+            key_down=arcade.key.DOWN,
+            key_left=arcade.key.LEFT,
+            key_right=arcade.key.RIGHT,
+            key_attack=arcade.key.SPACE
+        ):
         """
         Setup new Player object
         """
@@ -133,6 +144,74 @@ class Player(arcade.Sprite):
             filename="images/tiny_dungeon/Tiles/tile_0109.png",
             scale=scale,
         )
+
+        self.speed = speed
+
+        self.key_left = key_left
+        self.key_right = key_right
+        self.key_up = key_up
+        self.key_down = key_down
+        self.key_atttack = key_attack
+
+        # Track state of controls (could also be a joystick in the future)
+        self.left_pressed = False
+        self.right_pressed = False
+        self.up_pressed = False
+        self.down_pressed = False
+        self.atttack_pressed = False
+
+
+    def on_key_press(self, key, modifiers):
+        """
+        Track the state of the control keys
+        """
+        if key == self.key_left:
+            self.left_pressed = True
+        elif key == self.key_right:
+            self.right_pressed = True
+        elif key == self.key_up:
+            self.up_pressed = True
+        elif key == self.key_down:
+            self.down_pressed = True
+        elif key == self.key_atttack:
+            self.atttack_pressed = True
+
+
+    def on_key_release(self, key, modifiers):
+        """
+        Track the state of the control keys
+        """
+        if key == self.key_left:
+            self.left_pressed = False
+        elif key == self.key_right:
+            self.right_pressed = False
+        elif key == self.key_up:
+            self.up_pressed = False
+        elif key == self.key_down:
+            self.down_pressed = False
+        elif key == self.key_atttack:
+            self.atttack_pressed = False
+
+
+    def update(self):
+        """
+        Set Sprite's speed based on key status
+        """
+        # Assume no keys are held
+        self.change_x = 0
+        self.change_y = 0
+
+        # Update speed based on held keys
+        if self.left_pressed and not self.right_pressed:
+            self.change_x = -1 * self.speed
+        elif self.right_pressed and not self.left_pressed:
+            self.change_x = self.speed
+        elif self.up_pressed and not self.down_pressed:
+            self.change_y = self.speed
+        elif self.down_pressed and not self.up_pressed:
+            self.change_y = -1 * self.speed
+
+        # Note: We don't change the position of the sprite here, since that is done by the physics engine
 
 
 class PlayerShot(arcade.Sprite):
