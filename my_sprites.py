@@ -212,6 +212,8 @@ class Player(arcade.Sprite):
             self.change_y = -1 * self.speed
 
         # Note: We don't change the position of the sprite here, since that is done by the physics engine
+
+
 class PlayerShot(arcade.Sprite):
     """
     A shot fired by the Player
