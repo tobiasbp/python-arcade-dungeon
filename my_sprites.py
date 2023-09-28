@@ -6,29 +6,28 @@ class Enemy(arcade.Sprite):
     parent class for all enemies in the game. Features include pathfinding, hp management and movement
 
     :param filename: path to the file used as graphics for the sprite.
-    :param center_pos: tuple containing the x and y coordinate to create the sprite at.
+    :param position: tuple containing the x and y coordinate to create the sprite at.
     :param max_hp: the max hp for the enemy. Also determines starting hp.
     :param speed: the movement speed for the sprite in px/update.
     :param scale: the size multiplier for the graphics/hitbox of the sprite.
     """
 
     def __init__(
-            self, filename: str,
-            center_pos: tuple[float, float],
-            max_hp: int, speed: float,
+            self,
+            position: tuple[float, float],
             impassables: arcade.SpriteList,
+            window: arcade.Window,
             grid_size: int,
-            boundary_left: int,
-            boundary_right: int,
-            boundary_bottom: int,
-            boundary_top: int,
-            scale=1.0):
+            filename: str = "images/tiny_dungeon/Tiles/tile_0087.png",
+            max_hp: int = 10,
+            speed: int = 1,
+            scale: float = 1.0):
 
         super().__init__(
             filename=filename,
             scale=scale,
-            center_x=center_pos[0],
-            center_y=center_pos[1]
+            center_x=position[0],
+            center_y=position[1]
         )
 
         # hp
@@ -46,10 +45,10 @@ class Enemy(arcade.Sprite):
             moving_sprite=self,
             blocking_sprites=impassables,
             grid_size=grid_size,
-            left=boundary_left,
-            right=boundary_right,
-            bottom=boundary_bottom,
-            top=boundary_top
+            left=0,
+            right=window.width,
+            bottom=0,
+            top=window.height
         )
 
     @property

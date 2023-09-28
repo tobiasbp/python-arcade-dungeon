@@ -108,16 +108,10 @@ class GameView(arcade.View):
 
         # create a sample enemy
         self.sample_enemy = Enemy(
-            filename="images/tiny_dungeon/Tiles/tile_0087.png",
-            center_pos=(200, 200),
-            max_hp=10,
-            speed=1,
+            position=(200, 200),
             impassables=self.tilemap.sprite_lists["impassable"],
             grid_size=int(self.tilemap.tile_width),
-            boundary_left=0,
-            boundary_right=SCREEN_WIDTH,
-            boundary_bottom=0,
-            boundary_top=SCREEN_HEIGHT,
+            window=self.window,
             scale=SCALING
         )
         
