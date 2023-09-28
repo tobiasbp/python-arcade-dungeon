@@ -8,6 +8,7 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 """
 
 import arcade
+import random
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
@@ -106,22 +107,33 @@ class GameView(arcade.View):
             scale=SCALING,
         )
 
-        # create a sample enemy
-        self.sample_enemy = Enemy(
-            position=(200, 200),
-            impassables=self.tilemap.sprite_lists["impassable"],
-            grid_size=int(self.tilemap.tile_width),
-            window=self.window,
-            scale=SCALING
-        )
-        
+        # Change all tiles in the 'enemies' layer to Enemies
+        for enemy_index, enemy_position in enumerate([ s.position for s in self.tilemap.sprite_lists["enemies"]]):
+            # Create the enemy
+            e = Enemy(
+                position=enemy_position,
+                impassables=self.tilemap.sprite_lists["impassable"],
+                grid_size=int(self.tilemap.tile_width),
+                window=self.window,
+                scale=SCALING
+            )
+
+            # Go to position of random passable tile
+            # FIXME: Often, no path will be found. Why is that??
+            # e.go_to_position(random.choice(self.tilemap.sprite_lists["background"]).position)
+            # Go to the player's position
+            e.go_to_position(self.player.position)
+
+            # Replace the spawn point with the new enemy
+            self.tilemap.sprite_lists["enemies"][enemy_index] = e
+
+
         # Register player and walls with physics engine
         self.physics_engine =  arcade.PhysicsEngineSimple(
             player_sprite=self.player,
             walls = self.tilemap.sprite_lists["impassable"]
         )
 
-        self.sample_enemy.go_to_position((100, 100))
 
         # Get list of joysticks
         joysticks = arcade.get_joysticks()
@@ -188,8 +200,6 @@ class GameView(arcade.View):
         # Draw the player sprite
         self.player.draw(pixelated=DRAW_PIXELATED)
 
-        self.sample_enemy.draw(pixelated=DRAW_PIXELATED)
-
     def on_update(self, delta_time):
         """
         Movement and game logic
@@ -202,7 +212,8 @@ class GameView(arcade.View):
         # Return all sprites involved in collissions
         colliding_sprites = self.physics_engine.update()
 
-        self.sample_enemy.on_update()
+        # Update the enemies
+        self.tilemap.sprite_lists["enemies"].on_update()
 
         # Update the player shots
         self.player_shot_list.on_update(delta_time)
