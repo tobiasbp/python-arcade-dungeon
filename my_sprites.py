@@ -1,5 +1,8 @@
 import arcade
 import math
+import random
+from typing import List
+from enum import IntEnum
 
 class Enemy(arcade.Sprite):
     """
@@ -255,4 +258,75 @@ class PlayerShot(arcade.Sprite):
 
         # Remove shot when over top of screen
         if self.bottom > self.max_y_pos:
+            self.kill()
+
+
+class Reaction(IntEnum):
+    """
+    Reaction names that map to Emote graphics
+    """
+    HEART_BROKEN = 4
+    HEART = 5
+    EXCLAMATION_BLACK = 7
+    EXCLAMATION_RED = 8
+    HAPPY = 13
+    SAD = 14
+    ANGRY = 15
+    NOTE = 10
+    LAUGH = 28
+
+
+class Emote(arcade.Sprite):
+    """
+    An emote to show the emotion of a character in the game.
+    It will delete itself after lifetime has passed.
+    """
+
+    # A list of emotes as textures from a sprite sheet
+    emotes: List[arcade.texture.Texture] = arcade.load_spritesheet(
+        file_name = "data/emotes/pixel_style2.png",
+        sprite_width=16,
+        sprite_height=16,
+        columns=10,
+        count=30)
+
+    def __init__(
+            self,
+            reaction: Reaction,
+            position: tuple[int, int],
+            offset_x:int = 0,
+            offset_y:int = 16,
+            float_x:float=0.1,
+            float_y:float=0.2,
+            scale:int=1,
+            lifetime:float = 5.0,
+            enable_fade=True):
+
+        # The emote will disapear after this many seconds
+        self.lifetime = lifetime
+        self.time_left = lifetime
+
+        self.enable_fade = enable_fade
+
+        super().__init__(
+            center_x = position[0],
+            center_y = position[1],
+            scale = scale,
+            texture = Emote.emotes[reaction]
+        )
+
+        self.change_x = random.uniform(-1 * float_x, float_x)
+        self.change_y = float_y
+
+    def on_update(self, delta_time:float):
+
+        self.center_x += self.change_x
+        self.center_y += self.change_y
+
+        self.time_left -= delta_time
+
+        if self.enable_fade:
+            self.alpha = max(0, 255 * self.time_left/self.lifetime)
+
+        if self.time_left <= 0:
             self.kill()

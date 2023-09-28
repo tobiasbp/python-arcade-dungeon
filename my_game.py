@@ -12,7 +12,7 @@ import random
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
-from my_sprites import Player, PlayerShot, Enemy
+from my_sprites import Player, PlayerShot, Enemy, Emote, Reaction
 
 # Set the scaling of all sprites in the game
 SCALING = 1
@@ -96,7 +96,11 @@ class GameView(arcade.View):
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = arcade.SpriteList()
 
+        # A list of emotes showing character reactions
+        self.emotes_list = arcade.SpriteList()
+
         # Set up the player info
+        # FIXME: Move this into the Player class
         self.player_score = 0
         self.player_lives = PLAYER_LIVES
 
@@ -105,6 +109,15 @@ class GameView(arcade.View):
             center_x=self.tilemap.sprite_lists["players"][0].center_x,
             center_y=self.tilemap.sprite_lists["players"][0].center_y,
             scale=SCALING,
+        )
+
+        # Add a demo Emote at the player position
+        self.emotes_list.append(
+            Emote(
+                reaction=Reaction.HAPPY,
+                position=self.player.position,
+                scale=SCALING
+            )
         )
 
         # Change all tiles in the 'enemies' layer to Enemies
@@ -129,6 +142,7 @@ class GameView(arcade.View):
 
 
         # Register player and walls with physics engine
+        # FIXME: The physics engine can only handle a single player. How do we handle multiplayer?
         self.physics_engine =  arcade.PhysicsEngineSimple(
             player_sprite=self.player,
             walls = self.tilemap.sprite_lists["impassable"]
@@ -200,13 +214,18 @@ class GameView(arcade.View):
         # Draw the player sprite
         self.player.draw(pixelated=DRAW_PIXELATED)
 
+        self.emotes_list.draw(pixelated=DRAW_PIXELATED)
+
     def on_update(self, delta_time):
         """
         Movement and game logic
         """
 
-        # Set x/y speed for the player
+        # Set x/y speed for the player based on key states
         self.player.update()
+
+        # Update the emotes
+        self.emotes_list.on_update(delta_time)
 
         # Update the physics engine (including the player)
         # Return all sprites involved in collissions
