@@ -294,7 +294,7 @@ class IntroView(arcade.View):
             self.window.width / 2,
             self.window.height / 2,
             arcade.color.WHITE,
-            font_size=50,
+            font_size=20,
             font_name=MAIN_FONT_NAME,
             anchor_x="center",
             bold=True
