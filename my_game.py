@@ -123,12 +123,6 @@ class GameView(arcade.View):
 
         self.sample_enemy.go_to_position((100, 100))
 
-        # Track the current state of what keys are pressed
-        self.left_pressed = False
-        self.right_pressed = False
-        self.up_pressed = False
-        self.down_pressed = False
-
         # Get list of joysticks
         joysticks = arcade.get_joysticks()
 
