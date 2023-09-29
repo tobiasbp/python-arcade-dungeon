@@ -149,6 +149,9 @@ class Player(arcade.Sprite):
 
         self.speed = speed
 
+        # We need this to scale the Emotes
+        self.scale = scale
+
         self.key_left = key_left
         self.key_right = key_right
         self.key_up = key_up
@@ -162,6 +165,24 @@ class Player(arcade.Sprite):
         self.down_pressed = False
         self.atttack_pressed = False
 
+        # Player's emotes will be stored here
+        self._emotes = arcade.SpriteList()
+
+    def react(self, reaction):
+        """
+        Add an Emote
+        """
+        self._emotes.append(
+            Emote(
+                reaction=reaction,
+                position=self.position,
+                scale=self.scale
+            )
+        )
+
+    @property
+    def emotes(self):
+        return self._emotes
 
     def on_key_press(self, key, modifiers):
         """

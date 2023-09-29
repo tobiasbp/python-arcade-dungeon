@@ -111,15 +111,6 @@ class GameView(arcade.View):
             scale=SCALING,
         )
 
-        # Add a demo Emote at the player position
-        self.emotes_list.append(
-            Emote(
-                reaction=Reaction.HAPPY,
-                position=self.player.position,
-                scale=SCALING
-            )
-        )
-
         # Change all tiles in the 'enemies' layer to Enemies
         for enemy_index, enemy_position in enumerate([ s.position for s in self.tilemap.sprite_lists["enemies"]]):
             # Create the enemy
@@ -213,19 +204,24 @@ class GameView(arcade.View):
 
         # Draw the player sprite
         self.player.draw(pixelated=DRAW_PIXELATED)
+        # Draw the player emotes
+        self.player.emotes.draw(pixelated=DRAW_PIXELATED)
 
-        self.emotes_list.draw(pixelated=DRAW_PIXELATED)
 
     def on_update(self, delta_time):
         """
         Movement and game logic
         """
 
+        # DEMO: Random reactions for the player
+        if random.randint(1, 60) == 1:
+            self.player.react(random.choice(list(Reaction)))
+
         # Set x/y speed for the player based on key states
         self.player.update()
 
-        # Update the emotes
-        self.emotes_list.on_update(delta_time)
+        # Update the player emotes
+        self.player.emotes.on_update(delta_time)
 
         # Update the physics engine (including the player)
         # Return all sprites involved in collissions
