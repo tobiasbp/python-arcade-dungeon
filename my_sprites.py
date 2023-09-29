@@ -1,6 +1,11 @@
 import arcade
 import math
 
+# Constants used to track if the player is facing left or right
+PLAYER_RIGHT_FACING = 0
+PLAYER_LEFT_FACING = 1
+
+
 class Enemy(arcade.Sprite):
     """
     parent class for all enemies in the game. Features include pathfinding, hp management and movement
@@ -131,7 +136,7 @@ class Player(arcade.Sprite):
             key_down=arcade.key.DOWN,
             key_left=arcade.key.LEFT,
             key_right=arcade.key.RIGHT,
-            key_attack=arcade.key.SPACE
+            key_attack=arcade.key.SPACE,
         ):
         """
         Setup new Player object
@@ -145,7 +150,11 @@ class Player(arcade.Sprite):
             scale=scale,
         )
 
+        self.player_1 = arcade.load_texture_pair("images/tiny_dungeon/Tiles/tile_0109.png")
+
         self.speed = speed
+
+        self.character_face_direction = PLAYER_RIGHT_FACING
 
         self.key_left = key_left
         self.key_right = key_right
@@ -167,8 +176,14 @@ class Player(arcade.Sprite):
         """
         if key == self.key_left:
             self.left_pressed = True
+            self.character_face_direction = PLAYER_LEFT_FACING
+            self.texture = self.player_1[self.character_face_direction]
+            return
         elif key == self.key_right:
             self.right_pressed = True
+            self.character_face_direction = PLAYER_RIGHT_FACING
+            self.texture = self.player_1[self.character_face_direction]
+            return
         elif key == self.key_up:
             self.up_pressed = True
         elif key == self.key_down:
