@@ -176,11 +176,13 @@ class Player(arcade.Sprite):
         """
         if key == self.key_left:
             self.left_pressed = True
+            # Turns the sprite to the left side.
             self.character_face_direction = PLAYER_LEFT_FACING
             self.texture = self.player_1[self.character_face_direction]
             return
         elif key == self.key_right:
             self.right_pressed = True
+            # Turns the sprite to the Right Side
             self.character_face_direction = PLAYER_RIGHT_FACING
             self.texture = self.player_1[self.character_face_direction]
             return
