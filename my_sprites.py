@@ -4,6 +4,11 @@ import random
 from typing import List
 from enum import IntEnum
 
+# Two main variables that choose what direction the player is facing.
+PLAYER_RIGHT_FACING = 0
+PLAYER_LEFT_FACING = 1
+
+
 class Enemy(arcade.Sprite):
     """
     parent class for all enemies in the game. Features include pathfinding, hp management and movement
@@ -139,11 +144,13 @@ class Player(arcade.Sprite):
         Setup new Player object
         """
 
+        self.filename = "images/tiny_dungeon/Tiles/tile_0109.png"
+
         # Pass arguments to class arcade.Sprite
         super().__init__(
             center_x=center_x,
             center_y=center_y,
-            filename="images/tiny_dungeon/Tiles/tile_0109.png",
+            filename=self.filename,
             scale=scale,
         )
 
@@ -151,6 +158,12 @@ class Player(arcade.Sprite):
 
         # We need this to scale the Emotes
         self.scale = scale
+
+        # Loads the texture and the mirrored version of the texture
+        self.player_1 = arcade.load_texture_pair(self.filename)
+
+        # So the player starts facing right. Aka. The normal facing direction.
+        self.character_face_direction = PLAYER_RIGHT_FACING
 
         self.key_left = key_left
         self.key_right = key_right
@@ -190,15 +203,22 @@ class Player(arcade.Sprite):
         """
         if key == self.key_left:
             self.left_pressed = True
+            # Turns the sprite to the left side.
+            self.character_face_direction = PLAYER_LEFT_FACING
+            self.texture = self.player_1[self.character_face_direction]
+            return
         elif key == self.key_right:
             self.right_pressed = True
+            # Turns the sprite to the Right side
+            self.character_face_direction = PLAYER_RIGHT_FACING
+            self.texture = self.player_1[self.character_face_direction]
+            return
         elif key == self.key_up:
             self.up_pressed = True
         elif key == self.key_down:
             self.down_pressed = True
         elif key == self.key_atttack:
             self.atttack_pressed = True
-
 
     def on_key_release(self, key, modifiers):
         """
