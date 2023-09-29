@@ -12,7 +12,7 @@ import random
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
-from my_sprites import Player, PlayerShot, Enemy
+from my_sprites import Player, PlayerShot, Enemy, Emote, Reaction
 
 # Set the scaling of all sprites in the game
 SCALING = 1
@@ -96,7 +96,11 @@ class GameView(arcade.View):
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = arcade.SpriteList()
 
+        # A list of emotes showing character reactions
+        self.emotes_list = arcade.SpriteList()
+
         # Set up the player info
+        # FIXME: Move this into the Player class
         self.player_score = 0
         self.player_lives = PLAYER_LIVES
 
@@ -129,6 +133,7 @@ class GameView(arcade.View):
 
 
         # Register player and walls with physics engine
+        # FIXME: The physics engine can only handle a single player. How do we handle multiplayer?
         self.physics_engine =  arcade.PhysicsEngineSimple(
             player_sprite=self.player,
             walls = self.tilemap.sprite_lists["impassable"]
@@ -199,14 +204,24 @@ class GameView(arcade.View):
 
         # Draw the player sprite
         self.player.draw(pixelated=DRAW_PIXELATED)
+        # Draw the player emotes
+        self.player.emotes.draw(pixelated=DRAW_PIXELATED)
+
 
     def on_update(self, delta_time):
         """
         Movement and game logic
         """
 
-        # Set x/y speed for the player
+        # DEMO: Random reactions for the player
+        if random.randint(1, 60) == 1:
+            self.player.react(random.choice(list(Reaction)))
+
+        # Set x/y speed for the player based on key states
         self.player.update()
+
+        # Update the player emotes
+        self.player.emotes.on_update(delta_time)
 
         # Update the physics engine (including the player)
         # Return all sprites involved in collissions
