@@ -330,8 +330,8 @@ class Emote(arcade.Sprite):
         self.enable_fade = enable_fade
 
         super().__init__(
-            center_x = position[0],
-            center_y = position[1],
+            center_x = position[0] + offset_x,
+            center_y = position[1] + offset_y,
             scale = scale,
             texture = Emote.emotes[reaction]
         )
