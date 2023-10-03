@@ -4,10 +4,6 @@ import random
 from typing import List
 from enum import IntEnum
 
-# Two main variables that choose what direction the player is facing.
-PLAYER_RIGHT_FACING = 0
-PLAYER_LEFT_FACING = 1
-
 
 class Enemy(arcade.Sprite):
     """
@@ -160,10 +156,7 @@ class Player(arcade.Sprite):
         self.scale = scale
 
         # Loads the texture and the mirrored version of the texture
-        self.player_1 = arcade.load_texture_pair(self.filename)
-
-        # So the player starts facing right. Aka. The normal facing direction.
-        self.character_face_direction = PLAYER_RIGHT_FACING
+        self.textures = arcade.load_texture_pair(self.filename)
 
         self.key_left = key_left
         self.key_right = key_right
@@ -204,14 +197,12 @@ class Player(arcade.Sprite):
         if key == self.key_left:
             self.left_pressed = True
             # Turns the sprite to the left side.
-            self.character_face_direction = PLAYER_LEFT_FACING
-            self.texture = self.player_1[self.character_face_direction]
+            self.texture = self.textures[1]
             return
         elif key == self.key_right:
             self.right_pressed = True
             # Turns the sprite to the Right side
-            self.character_face_direction = PLAYER_RIGHT_FACING
-            self.texture = self.player_1[self.character_face_direction]
+            self.texture = self.textures[0]
             return
         elif key == self.key_up:
             self.up_pressed = True
