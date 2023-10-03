@@ -11,7 +11,7 @@ import arcade
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
-from my_sprites import Player, PlayerShot, Enemy
+from my_sprites import Player, PlayerShot, Enemy, AttackStab
 
 # Set the scaling of all sprites in the game
 SCALING = 1
@@ -93,7 +93,7 @@ class GameView(arcade.View):
             assert len(colliding_tiles) == 0, f"A tile on layer 'background' collides with a tile on layer 'impassable' at position {background_tile.position}"
 
         # Variable that will hold a list of shots fired by the player
-        self.player_shot_list = arcade.SpriteList()
+        self.player_attack_list = arcade.SpriteList()
 
         # Set up the player info
         self.player_score = 0
@@ -178,7 +178,7 @@ class GameView(arcade.View):
                     layer_sprites.draw(pixelated=DRAW_PIXELATED)
 
         # Draw the player shot
-        self.player_shot_list.draw(pixelated=DRAW_PIXELATED)
+        self.player_attack_list.draw(pixelated=DRAW_PIXELATED)
 
         # Draw the player sprite
         self.player.draw(pixelated=DRAW_PIXELATED)
@@ -195,7 +195,7 @@ class GameView(arcade.View):
         )
 
         # Draw the player shot
-        self.player_shot_list.draw(pixelated=DRAW_PIXELATED)
+        self.player_attack_list.draw(pixelated=DRAW_PIXELATED)
 
         # Draw the player sprite
         self.player.draw(pixelated=DRAW_PIXELATED)
@@ -234,7 +234,7 @@ class GameView(arcade.View):
         self.sample_enemy.on_update()
 
         # Update the player shots
-        self.player_shot_list.on_update(delta_time)
+        self.player_attack_list.on_update(delta_time)
 
     def game_over(self):
         """
@@ -271,16 +271,13 @@ class GameView(arcade.View):
             self.player_score += 5
 
             # Create the new shot
-            new_shot = PlayerShot(
+            new_attack = AttackStab(
                 center_x=self.player.center_x,
-                center_y=self.player.center_y,
-                speed=PLAYER_SHOT_SPEED,
-                max_y_pos=SCREEN_HEIGHT,
-                scale=SCALING,
+                center_y=self.player.center_y
             )
 
             # Add the new shot to the list of shots
-            self.player_shot_list.append(new_shot)
+            self.player_attack_list.append(new_attack)
 
     def on_key_release(self, key, modifiers):
         """

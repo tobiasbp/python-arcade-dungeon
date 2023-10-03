@@ -1,6 +1,7 @@
 import arcade
 import math
 
+
 class Enemy(arcade.Sprite):
     """
     parent class for all enemies in the game. Features include pathfinding, hp management and movement
@@ -178,3 +179,41 @@ class PlayerShot(arcade.Sprite):
         # Remove shot when over top of screen
         if self.bottom > self.max_y_pos:
             self.kill()
+
+
+class AttackStab(arcade.Sprite):
+    """
+    A shot fired by the Player
+    """
+
+    def __init__(self, center_x, center_y):
+        """
+        Setup new PlayerShot object
+        """
+
+        # Set the graphics to use for the sprite
+        # We need to flip it so it matches the mathematical angle/direction
+        super().__init__(
+            center_x=center_x,
+            center_y=center_y,
+
+            filename="images/tiny_dungeon/Tilemap/tilemap_packed.png",
+            flipped_diagonally=True,
+            flipped_horizontally=True,
+            flipped_vertically=False,
+
+        )
+
+        self.position = (center_x, center_y)
+        self.target_sprite = Player()
+        self.life_time = 1
+
+    def on_update(self, delta_time):
+        """
+        Move the sprite
+        """
+
+        self.life_time -= delta_time
+        if self.life_time <= 0:
+            self.kill()
+
