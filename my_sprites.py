@@ -4,6 +4,7 @@ import random
 from typing import List
 from enum import IntEnum
 
+
 class Enemy(arcade.Sprite):
     """
     parent class for all enemies in the game. Features include pathfinding, hp management and movement
@@ -143,7 +144,6 @@ class Player(arcade.Sprite):
         super().__init__(
             center_x=center_x,
             center_y=center_y,
-            filename="images/tiny_dungeon/Tiles/tile_0109.png",
             scale=scale,
         )
 
@@ -151,6 +151,12 @@ class Player(arcade.Sprite):
 
         # We need this to scale the Emotes
         self.scale = scale
+
+        # Loads the texture and the mirrored version of the texture
+        self.textures = arcade.load_texture_pair("images/tiny_dungeon/Tiles/tile_0109.png")
+
+        # Adds the Texture.
+        self.texture = self.textures[0]
 
         self.key_left = key_left
         self.key_right = key_right
@@ -190,15 +196,20 @@ class Player(arcade.Sprite):
         """
         if key == self.key_left:
             self.left_pressed = True
+            # Turns the sprite to the left side.
+            self.texture = self.textures[1]
+            return
         elif key == self.key_right:
             self.right_pressed = True
+            # Turns the sprite to the Right side
+            self.texture = self.textures[0]
+            return
         elif key == self.key_up:
             self.up_pressed = True
         elif key == self.key_down:
             self.down_pressed = True
         elif key == self.key_atttack:
             self.atttack_pressed = True
-
 
     def on_key_release(self, key, modifiers):
         """
