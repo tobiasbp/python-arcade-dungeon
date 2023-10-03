@@ -179,12 +179,16 @@ class GameView(arcade.View):
                 if MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
                     for s in layer_sprites:
                         # Only if player has line of sight with tile, it can be drawn
-                        if arcade.has_line_of_sight(
-                                point_1 = s.position,
-                                point_2 = self.player.position,
-                                walls = self.tilemap.sprite_lists["impassable"]
-                        ):
-                            s.draw(pixelated=DRAW_PIXELATED)
+                        try:
+                            if arcade.has_line_of_sight(
+                                    point_1 = s.position,
+                                    point_2 = self.player.position,
+                                    walls = self.tilemap.sprite_lists["impassable"],
+                                    check_resolution = TILE_SIZE
+                            ):
+                                s.draw(pixelated=DRAW_PIXELATED)
+                        except ZeroDivisionError:
+                            pass
                 else:
                     layer_sprites.draw(pixelated=DRAW_PIXELATED)
 
