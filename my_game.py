@@ -97,6 +97,9 @@ class GameView(arcade.View):
             colliding_tiles = background_tile.collides_with_list(self.tilemap.sprite_lists["impassable"])
             assert len(colliding_tiles) == 0, f"A tile on layer 'background' collides with a tile on layer 'impassable' at position {background_tile.position}"
 
+        # Variable that will hold a list of shots fired by the player
+        self.player_attack_list = arcade.SpriteList()
+
         # Add variable 'seen' to all tiles that has player line of sight. This will be used later on.
         for layer_name in MAP_LAYER_CONFIG.keys():
             if MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
