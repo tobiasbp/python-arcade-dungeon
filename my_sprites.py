@@ -12,6 +12,7 @@ class Enemy(arcade.Sprite):
     :param position: tuple containing the x and y coordinate to create the sprite at.
     :param max_hp: the max hp for the enemy. Also determines starting hp.
     :param speed: the movement speed for the sprite in px/update.
+    :param roaming_dist: the distance to travel, before changing dir, while in roaming state.
     :param scale: the size multiplier for the graphics/hitbox of the sprite.
     """
 
@@ -24,6 +25,7 @@ class Enemy(arcade.Sprite):
             filename: str = "images/tiny_dungeon/Tiles/tile_0087.png",
             max_hp: int = 10,
             speed: int = 1,
+            roaming_dist: float = 200,
             scale: float = 1.0):
 
         super().__init__(
@@ -37,7 +39,9 @@ class Enemy(arcade.Sprite):
         self._max_hp = max_hp
         self._hp = max_hp
 
+        self.window = window
         self.speed = speed
+        self.roaming_dist = roaming_dist
 
         # pathfinding
         self.path = []
@@ -89,6 +93,15 @@ class Enemy(arcade.Sprite):
             # reset movement vectors, so we stop when a path is finished
             self.change_x = 0
             self.change_y = 0
+
+            # roaming stage
+            while True:
+                next_pos = (random.randrange(0, self.window.width), random.randrange(0, self.window.height))
+
+                # if position is too close, find a new one
+                if arcade.get_distance(self.center_x, self.center_y, next_pos[0], next_pos[1]) > self.roaming_dist:
+                    self.go_to_position(next_pos)
+                    break
 
         # follow the path, if present
         else:
