@@ -1,34 +1,36 @@
 import arcade
 import math
+import random
+from typing import List
+from enum import IntEnum
 
 class Enemy(arcade.Sprite):
     """
     parent class for all enemies in the game. Features include pathfinding, hp management and movement
 
     :param filename: path to the file used as graphics for the sprite.
-    :param center_pos: tuple containing the x and y coordinate to create the sprite at.
+    :param position: tuple containing the x and y coordinate to create the sprite at.
     :param max_hp: the max hp for the enemy. Also determines starting hp.
     :param speed: the movement speed for the sprite in px/update.
     :param scale: the size multiplier for the graphics/hitbox of the sprite.
     """
 
     def __init__(
-            self, filename: str,
-            center_pos: tuple[float, float],
-            max_hp: int, speed: float,
+            self,
+            position: tuple[float, float],
             impassables: arcade.SpriteList,
+            window: arcade.Window,
             grid_size: int,
-            boundary_left: int,
-            boundary_right: int,
-            boundary_bottom: int,
-            boundary_top: int,
-            scale=1.0):
+            filename: str = "images/tiny_dungeon/Tiles/tile_0087.png",
+            max_hp: int = 10,
+            speed: int = 1,
+            scale: float = 1.0):
 
         super().__init__(
             filename=filename,
             scale=scale,
-            center_x=center_pos[0],
-            center_y=center_pos[1]
+            center_x=position[0],
+            center_y=position[1]
         )
 
         # hp
@@ -46,10 +48,10 @@ class Enemy(arcade.Sprite):
             moving_sprite=self,
             blocking_sprites=impassables,
             grid_size=grid_size,
-            left=boundary_left,
-            right=boundary_right,
-            bottom=boundary_bottom,
-            top=boundary_top
+            left=0,
+            right=window.width,
+            bottom=0,
+            top=window.height
         )
 
     @property
@@ -121,7 +123,18 @@ class Player(arcade.Sprite):
     The player
     """
 
-    def __init__(self, center_x=0, center_y=0, scale=1):
+    def __init__(
+            self,
+            center_x=0,
+            center_y=0,
+            speed=2,
+            scale=1,
+            key_up=arcade.key.UP,
+            key_down=arcade.key.DOWN,
+            key_left=arcade.key.LEFT,
+            key_right=arcade.key.RIGHT,
+            key_attack=arcade.key.SPACE
+        ):
         """
         Setup new Player object
         """
@@ -133,6 +146,95 @@ class Player(arcade.Sprite):
             filename="images/tiny_dungeon/Tiles/tile_0109.png",
             scale=scale,
         )
+
+        self.speed = speed
+
+        # We need this to scale the Emotes
+        self.scale = scale
+
+        self.key_left = key_left
+        self.key_right = key_right
+        self.key_up = key_up
+        self.key_down = key_down
+        self.key_atttack = key_attack
+
+        # Track state of controls (could also be a joystick in the future)
+        self.left_pressed = False
+        self.right_pressed = False
+        self.up_pressed = False
+        self.down_pressed = False
+        self.atttack_pressed = False
+
+        # Player's emotes will be stored here
+        self._emotes = arcade.SpriteList()
+
+    def react(self, reaction):
+        """
+        Add an Emote
+        """
+        self._emotes.append(
+            Emote(
+                reaction=reaction,
+                position=self.position,
+                scale=self.scale
+            )
+        )
+
+    @property
+    def emotes(self):
+        return self._emotes
+
+    def on_key_press(self, key, modifiers):
+        """
+        Track the state of the control keys
+        """
+        if key == self.key_left:
+            self.left_pressed = True
+        elif key == self.key_right:
+            self.right_pressed = True
+        elif key == self.key_up:
+            self.up_pressed = True
+        elif key == self.key_down:
+            self.down_pressed = True
+        elif key == self.key_atttack:
+            self.atttack_pressed = True
+
+
+    def on_key_release(self, key, modifiers):
+        """
+        Track the state of the control keys
+        """
+        if key == self.key_left:
+            self.left_pressed = False
+        elif key == self.key_right:
+            self.right_pressed = False
+        elif key == self.key_up:
+            self.up_pressed = False
+        elif key == self.key_down:
+            self.down_pressed = False
+        elif key == self.key_atttack:
+            self.atttack_pressed = False
+
+
+    def update(self):
+        """
+        Set Sprite's speed based on key status
+        """
+        # Assume no keys are held
+        self.change_x = 0
+        self.change_y = 0
+
+        # Update speed based on held keys
+        if self.left_pressed and not self.right_pressed:
+            self.change_x = -1 * self.speed
+        elif self.right_pressed and not self.left_pressed:
+            self.change_x = self.speed
+        elif self.up_pressed and not self.down_pressed:
+            self.change_y = self.speed
+        elif self.down_pressed and not self.up_pressed:
+            self.change_y = -1 * self.speed
+
+        # Note: We don't change the position of the sprite here, since that is done by the physics engine
 
 
 class PlayerShot(arcade.Sprite):
@@ -177,4 +279,75 @@ class PlayerShot(arcade.Sprite):
 
         # Remove shot when over top of screen
         if self.bottom > self.max_y_pos:
+            self.kill()
+
+
+class Reaction(IntEnum):
+    """
+    Reaction names that map to Emote graphics
+    """
+    HEART_BROKEN = 4
+    HEART = 5
+    EXCLAMATION_BLACK = 7
+    EXCLAMATION_RED = 8
+    HAPPY = 13
+    SAD = 14
+    ANGRY = 15
+    NOTE = 10
+    LAUGH = 28
+
+
+class Emote(arcade.Sprite):
+    """
+    An emote to show the emotion of a character in the game.
+    It will delete itself after lifetime has passed.
+    """
+
+    # A list of emotes as textures from a sprite sheet
+    emotes: List[arcade.texture.Texture] = arcade.load_spritesheet(
+        file_name = "data/emotes/pixel_style2.png",
+        sprite_width=16,
+        sprite_height=16,
+        columns=10,
+        count=30)
+
+    def __init__(
+            self,
+            reaction: Reaction,
+            position: tuple[int, int],
+            offset_x:int = 0,
+            offset_y:int = 16,
+            float_x:float=0.1,
+            float_y:float=0.2,
+            scale:int=1,
+            lifetime:float = 5.0,
+            enable_fade=True):
+
+        # The emote will disapear after this many seconds
+        self.lifetime = lifetime
+        self.time_left = lifetime
+
+        self.enable_fade = enable_fade
+
+        super().__init__(
+            center_x = position[0] + offset_x,
+            center_y = position[1] + offset_y,
+            scale = scale,
+            texture = Emote.emotes[reaction]
+        )
+
+        self.change_x = random.uniform(-1 * float_x, float_x)
+        self.change_y = float_y
+
+    def on_update(self, delta_time:float):
+
+        self.center_x += self.change_x
+        self.center_y += self.change_y
+
+        self.time_left -= delta_time
+
+        if self.enable_fade:
+            self.alpha = max(0, 255 * self.time_left/self.lifetime)
+
+        if self.time_left <= 0:
             self.kill()

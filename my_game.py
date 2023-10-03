@@ -8,13 +8,14 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 """
 
 import arcade
+import random
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
-from my_sprites import Player, PlayerShot
+from my_sprites import Player, PlayerShot, Enemy, Emote, Reaction
 
 # Set the scaling of all sprites in the game
-SCALING = 2
+SCALING = 1
 
 # Draw bitmaps without smooth interpolation
 DRAW_PIXELATED = True
@@ -38,9 +39,7 @@ SCREEN_HEIGHT = MAP_HEIGHT_TILES * TILE_SIZE * SCALING + GUI_HEIGHT
 
 # Variables controlling the player
 PLAYER_LIVES = 3
-PLAYER_SPEED = 20
-PLAYER_START_X = SCREEN_WIDTH / 2
-PLAYER_START_Y = 50
+PLAYER_SPEED = 5
 PLAYER_SHOT_SPEED = 300
 
 FIRE_KEY = arcade.key.SPACE
@@ -50,11 +49,13 @@ FIRE_KEY = arcade.key.SPACE
 # draw: Should the sprites on this layer be drawn?. Config layers, like spawn points, should probably not be drawn
 # passable: Can players and enemies can move through sprites on this layer?
 MAP_LAYER_CONFIG = {
- "background": {"line_of_sight": False, "draw": True, "passable": True},
- "impassable": {"line_of_sight": False, "draw": True, "passable": False},
- "objects-passable": {"line_of_sight": True, "draw": True, "passable": True},
- "objects-impassable": {"line_of_sight": True, "draw": True, "passable": False},
- "pressure-plates": {"line_of_sight": True, "draw": True, "passable": True},
+    "background": {"line_of_sight": False, "draw": True, "passable": True},
+    "impassable": {"line_of_sight": False, "draw": True, "passable": False},
+    "objects-passable": {"line_of_sight": True, "draw": True, "passable": True},
+    "objects-impassable": {"line_of_sight": True, "draw": True, "passable": False},
+    "pressure-plates": {"line_of_sight": True, "draw": True, "passable": True},
+    "players": {"line_of_sight": False, "draw": True, "passable": True},
+    "enemies": {"line_of_sight": False, "draw": True, "passable": True}
 }
 
 
@@ -85,31 +86,59 @@ class GameView(arcade.View):
         for layer_name in MAP_LAYER_CONFIG.keys():
             assert layer_name in self.tilemap.sprite_lists.keys(), f"Layer name '{layer_name}' not in tilemap."
 
+        # Ensure that no tile on the background layer collides with the impassibles layer
+        # We want to be able to spawn enemies on the backgrounds layer, so we must ensure
+        # that the spawn point is not impassable 
+        for background_tile in self.tilemap.sprite_lists["background"]:
+            colliding_tiles = background_tile.collides_with_list(self.tilemap.sprite_lists["impassable"])
+            assert len(colliding_tiles) == 0, f"A tile on layer 'background' collides with a tile on layer 'impassable' at position {background_tile.position}"
+
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = arcade.SpriteList()
 
+        # A list of emotes showing character reactions
+        self.emotes_list = arcade.SpriteList()
+
         # Set up the player info
+        # FIXME: Move this into the Player class
         self.player_score = 0
         self.player_lives = PLAYER_LIVES
 
         # Create a Player object
         self.player = Player(
-            center_x=PLAYER_START_X,
-            center_y=PLAYER_START_Y,
+            center_x=self.tilemap.sprite_lists["players"][0].center_x,
+            center_y=self.tilemap.sprite_lists["players"][0].center_y,
             scale=SCALING,
         )
 
+        # Change all tiles in the 'enemies' layer to Enemies
+        for enemy_index, enemy_position in enumerate([ s.position for s in self.tilemap.sprite_lists["enemies"]]):
+            # Create the enemy
+            e = Enemy(
+                position=enemy_position,
+                impassables=self.tilemap.sprite_lists["impassable"],
+                grid_size=int(self.tilemap.tile_width),
+                window=self.window,
+                scale=SCALING
+            )
+
+            # Go to position of random passable tile
+            # FIXME: Often, no path will be found. Why is that??
+            # e.go_to_position(random.choice(self.tilemap.sprite_lists["background"]).position)
+            # Go to the player's position
+            e.go_to_position(self.player.position)
+
+            # Replace the spawn point with the new enemy
+            self.tilemap.sprite_lists["enemies"][enemy_index] = e
+
+
         # Register player and walls with physics engine
+        # FIXME: The physics engine can only handle a single player. How do we handle multiplayer?
         self.physics_engine =  arcade.PhysicsEngineSimple(
             player_sprite=self.player,
             walls = self.tilemap.sprite_lists["impassable"]
         )
 
-        # Track the current state of what keys are pressed
-        self.left_pressed = False
-        self.right_pressed = False
-        self.up_pressed = False
-        self.down_pressed = False
 
         # Get list of joysticks
         joysticks = arcade.get_joysticks()
@@ -176,34 +205,36 @@ class GameView(arcade.View):
             bold=True,
         )
 
+        # Draw the player shot
+        self.player_shot_list.draw(pixelated=DRAW_PIXELATED)
+
+        # Draw the player sprite
+        self.player.draw(pixelated=DRAW_PIXELATED)
+        # Draw the player emotes
+        self.player.emotes.draw(pixelated=DRAW_PIXELATED)
+
+
     def on_update(self, delta_time):
         """
         Movement and game logic
         """
 
-        # Player does not move unless keys are held
-        self.player.change_x = 0
-        self.player.change_y = 0
+        # DEMO: Random reactions for the player
+        if random.randint(1, 60) == 1:
+            self.player.react(random.choice(list(Reaction)))
 
-        # Move player on x or y axis
-        if self.left_pressed and not self.right_pressed:
-            self.player.change_x = -PLAYER_SPEED
-        elif self.right_pressed and not self.left_pressed:
-            self.player.change_x = PLAYER_SPEED
-        elif self.up_pressed and not self.down_pressed:
-            self.player.change_y = PLAYER_SPEED
-        elif self.down_pressed and not self.up_pressed:
-            self.player.change_y = -PLAYER_SPEED
+        # Set x/y speed for the player based on key states
+        self.player.update()
 
-        # Move player with joystick if present
-        # FIXME: Implement joystick movement on x and y axis
-        # if self.joystick:
-        #    self.player.change_x = round(self.joystick.x) * PLAYER_SPEED
+        # Update the player emotes
+        self.player.emotes.on_update(delta_time)
 
         # Update the physics engine (including the player)
         # Return all sprites involved in collissions
-        # FIXME: simple physics does not use delta_time. Has no on_update() method.
         colliding_sprites = self.physics_engine.update()
+
+        # Update the enemies
+        self.tilemap.sprite_lists["enemies"].on_update()
 
         # Update the player shots
         self.player_shot_list.on_update(delta_time)
@@ -220,23 +251,11 @@ class GameView(arcade.View):
         self.window.show_view(game_over_view)
 
     def on_key_press(self, key, modifiers):
-        """
-        Called whenever a key is pressed.
-        """
+        self.player.on_key_press(key, modifiers)
 
         # End the game if the escape key is pressed
         if key == arcade.key.ESCAPE:
             self.game_over()
-
-        # Track state of arrow keys
-        if key == arcade.key.UP:
-            self.up_pressed = True
-        elif key == arcade.key.DOWN:
-            self.down_pressed = True
-        elif key == arcade.key.LEFT:
-            self.left_pressed = True
-        elif key == arcade.key.RIGHT:
-            self.right_pressed = True
 
         if key == FIRE_KEY:
             # Player gets points for firing?
@@ -255,18 +274,7 @@ class GameView(arcade.View):
             self.player_shot_list.append(new_shot)
 
     def on_key_release(self, key, modifiers):
-        """
-        Called whenever a key is released.
-        """
-
-        if key == arcade.key.UP:
-            self.up_pressed = False
-        elif key == arcade.key.DOWN:
-            self.down_pressed = False
-        elif key == arcade.key.LEFT:
-            self.left_pressed = False
-        elif key == arcade.key.RIGHT:
-            self.right_pressed = False
+        self.player.on_key_release(key, modifiers)
 
     def on_joybutton_press(self, joystick, button_no):
         print("Button pressed:", button_no)
@@ -312,7 +320,7 @@ class IntroView(arcade.View):
             self.window.width / 2,
             self.window.height / 2,
             arcade.color.WHITE,
-            font_size=50,
+            font_size=20,
             font_name=MAIN_FONT_NAME,
             anchor_x="center",
             bold=True
