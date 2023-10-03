@@ -140,13 +140,10 @@ class Player(arcade.Sprite):
         Setup new Player object
         """
 
-        self.filename = "images/tiny_dungeon/Tiles/tile_0109.png"
-
         # Pass arguments to class arcade.Sprite
         super().__init__(
             center_x=center_x,
             center_y=center_y,
-            filename=self.filename,
             scale=scale,
         )
 
@@ -156,7 +153,10 @@ class Player(arcade.Sprite):
         self.scale = scale
 
         # Loads the texture and the mirrored version of the texture
-        self.textures = arcade.load_texture_pair(self.filename)
+        self.textures = arcade.load_texture_pair("images/tiny_dungeon/Tiles/tile_0109.png")
+
+        # Adds the Texture.
+        self.texture = self.textures[0]
 
         self.key_left = key_left
         self.key_right = key_right
