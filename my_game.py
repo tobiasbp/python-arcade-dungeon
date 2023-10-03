@@ -12,7 +12,7 @@ import random
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
-from my_sprites import Player, PlayerShot, Enemy, Emote, Reaction
+from my_sprites import Player, PlayerShot, Enemy, Emote, Reaction, EnemyState
 
 # Set the scaling of all sprites in the game
 SCALING = 1
@@ -127,6 +127,7 @@ class GameView(arcade.View):
             # e.go_to_position(random.choice(self.tilemap.sprite_lists["background"]).position)
             # Go to the player's position
             e.go_to_position(self.player.position)
+            e.state = EnemyState.CHASING
 
             # Replace the spawn point with the new enemy
             self.tilemap.sprite_lists["enemies"][enemy_index] = e

@@ -42,6 +42,7 @@ class Enemy(arcade.Sprite):
         self.window = window
         self.speed = speed
         self.roaming_dist = roaming_dist
+        self.state = EnemyState.ROAMING
 
         # pathfinding
         self.path = []
@@ -95,6 +96,8 @@ class Enemy(arcade.Sprite):
             self.change_y = 0
 
             # roaming stage
+            self.state = EnemyState.ROAMING
+
             while True:
                 next_pos = (random.randrange(0, self.window.width), random.randrange(0, self.window.height))
 
@@ -134,6 +137,15 @@ class Enemy(arcade.Sprite):
         # remove the sprite if hp is 0 or less
         if self.hp <= 0:
             self.kill()
+
+
+class EnemyState(IntEnum):
+    """
+    All possible states for enemies
+    """
+
+    ROAMING = 0
+    CHASING = 1
 
 
 class Player(arcade.Sprite):
