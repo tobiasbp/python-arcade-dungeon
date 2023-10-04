@@ -197,8 +197,26 @@ class Player(arcade.Sprite):
         self.down_pressed = False
         self.atttack_pressed = False
 
+        # Player's attacks will be stored here
+        self._attacks = arcade.SpriteList()
+
         # Player's emotes will be stored here
         self._emotes = arcade.SpriteList()
+
+    def attack(self):
+        """
+        Perform an attack
+        Only a single attack is allowed
+        """
+        if len(self._attacks) == 0:
+            self._attacks.append(
+                PlayerShot(
+                    center_x=self.center_x,
+                    center_y=self.center_y,
+                    max_y_pos=self.center_y+10,
+                    speed=50
+                )
+            )
 
     def react(self, reaction):
         """
@@ -211,6 +229,10 @@ class Player(arcade.Sprite):
                 scale=self.scale
             )
         )
+
+    @property
+    def attacks(self):
+        return self._attacks
 
     @property
     def emotes(self):
@@ -240,6 +262,7 @@ class Player(arcade.Sprite):
             self.down_pressed = True
         elif key == self.key_atttack:
             self.atttack_pressed = True
+            self.attack()
 
     def on_key_release(self, key, modifiers):
         """
@@ -294,7 +317,7 @@ class PlayerShot(arcade.Sprite):
             center_x=center_x,
             center_y=center_y,
             scale=scale,
-            filename="images/tiny_dungeon/Tiles/tile_0109.png",
+            filename="images/tiny_dungeon/Tiles/tile_0107.png",
             flipped_diagonally=True,
             flipped_horizontally=True,
             flipped_vertically=False,

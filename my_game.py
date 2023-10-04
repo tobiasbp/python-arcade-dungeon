@@ -93,12 +93,6 @@ class GameView(arcade.View):
             colliding_tiles = background_tile.collides_with_list(self.tilemap.sprite_lists["impassable"])
             assert len(colliding_tiles) == 0, f"A tile on layer 'background' collides with a tile on layer 'impassable' at position {background_tile.position}"
 
-        # Variable that will hold a list of shots fired by the player
-        self.player_shot_list = arcade.SpriteList()
-
-        # A list of emotes showing character reactions
-        self.emotes_list = arcade.SpriteList()
-
         # Set up the player info
         # FIXME: Move this into the Player class
         self.player_score = 0
@@ -182,12 +176,6 @@ class GameView(arcade.View):
                 else:
                     layer_sprites.draw(pixelated=DRAW_PIXELATED)
 
-        # Draw the player shot
-        self.player_shot_list.draw(pixelated=DRAW_PIXELATED)
-
-        # Draw the player sprite
-        self.player.draw(pixelated=DRAW_PIXELATED)
-
         # Draw players score on screen
         arcade.draw_text(
             f"SCORE: {self.player_score}",  # Text to show
@@ -199,12 +187,9 @@ class GameView(arcade.View):
             bold=True,
         )
 
-        # Draw the player shot
-        self.player_shot_list.draw(pixelated=DRAW_PIXELATED)
-
-        # Draw the player sprite
+        # Draw the player sprite and its attacks and emotes
         self.player.draw(pixelated=DRAW_PIXELATED)
-        # Draw the player emotes
+        self.player.attacks.draw(pixelated=DRAW_PIXELATED)
         self.player.emotes.draw(pixelated=DRAW_PIXELATED)
 
 
@@ -220,7 +205,8 @@ class GameView(arcade.View):
         # Set x/y speed for the player based on key states
         self.player.update()
 
-        # Update the player emotes
+        # Update the player attacks and emotes
+        self.player.attacks.on_update(delta_time)
         self.player.emotes.on_update(delta_time)
 
         # Update the physics engine (including the player)
@@ -229,9 +215,6 @@ class GameView(arcade.View):
 
         # Update the enemies
         self.tilemap.sprite_lists["enemies"].on_update()
-
-        # Update the player shots
-        self.player_shot_list.on_update(delta_time)
 
     def game_over(self):
         """
@@ -250,22 +233,6 @@ class GameView(arcade.View):
         # End the game if the escape key is pressed
         if key == arcade.key.ESCAPE:
             self.game_over()
-
-        if key == FIRE_KEY:
-            # Player gets points for firing?
-            self.player_score += 5
-
-            # Create the new shot
-            new_shot = PlayerShot(
-                center_x=self.player.center_x,
-                center_y=self.player.center_y,
-                speed=PLAYER_SHOT_SPEED,
-                max_y_pos=SCREEN_HEIGHT,
-                scale=SCALING,
-            )
-
-            # Add the new shot to the list of shots
-            self.player_shot_list.append(new_shot)
 
     def on_key_release(self, key, modifiers):
         self.player.on_key_release(key, modifiers)
