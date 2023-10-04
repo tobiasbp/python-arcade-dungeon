@@ -119,6 +119,7 @@ class GameView(arcade.View):
                 impassables=self.tilemap.sprite_lists["impassable"],
                 grid_size=int(self.tilemap.tile_width),
                 window=self.window,
+                target=self.player,
                 scale=SCALING
             )
 
@@ -127,7 +128,6 @@ class GameView(arcade.View):
             # e.go_to_position(random.choice(self.tilemap.sprite_lists["background"]).position)
             # Go to the player's position
             e.go_to_position(self.player.position)
-            e.state = EnemyState.CHASING
 
             # Replace the spawn point with the new enemy
             self.tilemap.sprite_lists["enemies"][enemy_index] = e

@@ -2,12 +2,13 @@ import arcade
 import math
 import random
 from typing import List
-from enum import IntEnum
+from enum import IntEnum, Enum, auto, unique
 
 class Enemy(arcade.Sprite):
     """
     parent class for all enemies in the game. Features include pathfinding, hp management and movement
 
+    :param target: sprite to chase/harm if spotted.
     :param filename: path to the file used as graphics for the sprite.
     :param position: tuple containing the x and y coordinate to create the sprite at.
     :param max_hp: the max hp for the enemy. Also determines starting hp.
@@ -22,6 +23,7 @@ class Enemy(arcade.Sprite):
             impassables: arcade.SpriteList,
             window: arcade.Window,
             grid_size: int,
+            target: arcade.Sprite,  # FIXME: Take multiple targets to support multiplayer
             filename: str = "images/tiny_dungeon/Tiles/tile_0087.png",
             max_hp: int = 10,
             speed: int = 1,
@@ -41,6 +43,7 @@ class Enemy(arcade.Sprite):
 
         self.window = window
         self.speed = speed
+        self.target = target
         self.roaming_dist = roaming_dist
         self.state = EnemyState.ROAMING
 
@@ -78,6 +81,8 @@ class Enemy(arcade.Sprite):
         If no barrier list is given, use the sprites own barriers.
         """
 
+        target_pos = (int(target_pos[0]), int(target_pos[1]))
+
         # calculate the path. It will be a list of positions(lists)
         self.path = arcade.astar_calculate_path(self.position,
                                                 target_pos,
@@ -89,14 +94,27 @@ class Enemy(arcade.Sprite):
 
     def on_update(self, delta_time: float = 1 / 60):
 
-        if not self.path:
+        # state control
+        if arcade.has_line_of_sight(self.position, self.target.position, self.barriers.blocking_sprites):
+            self.state = EnemyState.CHASING
+        else:
+            self.state = EnemyState.ROAMING
+
+        # chasing state
+        if self.state == EnemyState.CHASING:
+            self.path = []
+
+            angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.target.center_x, self.target.center_y)
+
+            self.center_x += math.sin(angle_to_target) * self.speed
+            self.center_y += math.cos(angle_to_target) * self.speed
+
+        # roaming state
+        if not self.path and self.state == EnemyState.ROAMING:
 
             # reset movement vectors, so we stop when a path is finished
             self.change_x = 0
             self.change_y = 0
-
-            # roaming stage
-            self.state = EnemyState.ROAMING
 
             while True:
                 next_pos = (random.randrange(0, self.window.width), random.randrange(0, self.window.height))
@@ -107,7 +125,7 @@ class Enemy(arcade.Sprite):
                     break
 
         # follow the path, if present
-        else:
+        elif self.path:
 
             # next position to move to
             dest_pos = self.path[self.cur_path_position]
@@ -138,15 +156,14 @@ class Enemy(arcade.Sprite):
         if self.hp <= 0:
             self.kill()
 
-
-class EnemyState(IntEnum):
+@unique
+class EnemyState(Enum):
     """
     All possible states for enemies
     """
 
-    ROAMING = 0
-    CHASING = 1
-
+    ROAMING = auto()
+    CHASING = auto()
 
 class Player(arcade.Sprite):
     """
