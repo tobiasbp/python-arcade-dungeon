@@ -323,6 +323,7 @@ class PlayerShot(arcade.Sprite):
             self.kill()
 
 
+@unique
 class Reaction(IntEnum):
     """
     Reaction names that map to Emote graphics
