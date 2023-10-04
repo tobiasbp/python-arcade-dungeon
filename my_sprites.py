@@ -151,7 +151,9 @@ class Player(arcade.Sprite):
             key_down=arcade.key.DOWN,
             key_left=arcade.key.LEFT,
             key_right=arcade.key.RIGHT,
-            key_attack=arcade.key.SPACE
+            key_attack=arcade.key.SPACE,
+            jitter_amount:int=10, # How much to rotate when walking
+            jitter_likelihood:float=0.5 # How likely is jittering?
         ):
         """
         Setup new Player object
@@ -197,6 +199,10 @@ class Player(arcade.Sprite):
         self.down_pressed = False
         self.atttack_pressed = False
 
+        # Save settings for animating the sprite when walking
+        self.jitter_amount = jitter_amount
+        self.jitter_likelihood = jitter_likelihood
+
         # Player's attacks will be stored here
         self._attacks = arcade.SpriteList()
 
@@ -214,7 +220,8 @@ class Player(arcade.Sprite):
                     center_x=self.center_x,
                     center_y=self.center_y,
                     max_y_pos=self.center_y+10,
-                    speed=50
+                    speed=50,
+                    scale=self.scale
                 )
             )
 
@@ -298,6 +305,12 @@ class Player(arcade.Sprite):
         elif self.down_pressed and not self.up_pressed:
             self.change_y = -1 * self.speed
 
+        # Rotate the sprite a bit when it's moving
+        if (self.change_x != 0 or self.change_y != 0) and random.random() <= self.jitter_likelihood:
+            self.angle = random.randint(-self.jitter_amount, self.jitter_amount)
+        else:
+            self.angle = 0
+
         # Note: We don't change the position of the sprite here, since that is done by the physics engine
 
 
@@ -336,7 +349,6 @@ class PlayerShot(arcade.Sprite):
         """
         Move the sprite
         """
-
         # Update the position of the sprite
         self.center_x += delta_time * self.change_x
         self.center_y += delta_time * self.change_y
