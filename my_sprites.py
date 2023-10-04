@@ -327,6 +327,7 @@ class PlayerShot(arcade.Sprite):
 class Reaction(IntEnum):
     """
     Reaction names that map to Emote graphics
+    The values are calculated from image position in sprite sheet
     """
     HEART_BROKEN = 4
     HEART = 5
