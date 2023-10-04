@@ -1,8 +1,8 @@
 import arcade
 import math
 import random
-from typing import List
-from enum import IntEnum
+from typing import List, Optional
+from enum import IntEnum, auto, unique
 
 
 class Enemy(arcade.Sprite):
@@ -118,10 +118,26 @@ class Enemy(arcade.Sprite):
         if self.cur_hp <= 0:
             self.kill()
 
+@unique
+class PlayerType(IntEnum):
+    """
+    Player types that map to numbers in filename suffixes
+    """
+    WIZARD = 7 * 12 + 0
+    MAN_01 = 7 * 12 + 1
+    BLACKSMITH = 7 * 12 + 2
+    VIKING = 7 * 12 + 3
+    MAN_02 = 7 * 12 + 4
+    KNIGHT_CLOSED_HELMET = 8 * 12 + 0
+    KNIGHT_OPEN_HELMET = 8 * 12 + 1
+    KNIGHT_NO_HELMET = 8 * 12 + 2
+    WOMAN_YOUNGER = 8 * 12 + 3
+    WOMAN_OLDER = 8 * 12 + 4
+
 
 class Player(arcade.Sprite):
     """
-    The player
+    A player
     """
 
     def __init__(
@@ -130,6 +146,7 @@ class Player(arcade.Sprite):
             center_y=0,
             speed=2,
             scale=1,
+            type:Optional[PlayerType]=None,
             key_up=arcade.key.UP,
             key_down=arcade.key.DOWN,
             key_left=arcade.key.LEFT,
@@ -152,11 +169,20 @@ class Player(arcade.Sprite):
         # We need this to scale the Emotes
         self.scale = scale
 
-        # Loads the texture and the mirrored version of the texture
-        self.textures = arcade.load_texture_pair("images/tiny_dungeon/Tiles/tile_0109.png")
+        # Pick a random type if none is selected
+        if type is None:
+            type = random.choice(list(PlayerType))
 
-        # Adds the Texture.
+        # Use the integer value of PlayerType and pad with zeros to get a 4 digit value.
+        # Load the image twice, with one flipped, so we have left/right facing textures
+        self.textures = arcade.load_texture_pair(
+            f"images/tiny_dungeon/Tiles/tile_{type:0=4}.png"
+            )
+
+        # Set current texture
         self.texture = self.textures[0]
+
+        self._type = type
 
         self.key_left = key_left
         self.key_right = key_right
@@ -189,6 +215,10 @@ class Player(arcade.Sprite):
     @property
     def emotes(self):
         return self._emotes
+
+    @property
+    def type(self):
+        return self._type
 
     def on_key_press(self, key, modifiers):
         """
