@@ -72,7 +72,7 @@ class Enemy(arcade.Sprite):
 
     @hp.setter
     def hp(self, new_hp):
-        self._hp = min(new_hp, self.max_hp) if new_hp >= 0 else 0
+        self._hp = max(0, min(new_hp, self.max_hp))
 
     def go_to_position(self, target_pos: tuple[int, int]):
         """
