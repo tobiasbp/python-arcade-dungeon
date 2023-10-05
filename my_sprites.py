@@ -4,6 +4,15 @@ import random
 from typing import List
 from enum import IntEnum, Enum, auto, unique
 
+@unique
+class EnemyState(Enum):
+    """
+    All possible states for enemies
+    """
+
+    ROAMING = auto()
+    CHASING = auto()
+
 class Enemy(arcade.Sprite):
     """
     parent class for all enemies in the game. Features include pathfinding, hp management and movement
@@ -25,6 +34,7 @@ class Enemy(arcade.Sprite):
             grid_size: int,
             target: arcade.Sprite,  # FIXME: Take multiple targets to support multiplayer
             filename: str = "images/tiny_dungeon/Tiles/tile_0087.png",
+            state: EnemyState=EnemyState.ROAMING,
             max_hp: int = 10,
             speed: int = 1,
             roaming_dist: float = 200,
@@ -45,7 +55,7 @@ class Enemy(arcade.Sprite):
         self.speed = speed
         self.target = target
         self.roaming_dist = roaming_dist
-        self.state = EnemyState.ROAMING
+        self._state = state
 
         # pathfinding
         self.path = []
@@ -73,6 +83,15 @@ class Enemy(arcade.Sprite):
     @hp.setter
     def hp(self, new_hp):
         self._hp = max(0, min(new_hp, self.max_hp))
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, new_state: EnemyState):
+        assert type(new_state) == EnemyState, "state should be an EnemyState"
+        self._state = new_state
 
     def go_to_position(self, target_pos: tuple[int, int]):
         """
@@ -156,14 +175,6 @@ class Enemy(arcade.Sprite):
         if self.hp <= 0:
             self.kill()
 
-@unique
-class EnemyState(Enum):
-    """
-    All possible states for enemies
-    """
-
-    ROAMING = auto()
-    CHASING = auto()
 
 class Player(arcade.Sprite):
     """
