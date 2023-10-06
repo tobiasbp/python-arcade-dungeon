@@ -129,22 +129,23 @@ class Enemy(arcade.Sprite):
             self.center_y += math.cos(angle_to_target) * self.speed
 
         # roaming state
-        if not self.path and self.state == EnemyState.ROAMING:
+        elif self.state == EnemyState.ROAMING:
+            if not self.path:
 
-            # reset movement vectors, so we stop when a path is finished
-            self.change_x = 0
-            self.change_y = 0
+                # reset movement vectors, so we stop when a path is finished
+                self.change_x = 0
+                self.change_y = 0
 
-            while True:
-                next_pos = (random.randrange(0, self.window.width), random.randrange(0, self.window.height))
+                while True:
+                    next_pos = (random.randrange(0, self.window.width), random.randrange(0, self.window.height))
 
-                # if position is too close, find a new one
-                if arcade.get_distance(self.center_x, self.center_y, next_pos[0], next_pos[1]) > self.roaming_dist:
-                    self.go_to_position(next_pos)
-                    break
+                    # if position is too close, find a new one
+                    if arcade.get_distance(self.center_x, self.center_y, next_pos[0], next_pos[1]) > self.roaming_dist:
+                        self.go_to_position(next_pos)
+                        break
 
-        # follow the path, if present
-        elif self.path:
+            # follow the path, if present
+        if self.path:
 
             # next position to move to
             dest_pos = self.path[self.cur_path_position]
