@@ -1,7 +1,7 @@
 import arcade
 import math
 import random
-from typing import List
+from typing import List, Optional
 from enum import IntEnum, Enum, auto, unique
 
 @unique
@@ -12,6 +12,7 @@ class EnemyState(Enum):
 
     ROAMING = auto()
     CHASING = auto()
+
 
 class Enemy(arcade.Sprite):
     """
@@ -176,10 +177,26 @@ class Enemy(arcade.Sprite):
         if self.hp <= 0:
             self.kill()
 
+@unique
+class PlayerType(IntEnum):
+    """
+    Player types that map to numbers in filename suffixes
+    """
+    WIZARD = 7 * 12 + 0
+    MAN_01 = 7 * 12 + 1
+    BLACKSMITH = 7 * 12 + 2
+    VIKING = 7 * 12 + 3
+    MAN_02 = 7 * 12 + 4
+    KNIGHT_CLOSED_HELMET = 8 * 12 + 0
+    KNIGHT_OPEN_HELMET = 8 * 12 + 1
+    KNIGHT_NO_HELMET = 8 * 12 + 2
+    WOMAN_YOUNGER = 8 * 12 + 3
+    WOMAN_OLDER = 8 * 12 + 4
+
 
 class Player(arcade.Sprite):
     """
-    The player
+    A player
     """
 
     def __init__(
@@ -188,11 +205,14 @@ class Player(arcade.Sprite):
             center_y=0,
             speed=2,
             scale=1,
+            type:Optional[PlayerType]=None,
             key_up=arcade.key.UP,
             key_down=arcade.key.DOWN,
             key_left=arcade.key.LEFT,
             key_right=arcade.key.RIGHT,
-            key_attack=arcade.key.SPACE
+            key_attack=arcade.key.SPACE,
+            jitter_amount:int=10, # How much to rotate when walking
+            jitter_likelihood:float=0.5 # How likely is jittering?
         ):
         """
         Setup new Player object
@@ -202,7 +222,6 @@ class Player(arcade.Sprite):
         super().__init__(
             center_x=center_x,
             center_y=center_y,
-            filename="images/tiny_dungeon/Tiles/tile_0109.png",
             scale=scale,
         )
 
@@ -210,6 +229,21 @@ class Player(arcade.Sprite):
 
         # We need this to scale the Emotes
         self.scale = scale
+
+        # Pick a random type if none is selected
+        if type is None:
+            type = random.choice(list(PlayerType))
+
+        # Use the integer value of PlayerType and pad with zeros to get a 4 digit value.
+        # Load the image twice, with one flipped, so we have left/right facing textures
+        self.textures = arcade.load_texture_pair(
+            f"images/tiny_dungeon/Tiles/tile_{type:0=4}.png"
+            )
+
+        # Set current texture
+        self.texture = self.textures[0]
+
+        self._type = type
 
         self.key_left = key_left
         self.key_right = key_right
@@ -224,8 +258,31 @@ class Player(arcade.Sprite):
         self.down_pressed = False
         self.atttack_pressed = False
 
+        # Save settings for animating the sprite when walking
+        self.jitter_amount = jitter_amount
+        self.jitter_likelihood = jitter_likelihood
+
+        # Player's attacks will be stored here
+        self._attacks = arcade.SpriteList()
+
         # Player's emotes will be stored here
         self._emotes = arcade.SpriteList()
+
+    def attack(self):
+        """
+        Perform an attack
+        Only a single attack is allowed
+        """
+        if len(self._attacks) == 0:
+            self._attacks.append(
+                PlayerShot(
+                    center_x=self.center_x,
+                    center_y=self.center_y,
+                    max_y_pos=self.center_y+10,
+                    speed=50,
+                    scale=self.scale
+                )
+            )
 
     def react(self, reaction):
         """
@@ -240,8 +297,16 @@ class Player(arcade.Sprite):
         )
 
     @property
+    def attacks(self):
+        return self._attacks
+
+    @property
     def emotes(self):
         return self._emotes
+
+    @property
+    def type(self):
+        return self._type
 
     def on_key_press(self, key, modifiers):
         """
@@ -249,15 +314,21 @@ class Player(arcade.Sprite):
         """
         if key == self.key_left:
             self.left_pressed = True
+            # Turns the sprite to the left side.
+            self.texture = self.textures[1]
+            return
         elif key == self.key_right:
             self.right_pressed = True
+            # Turns the sprite to the Right side
+            self.texture = self.textures[0]
+            return
         elif key == self.key_up:
             self.up_pressed = True
         elif key == self.key_down:
             self.down_pressed = True
         elif key == self.key_atttack:
             self.atttack_pressed = True
-
+            self.attack()
 
     def on_key_release(self, key, modifiers):
         """
@@ -293,6 +364,12 @@ class Player(arcade.Sprite):
         elif self.down_pressed and not self.up_pressed:
             self.change_y = -1 * self.speed
 
+        # Rotate the sprite a bit when it's moving
+        if (self.change_x != 0 or self.change_y != 0) and random.random() <= self.jitter_likelihood:
+            self.angle = random.randint(-self.jitter_amount, self.jitter_amount)
+        else:
+            self.angle = 0
+
         # Note: We don't change the position of the sprite here, since that is done by the physics engine
 
 
@@ -312,7 +389,7 @@ class PlayerShot(arcade.Sprite):
             center_x=center_x,
             center_y=center_y,
             scale=scale,
-            filename="images/tiny_dungeon/Tiles/tile_0109.png",
+            filename="images/tiny_dungeon/Tiles/tile_0107.png",
             flipped_diagonally=True,
             flipped_horizontally=True,
             flipped_vertically=False,
@@ -331,7 +408,6 @@ class PlayerShot(arcade.Sprite):
         """
         Move the sprite
         """
-
         # Update the position of the sprite
         self.center_x += delta_time * self.change_x
         self.center_y += delta_time * self.change_y
@@ -341,9 +417,11 @@ class PlayerShot(arcade.Sprite):
             self.kill()
 
 
+@unique
 class Reaction(IntEnum):
     """
     Reaction names that map to Emote graphics
+    The values are calculated from image position in sprite sheet
     """
     HEART_BROKEN = 4
     HEART = 5
