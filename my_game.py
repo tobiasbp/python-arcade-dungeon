@@ -12,7 +12,7 @@ import random
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
-from my_sprites import Player, PlayerShot, Enemy, Emote, Reaction
+from my_sprites import Player, PlayerShot, Enemy, Emote, Reaction, EnemyState
 
 # Set the scaling of all sprites in the game
 SCALING = 1
@@ -113,6 +113,7 @@ class GameView(arcade.View):
                 impassables=self.tilemap.sprite_lists["impassable"],
                 grid_size=int(self.tilemap.tile_width),
                 window=self.window,
+                target=self.player,
                 scale=SCALING
             )
 
