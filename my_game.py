@@ -273,7 +273,8 @@ class GameView(arcade.View):
             # Create the new shot
             new_attack = AttackStab(
                 center_x=self.player.center_x,
-                center_y=self.player.center_y
+                center_y=self.player.center_y,
+                target_sprite=self.player
             )
 
             # Add the new shot to the list of shots

@@ -186,7 +186,7 @@ class AttackStab(arcade.Sprite):
     A shot fired by the Player
     """
 
-    def __init__(self, center_x, center_y):
+    def __init__(self, center_x, center_y, target_sprite):
         """
         Setup new PlayerShot object
         """
@@ -197,7 +197,7 @@ class AttackStab(arcade.Sprite):
             center_x=center_x,
             center_y=center_y,
 
-            filename="images/tiny_dungeon/Tilemap/tilemap_packed.png",
+            filename="images/tiny_dungeon/tiles/tile_0000.png",
             flipped_diagonally=True,
             flipped_horizontally=True,
             flipped_vertically=False,
@@ -205,7 +205,7 @@ class AttackStab(arcade.Sprite):
         )
 
         self.position = (center_x, center_y)
-        self.target_sprite = Player()
+        self.target_sprite = target_sprite
         self.life_time = 1
 
     def on_update(self, delta_time):
@@ -216,4 +216,6 @@ class AttackStab(arcade.Sprite):
         self.life_time -= delta_time
         if self.life_time <= 0:
             self.kill()
+        self.position = self.target_sprite.position
+        self.center_y += 20
 
