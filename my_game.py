@@ -8,10 +8,11 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 """
 
 import arcade
+import random
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
-from my_sprites import Player, PlayerShot, Enemy
+from my_sprites import Player, PlayerShot, Enemy, Emote, Reaction, EnemyState
 
 # Set the scaling of all sprites in the game
 SCALING = 1
@@ -92,10 +93,8 @@ class GameView(arcade.View):
             colliding_tiles = background_tile.collides_with_list(self.tilemap.sprite_lists["impassable"])
             assert len(colliding_tiles) == 0, f"A tile on layer 'background' collides with a tile on layer 'impassable' at position {background_tile.position}"
 
-        # Variable that will hold a list of shots fired by the player
-        self.player_shot_list = arcade.SpriteList()
-
         # Set up the player info
+        # FIXME: Move this into the Player class
         self.player_score = 0
         self.player_lives = PLAYER_LIVES
 
@@ -106,34 +105,35 @@ class GameView(arcade.View):
             scale=SCALING,
         )
 
-        # create a sample enemy
-        self.sample_enemy = Enemy(
-            filename="images/tiny_dungeon/Tiles/tile_0087.png",
-            center_pos=(200, 200),
-            max_hp=10,
-            speed=1,
-            impassables=self.tilemap.sprite_lists["impassable"],
-            grid_size=int(self.tilemap.tile_width),
-            boundary_left=0,
-            boundary_right=SCREEN_WIDTH,
-            boundary_bottom=0,
-            boundary_top=SCREEN_HEIGHT,
-            scale=SCALING
-        )
-        
+        # Change all tiles in the 'enemies' layer to Enemies
+        for enemy_index, enemy_position in enumerate([ s.position for s in self.tilemap.sprite_lists["enemies"]]):
+            # Create the enemy
+            e = Enemy(
+                position=enemy_position,
+                impassables=self.tilemap.sprite_lists["impassable"],
+                grid_size=int(self.tilemap.tile_width),
+                window=self.window,
+                target=self.player,
+                scale=SCALING
+            )
+
+            # Go to position of random passable tile
+            # FIXME: Often, no path will be found. Why is that??
+            # e.go_to_position(random.choice(self.tilemap.sprite_lists["background"]).position)
+            # Go to the player's position
+            e.go_to_position(self.player.position)
+
+            # Replace the spawn point with the new enemy
+            self.tilemap.sprite_lists["enemies"][enemy_index] = e
+
+
         # Register player and walls with physics engine
+        # FIXME: The physics engine can only handle a single player. How do we handle multiplayer?
         self.physics_engine =  arcade.PhysicsEngineSimple(
             player_sprite=self.player,
             walls = self.tilemap.sprite_lists["impassable"]
         )
 
-        self.sample_enemy.go_to_position((100, 100))
-
-        # Track the current state of what keys are pressed
-        self.left_pressed = False
-        self.right_pressed = False
-        self.up_pressed = False
-        self.down_pressed = False
 
         # Get list of joysticks
         joysticks = arcade.get_joysticks()
@@ -177,12 +177,6 @@ class GameView(arcade.View):
                 else:
                     layer_sprites.draw(pixelated=DRAW_PIXELATED)
 
-        # Draw the player shot
-        self.player_shot_list.draw(pixelated=DRAW_PIXELATED)
-
-        # Draw the player sprite
-        self.player.draw(pixelated=DRAW_PIXELATED)
-
         # Draw players score on screen
         arcade.draw_text(
             f"SCORE: {self.player_score}",  # Text to show
@@ -194,47 +188,34 @@ class GameView(arcade.View):
             bold=True,
         )
 
-        # Draw the player shot
-        self.player_shot_list.draw(pixelated=DRAW_PIXELATED)
-
-        # Draw the player sprite
+        # Draw the player sprite and its attacks and emotes
         self.player.draw(pixelated=DRAW_PIXELATED)
+        self.player.attacks.draw(pixelated=DRAW_PIXELATED)
+        self.player.emotes.draw(pixelated=DRAW_PIXELATED)
 
-        self.sample_enemy.draw(pixelated=DRAW_PIXELATED)
 
     def on_update(self, delta_time):
         """
         Movement and game logic
         """
 
-        # Player does not move unless keys are held
-        self.player.change_x = 0
-        self.player.change_y = 0
+        # DEMO: Random reactions for the player
+        if random.randint(1, 60) == 1:
+            self.player.react(random.choice(list(Reaction)))
 
-        # Move player on x or y axis
-        if self.left_pressed and not self.right_pressed:
-            self.player.change_x = -PLAYER_SPEED
-        elif self.right_pressed and not self.left_pressed:
-            self.player.change_x = PLAYER_SPEED
-        elif self.up_pressed and not self.down_pressed:
-            self.player.change_y = PLAYER_SPEED
-        elif self.down_pressed and not self.up_pressed:
-            self.player.change_y = -PLAYER_SPEED
+        # Set x/y speed for the player based on key states
+        self.player.update()
 
-        # Move player with joystick if present
-        # FIXME: Implement joystick movement on x and y axis
-        # if self.joystick:
-        #    self.player.change_x = round(self.joystick.x) * PLAYER_SPEED
+        # Update the player attacks and emotes
+        self.player.attacks.on_update(delta_time)
+        self.player.emotes.on_update(delta_time)
 
         # Update the physics engine (including the player)
         # Return all sprites involved in collissions
-        # FIXME: simple physics does not use delta_time. Has no on_update() method.
         colliding_sprites = self.physics_engine.update()
 
-        self.sample_enemy.on_update()
-
-        # Update the player shots
-        self.player_shot_list.on_update(delta_time)
+        # Update the enemies
+        self.tilemap.sprite_lists["enemies"].on_update()
 
     def game_over(self):
         """
@@ -248,53 +229,14 @@ class GameView(arcade.View):
         self.window.show_view(game_over_view)
 
     def on_key_press(self, key, modifiers):
-        """
-        Called whenever a key is pressed.
-        """
+        self.player.on_key_press(key, modifiers)
 
         # End the game if the escape key is pressed
         if key == arcade.key.ESCAPE:
             self.game_over()
 
-        # Track state of arrow keys
-        if key == arcade.key.UP:
-            self.up_pressed = True
-        elif key == arcade.key.DOWN:
-            self.down_pressed = True
-        elif key == arcade.key.LEFT:
-            self.left_pressed = True
-        elif key == arcade.key.RIGHT:
-            self.right_pressed = True
-
-        if key == FIRE_KEY:
-            # Player gets points for firing?
-            self.player_score += 5
-
-            # Create the new shot
-            new_shot = PlayerShot(
-                center_x=self.player.center_x,
-                center_y=self.player.center_y,
-                speed=PLAYER_SHOT_SPEED,
-                max_y_pos=SCREEN_HEIGHT,
-                scale=SCALING,
-            )
-
-            # Add the new shot to the list of shots
-            self.player_shot_list.append(new_shot)
-
     def on_key_release(self, key, modifiers):
-        """
-        Called whenever a key is released.
-        """
-
-        if key == arcade.key.UP:
-            self.up_pressed = False
-        elif key == arcade.key.DOWN:
-            self.down_pressed = False
-        elif key == arcade.key.LEFT:
-            self.left_pressed = False
-        elif key == arcade.key.RIGHT:
-            self.right_pressed = False
+        self.player.on_key_release(key, modifiers)
 
     def on_joybutton_press(self, joystick, button_no):
         print("Button pressed:", button_no)
@@ -340,7 +282,7 @@ class IntroView(arcade.View):
             self.window.width / 2,
             self.window.height / 2,
             arcade.color.WHITE,
-            font_size=50,
+            font_size=20,
             font_name=MAIN_FONT_NAME,
             anchor_x="center",
             bold=True
