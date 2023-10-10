@@ -12,8 +12,8 @@ import random
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
-from my_sprites import Player, PlayerShot, Enemy, AttackStab
-from my_sprites import Player, PlayerShot, Enemy, Emote, Reaction, EnemyState
+# from my_sprites import Player, PlayerShot, Enemy, AttackStab
+from my_sprites import Player, PlayerShot, Enemy, Emote, Reaction, EnemyState, AttackStab
 
 # Set the scaling of all sprites in the game
 SCALING = 1
@@ -227,8 +227,6 @@ class GameView(arcade.View):
         # Update the physics engine (including the player)
         # Return all sprites involved in collissions
         colliding_sprites = self.physics_engine.update()
-
-        self.sample_enemy.on_update()
 
         # Update the player shots
         self.player_attack_list.on_update(delta_time)
