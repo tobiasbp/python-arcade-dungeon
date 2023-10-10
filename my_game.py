@@ -8,8 +8,6 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 """
 
 import arcade
-import arcade.gui
-import random
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
