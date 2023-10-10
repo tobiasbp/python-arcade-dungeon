@@ -73,6 +73,11 @@ class Enemy(arcade.Sprite):
             top=window.height
         )
 
+        # Enemies emotes will be stored here
+        self._emotes = arcade.SpriteList()
+
+        self.react(Reaction.EXCLAMATION_RED)
+
     @property
     def max_hp(self):
         return self._max_hp
@@ -94,6 +99,10 @@ class Enemy(arcade.Sprite):
         assert type(new_state) == EnemyState, "state should be an EnemyState"
         self._state = new_state
 
+    @property
+    def emotes(self):
+        return self._emotes
+
     def go_to_position(self, target_pos: tuple[int, int]):
         """
         calculates a path to the target pos. Sets the sprite's path to this path.
@@ -111,6 +120,18 @@ class Enemy(arcade.Sprite):
 
         # reset this because we are at the start of a new path
         self.cur_path_position = 0
+
+    def react(self, reaction):
+        """
+        Add an Emote
+        """
+        self._emotes.append(
+            Emote(
+                reaction=reaction,
+                position=self.position,
+                scale=self.scale
+            )
+        )
 
     def on_update(self, delta_time: float = 1 / 60):
 
@@ -176,6 +197,8 @@ class Enemy(arcade.Sprite):
         # remove the sprite if hp is 0 or less
         if self.hp <= 0:
             self.kill()
+
+        self._emotes.on_update(delta_time)
 
 @unique
 class PlayerType(IntEnum):
