@@ -24,6 +24,23 @@ class EnemyState(Enum):
     CHASING = auto()
 
 
+class Attack(arcade.Sprite):
+    """A simple hitbox to track collisions with. Just has a hitbox and a duration"""
+
+    def __init__(self, duration: float, **kwargs):
+        super().__init__(**kwargs)
+
+        self.duration = duration
+        self.timer = 0
+
+    def on_update(self, delta_time: float = 1 / 60):
+
+        # if duration is up, remove self
+        self.timer += delta_time
+        if self.timer > self.duration:
+            self.kill()
+
+
 class Enemy(arcade.Sprite):
     """
     parent class for all enemies in the game. Features include pathfinding, hp management and movement
@@ -48,6 +65,7 @@ class Enemy(arcade.Sprite):
             state: EnemyState=EnemyState.ROAMING,
             max_hp: int = 10,
             speed: int = 1,
+            attack_cooldown: int = 1,
             roaming_dist: float = 200,
             scale: float = 1.0):
 
@@ -67,6 +85,11 @@ class Enemy(arcade.Sprite):
         self.target = target
         self.roaming_dist = roaming_dist
         self._state = state
+
+        # attacks
+        self.attacks = arcade.SpriteList()
+        self.attack_cooldown = attack_cooldown  # the time in seconds between attacking
+        self.attack_timer = attack_cooldown  # the timer that we use to track attacking cooldown
 
         # pathfinding
         self.path = []
@@ -118,6 +141,25 @@ class Enemy(arcade.Sprite):
     def emotes(self):
         return self._emotes
 
+    def attack(self, width: float, length: float, duration: float):
+        """spawn a harmful object in front of the sprite"""
+
+        # can only have one attack at a time - for now
+        if not self.attacks and self.attack_timer >= self.attack_cooldown:
+
+            new_attack = Attack(
+                duration=duration,
+                filename="images/RedBox.png",
+                image_width=width,
+                image_height=length,
+                scale=self.scale,
+                center_x=self.center_x+math.sin(self.angle)*width,
+                center_y=self.center_y+math.cos(self.angle)*length
+            )
+
+            self.attacks.append(new_attack)
+            self.attack_timer = 0
+
     def go_to_position(self, target_pos: tuple[int, int]):
         """
         calculates a path to the target pos. Sets the sprite's path to this path.
@@ -157,13 +199,16 @@ class Enemy(arcade.Sprite):
             self.state = EnemyState.ROAMING
 
         # chasing state
+        angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.target.center_x, self.target.center_y)  # we need this later as well
         if self.state == EnemyState.CHASING:
             self.path = []
 
-            angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.target.center_x, self.target.center_y)
 
             self.center_x += math.sin(angle_to_target) * self.speed
             self.center_y += math.cos(angle_to_target) * self.speed
+
+            # DEMO: Showcasing attacks
+            self.attack(16, 16, 0.5)
 
         # roaming state
         elif self.state == EnemyState.ROAMING:
@@ -212,6 +257,14 @@ class Enemy(arcade.Sprite):
         # remove the sprite if hp is 0 or less
         if self.hp <= 0:
             self.kill()
+
+        # update attacks
+        for a in self.attacks:
+            a.draw()
+            a.on_update()
+            a.center_x = self.center_x + math.sin(angle_to_target) * 16
+            a.center_y = self.center_y + math.cos(angle_to_target) * 16
+        self.attack_timer += delta_time
 
         self._emotes.on_update(delta_time)
 
@@ -318,7 +371,6 @@ class Player(arcade.Sprite):
 
         # Player's emotes will be stored here
         self._emotes = arcade.SpriteList()
-
 
     def attack(self):
         """

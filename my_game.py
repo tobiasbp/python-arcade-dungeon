@@ -213,7 +213,7 @@ class GameView(arcade.View):
         colliding_sprites = self.physics_engine.update()
 
         # Update the enemies
-        self.tilemap.sprite_lists["enemies"].on_update()
+        #self.tilemap.sprite_lists["enemies"].on_update()
 
     def game_over(self):
         """
