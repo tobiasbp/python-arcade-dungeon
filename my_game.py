@@ -193,6 +193,8 @@ class GameView(arcade.View):
         self.player.attacks.draw(pixelated=DRAW_PIXELATED)
         self.player.emotes.draw(pixelated=DRAW_PIXELATED)
 
+        # FIXME: how do we draw the enemy attacks, without calling an update function?
+        self.tilemap.sprite_lists["enemies"].on_update()
 
     def on_update(self, delta_time):
         """
@@ -215,7 +217,7 @@ class GameView(arcade.View):
         colliding_sprites = self.physics_engine.update()
 
         # Update the enemies
-        self.tilemap.sprite_lists["enemies"].on_update()
+        #self.tilemap.sprite_lists["enemies"].on_update()
 
     def game_over(self):
         """
