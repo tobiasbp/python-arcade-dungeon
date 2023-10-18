@@ -259,6 +259,7 @@ class Player(arcade.Sprite):
             center_y=0,
             speed=2,
             scale=1,
+            max_hp: int = 10,
             type:Optional[PlayerType]=None,
             key_up=arcade.key.UP,
             key_down=arcade.key.DOWN,
@@ -298,6 +299,10 @@ class Player(arcade.Sprite):
         self.texture = self.textures[0]
 
         self._type = type
+
+        # hp
+        self._max_hp = max_hp
+        self._hp = max_hp
 
         self.key_left = key_left
         self.key_right = key_right
@@ -349,6 +354,18 @@ class Player(arcade.Sprite):
                 scale=self.scale
             )
         )
+
+    @property
+    def max_hp(self):
+        return self._max_hp
+
+    @property
+    def hp(self):
+        return self._hp
+
+    @hp.setter
+    def hp(self, new_hp):
+        self._hp = max(0, min(new_hp, self.max_hp))  # hp should be greater than 0 and not greater than max hp
 
     @property
     def attacks(self):

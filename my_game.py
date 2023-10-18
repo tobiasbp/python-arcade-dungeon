@@ -38,7 +38,6 @@ SCREEN_WIDTH = MAP_WIDTH_TILES * TILE_SIZE * SCALING
 SCREEN_HEIGHT = MAP_HEIGHT_TILES * TILE_SIZE * SCALING + GUI_HEIGHT
 
 # Variables controlling the player
-PLAYER_LIVES = 3
 PLAYER_SPEED = 5
 PLAYER_SHOT_SPEED = 300
 
@@ -96,7 +95,6 @@ class GameView(arcade.View):
         # Set up the player info
         # FIXME: Move this into the Player class
         self.player_score = 0
-        self.player_lives = PLAYER_LIVES
 
         # Create a Player object
         self.player = Player(
