@@ -17,17 +17,26 @@ class EnemyState(Enum):
 class Attack(arcade.Sprite):
     """A simple hitbox to track collisions with. Just has a hitbox and a duration"""
 
-    def __init__(self, duration: float, **kwargs):
+    def __init__(self, duration: float, target_list: arcade.SpriteList, damage: int, **kwargs):
         super().__init__(**kwargs)
 
         self.duration = duration
         self.timer = 0
+        self.target_list = target_list
+        self.damage = damage
 
     def on_update(self, delta_time: float = 1 / 60):
 
-        # if duration is up, remove self
+        kill = False  # we need this to run the full loop below and still kill afterwards
+
+        # if collides with target, inflict damage and remove self
+        for target_hit in arcade.check_for_collision_with_lists(self, self.target_list):
+            target_hit.hp -= self.damage
+            kill = True
+
+        # if duration is up, or we have dealt damage, remove self
         self.timer += delta_time
-        if self.timer > self.duration:
+        if self.timer > self.duration or kill:
             self.kill()
 
 
@@ -118,7 +127,7 @@ class Enemy(arcade.Sprite):
         assert type(new_state) == EnemyState, "state should be an EnemyState"
         self._state = new_state
 
-    def attack(self, width: float, length: float, duration: float):
+    def attack(self, width: float, length: float, duration: float, target_list: arcade.SpriteList, damage: int):
         """spawn a harmful object in front of the sprite"""
 
         # can only have one attack at a time - for now
@@ -126,6 +135,8 @@ class Enemy(arcade.Sprite):
 
             new_attack = Attack(
                 duration=duration,
+                target_list=target_list,
+                damage=damage,
                 filename="images/RedBox.png",
                 image_width=width,
                 image_height=length,
@@ -173,7 +184,7 @@ class Enemy(arcade.Sprite):
             self.center_y += math.cos(angle_to_target) * self.speed
 
             # DEMO: Showcasing attacks
-            self.attack(16, 16, 0.5)
+            #self.attack(width=16, length=16, duration=0.5, target_list=, damage=2)
 
         # roaming state
         elif self.state == EnemyState.ROAMING:
