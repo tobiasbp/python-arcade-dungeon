@@ -60,7 +60,7 @@ class Enemy(arcade.Sprite):
             impassables: arcade.SpriteList,
             window: arcade.Window,
             grid_size: int,
-            target: arcade.Sprite,  # FIXME: Take multiple targets to support multiplayer
+            target_list: arcade.SpriteList,
             filename: str = "images/tiny_dungeon/Tiles/tile_0087.png",
             state: EnemyState=EnemyState.ROAMING,
             max_hp: int = 10,
@@ -82,7 +82,8 @@ class Enemy(arcade.Sprite):
 
         self.window = window
         self.speed = speed
-        self.target = target
+        self.target_list = target_list
+        self.target = None
         self.roaming_dist = roaming_dist
         self._state = state
 
@@ -167,6 +168,13 @@ class Enemy(arcade.Sprite):
         self.cur_path_position = 0
 
     def on_update(self, delta_time: float = 1 / 60):
+
+        # pick a target to go for. Target is the nearest target
+        dist_to_nearest = 9999999
+        for t in self.target_list:
+            if arcade.get_distance_between_sprites(self, t) < dist_to_nearest:
+                self.target = t
+                dist_to_nearest = arcade.get_distance_between_sprites(self, t)
 
         # state control
         if arcade.has_line_of_sight(self.position, self.target.position, self.barriers.blocking_sprites):

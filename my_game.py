@@ -103,6 +103,9 @@ class GameView(arcade.View):
             scale=SCALING,
         )
 
+        target_list = arcade.SpriteList()
+        target_list.append(self.player)
+
         # Change all tiles in the 'enemies' layer to Enemies
         for enemy_index, enemy_position in enumerate([ s.position for s in self.tilemap.sprite_lists["enemies"]]):
             # Create the enemy
@@ -111,7 +114,7 @@ class GameView(arcade.View):
                 impassables=self.tilemap.sprite_lists["impassable"],
                 grid_size=int(self.tilemap.tile_width),
                 window=self.window,
-                target=self.player,
+                target_list=target_list,
                 scale=SCALING
             )
 
