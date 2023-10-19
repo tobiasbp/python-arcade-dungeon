@@ -30,7 +30,7 @@ class Attack(arcade.Sprite):
         kill = False  # we need this to run the full loop below and still kill afterwards
 
         # if collides with target, inflict damage and remove self
-        for target_hit in arcade.check_for_collision_with_lists(self, self.target_list):
+        for target_hit in arcade.check_for_collision_with_list(self, self.target_list):
             target_hit.hp -= self.damage
             kill = True
 
@@ -192,7 +192,7 @@ class Enemy(arcade.Sprite):
             self.center_y += math.cos(angle_to_target) * self.speed
 
             # DEMO: Showcasing attacks
-            #self.attack(width=16, length=16, duration=0.5, target_list=, damage=2)
+            self.attack(width=16, length=16, duration=0.5, target_list=self.target_list, damage=2)
 
         # roaming state
         elif self.state == EnemyState.ROAMING:
