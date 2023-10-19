@@ -15,7 +15,13 @@ class EnemyState(Enum):
 
 
 class Attack(arcade.Sprite):
-    """A simple hitbox to track collisions with. Just has a hitbox and a duration"""
+    """
+    A simple hitbox to track collisions with. Just has a hitbox and a duration.
+
+    :param duration: the maximum lifetime of the sprite. Kills this number of seconds after creation.
+    :param target_list: the sprites to track collision with and inflict damage to. Should only contain sprites with hp.
+    :param damage: the amount of damage to inflict upon each target's hp, upon collision.
+    """
 
     def __init__(self, duration: float, target_list: arcade.SpriteList, damage: int, **kwargs):
         super().__init__(**kwargs)
