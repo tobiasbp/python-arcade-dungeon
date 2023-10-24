@@ -76,8 +76,6 @@ class Enemy(arcade.Sprite):
         # Enemies emotes will be stored here
         self._emotes = arcade.SpriteList()
 
-        self.react(Reaction.EXCLAMATION_RED)
-
     @property
     def max_hp(self):
         return self._max_hp
@@ -97,6 +95,10 @@ class Enemy(arcade.Sprite):
     @state.setter
     def state(self, new_state: EnemyState):
         assert type(new_state) == EnemyState, "state should be an EnemyState"
+        # Checks if the _state is the same as the new_state.
+        if self._state is not new_state:
+            self.react(Reaction.EXCLAMATION_RED)
+
         self._state = new_state
 
     @property
