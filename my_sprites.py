@@ -56,6 +56,7 @@ class Enemy(arcade.Sprite):
     :param position: tuple containing the x and y coordinate to create the sprite at.
     :param max_hp: the max hp for the enemy. Also determines starting hp.
     :param speed: the movement speed for the sprite in px/update.
+    :param attack_cooldown: how frequently the enemy can attack.
     :param roaming_dist: the distance to travel, before changing dir, while in roaming state.
     :param scale: the size multiplier for the graphics/hitbox of the sprite.
     """
@@ -275,13 +276,17 @@ class Enemy(arcade.Sprite):
 
         # update attacks
         for a in self.attacks:
-            a.draw()
             a.on_update()
             a.center_x = self.center_x + math.sin(angle_to_target) * 16
             a.center_y = self.center_y + math.cos(angle_to_target) * 16
         self.attack_timer += delta_time
 
         self._emotes.on_update(delta_time)
+
+    def on_draw(self, draw_attack_hitboxes: bool=False):
+        if draw_attack_hitboxes:
+            self.attacks.draw_hit_boxes(arcade.color.NEON_GREEN)
+        self.draw()
 
 @unique
 class PlayerType(IntEnum):
