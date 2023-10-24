@@ -101,8 +101,6 @@ class Enemy(arcade.Sprite):
                 self.react(Reaction.EXCLAMATION_RED)
             elif new_state == EnemyState.ROAMING:
                 self.react(Reaction.HEART_BROKEN)
-            else:
-                pass
 
         self._state = new_state
 
