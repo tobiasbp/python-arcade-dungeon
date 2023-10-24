@@ -319,21 +319,36 @@ class Player(arcade.Sprite):
         # Player's emotes will be stored here
         self._emotes = arcade.SpriteList()
 
+
     def attack(self):
         """
         Perform an attack using the equiped weapon
         """
-        if self.equiped is not None:
-            self.equiped.attack(
+        if self.equiped is not None and self.equiped.is_idle:
+
+            # FIXME: Remove the weapon if it has no attacks left
+
+            success = self.equiped.attack(
                 position=self.position,
                 direction=self.direction,
             )
-            self.react(Reaction.ANGRY)
+
+            if success:
+                self.react(Reaction.ANGRY)
+            else:
+                self.react(Reaction.SAD)
+
+            return True
+
+        else:
+            return False
+
 
     def react(self, reaction):
         """
         Add an Emote
         """
+        # FIXME: Add a limit on number of emotes allowed
         self._emotes.append(
             Emote(
                 reaction=reaction,
@@ -341,6 +356,7 @@ class Player(arcade.Sprite):
                 scale=self.scale
             )
         )
+
 
     @property
     def weapons(self):
@@ -552,11 +568,13 @@ class Emote(arcade.Sprite):
 @unique
 class WeaponType(IntEnum):
     """
-    Weapon types that map to wepon graphics
+    Weapon types that map to weapon graphics
     The values are calculated from image position in sprite sheet
     """
     SWORD_SHORT = 9*11+4
     SWORD_LONG = 9*11+5
+    # FIXME: Add more weapon types
+
 
 class Weapon(arcade.Sprite):
     """
@@ -573,7 +591,7 @@ class Weapon(arcade.Sprite):
         count=12*11,
         margin=1)
 
-    # range: How far from the user of the weapon will it attack?
+    # range: How far from the user of the weapon will it attack
     # strength: How much damage will the weapon inflict?
     # speed: How often can the weapon be used (seconds)
     # max_usage: How many times can the weapon be used?
@@ -583,7 +601,7 @@ class Weapon(arcade.Sprite):
             "range": 15,
             "strength": 7,
             "speed": 0.8,
-            "max_usage": math.inf
+            "max_usage": 10
         },
         WeaponType.SWORD_LONG: {
             # Remember to use scale with this when attacking
@@ -592,6 +610,7 @@ class Weapon(arcade.Sprite):
             "speed": 1.2,
             "max_usage": math.inf
         }
+        # FIXME: Add more weapon types
     }
 
     def __init__(self,type: WeaponType,position: tuple[int, int]=(0,0),scale:int=1):
@@ -637,6 +656,10 @@ class Weapon(arcade.Sprite):
         Weapon attacks at position
         """
         if self.is_idle:
+            if self.attacks_left <= 0:
+                return False
+
+            self._attacks_left -= 1
             self.position = position
             self._time_to_idle = self.speed
 
@@ -652,6 +675,7 @@ class Weapon(arcade.Sprite):
             else:
                 raise ValueError("Invalid direction:", direction)
 
+            return True
 
     def update(self):
         if not self.is_idle:
