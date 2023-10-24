@@ -97,7 +97,12 @@ class Enemy(arcade.Sprite):
         assert type(new_state) == EnemyState, "state should be an EnemyState"
         # Checks if the _state is the same as the new_state.
         if self._state is not new_state:
-            self.react(Reaction.EXCLAMATION_RED)
+            if new_state == EnemyState.CHASING:
+                self.react(Reaction.EXCLAMATION_RED)
+            elif new_state == EnemyState.ROAMING:
+                self.react(Reaction.HEART_BROKEN)
+            else:
+                pass
 
         self._state = new_state
 
