@@ -220,6 +220,10 @@ class Enemy(arcade.Sprite):
             self.center_x += math.sin(angle_to_target) * self.speed
             self.center_y += math.cos(angle_to_target) * self.speed
 
+            for a in self.attacks:
+                a.center_x += math.sin(angle_to_target) * self.speed
+                a.center_y += math.cos(angle_to_target) * self.speed
+
             # DEMO: Showcasing attacks
             self.attack(width=16, length=16, angle=angle_to_target, distance=32, duration=0.5, damage=2)
 
