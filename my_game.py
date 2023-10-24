@@ -41,11 +41,12 @@ SCREEN_HEIGHT = MAP_HEIGHT_TILES * TILE_SIZE * SCALING + GUI_HEIGHT
 PLAYER_LIVES = 3
 PLAYER_SPEED = 5
 PLAYER_SHOT_SPEED = 300
+PLAYER_SIGHT_RANGE = 1
 
 FIRE_KEY = arcade.key.SPACE
 
 # All layers configured must exist in the map file.
-# line_of_sight: Should sprites only be drawn if they are vissible to a player?
+# line_of_sight: Should sprites only be drawn if they are visible to a player?
 # draw: Should the sprites on this layer be drawn?. Config layers, like spawn points, should probably not be drawn
 # passable: Can players and enemies can move through sprites on this layer?
 MAP_LAYER_CONFIG = {
@@ -180,13 +181,14 @@ class GameView(arcade.View):
             if MAP_LAYER_CONFIG[layer_name].get("draw", True):
                 if MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
                     for s in layer_sprites:
-                        # Only if player has or has previously had line of sight with tile, it can be drawn
+                        # Only if player has or has previously had line of sight with tile and is within range, it can be drawn.
                         try:
                             if arcade.has_line_of_sight(
                                     point_1 = s.position,
                                     point_2 = self.player.position,
                                     walls = self.tilemap.sprite_lists["impassable"],
-                                    check_resolution = TILE_SIZE
+                                    check_resolution = TILE_SIZE,
+                                    max_distance = PLAYER_SIGHT_RANGE
                             ) or s.seen == True:
                                 s.draw(pixelated=DRAW_PIXELATED)
                                 s.seen = True
