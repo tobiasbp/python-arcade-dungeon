@@ -148,7 +148,7 @@ class Enemy(arcade.Sprite):
     def emotes(self):
         return self._emotes
 
-    def attack(self, width: float, length: float, angle: float, distance: float, duration: float, damage: int):
+    def make_attack(self, width: float, length: float, angle: float, distance: float, duration: float, damage: int):
         """spawn a harmful object in front of the sprite"""
 
         # can only have one attack at a time - for now
