@@ -193,7 +193,7 @@ class GameView(arcade.View):
                                 s.draw(pixelated=DRAW_PIXELATED)
                                 s.seen = True
                         except ZeroDivisionError:
-                            pass
+                            s.draw(pixelated=DRAW_PIXELATED)
                 else:
                     layer_sprites.draw(pixelated=DRAW_PIXELATED)
 
