@@ -126,7 +126,7 @@ class Enemy(arcade.Sprite):
         assert type(new_state) == EnemyState, "state should be an EnemyState"
         self._state = new_state
 
-    def attack(self, width: float, length: float, angle: float, distance: float, duration: float, damage: int):
+    def make_attack(self, width: float, length: float, angle: float, distance: float, duration: float, damage: int):
         """spawn a harmful object in front of the sprite"""
 
         # can only have one attack at a time - for now
