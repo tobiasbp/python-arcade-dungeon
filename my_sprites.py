@@ -250,11 +250,15 @@ class Enemy(arcade.Sprite):
 
         # update attacks
         for a in self.attacks:
-            a.draw()
             a.on_update()
             a.center_x = self.center_x + math.sin(angle_to_target) * 16
             a.center_y = self.center_y + math.cos(angle_to_target) * 16
         self.attack_timer += delta_time
+
+    def on_draw(self, draw_attack_hitboxes: bool=False):
+        if draw_attack_hitboxes:
+            self.attacks.draw_hit_boxes(arcade.color.NEON_GREEN)
+        self.draw()
 
 @unique
 class PlayerType(IntEnum):
