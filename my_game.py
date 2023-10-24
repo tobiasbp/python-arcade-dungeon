@@ -213,6 +213,9 @@ class GameView(arcade.View):
         self.player.attacks.draw(pixelated=DRAW_PIXELATED)
         self.player.emotes.draw(pixelated=DRAW_PIXELATED)
 
+        # Draw the enemy emotes
+        for e in self.tilemap.sprite_lists["enemies"]:
+            e.emotes.draw()
 
     def on_update(self, delta_time):
         """
