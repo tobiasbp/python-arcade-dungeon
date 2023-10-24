@@ -184,7 +184,6 @@ class GameView(arcade.View):
                         # Only if player has or has previously had line of sight with tile and is within range, it can be drawn.
                         if s.seen == True:
                             s.draw(pixelated=DRAW_PIXELATED)
-                            s.seen = True
                         else:
                             try:
                                 if arcade.has_line_of_sight(
