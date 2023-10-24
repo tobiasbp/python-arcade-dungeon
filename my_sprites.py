@@ -29,7 +29,6 @@ class Attack(arcade.Sprite):
     A simple hitbox to track collisions with. Just has a hitbox and a duration.
 
     :param duration: the maximum lifetime of the sprite. Kills this number of seconds after creation.
-    :param target_list: the sprites to track collision with and inflict damage to. Should only contain sprites with hp.
     :param damage: the amount of damage to inflict upon each target's hp, upon collision.
     """
 
@@ -149,8 +148,7 @@ class Enemy(arcade.Sprite):
     def emotes(self):
         return self._emotes
 
-    def attack(self, width: float, length: float, duration: float):
-    def attack(self, width: float, length: float, duration: float, target_list: arcade.SpriteList, damage: int):
+    def attack(self, width: float, length: float, angle: float, distance: float, duration: float, damage: int):
         """spawn a harmful object in front of the sprite"""
 
         # can only have one attack at a time - for now
@@ -162,8 +160,8 @@ class Enemy(arcade.Sprite):
                 image_width=width,
                 image_height=length,
                 scale=self.scale,
-                center_x=self.center_x+math.sin(self.angle)*width,
-                center_y=self.center_y+math.cos(self.angle)*length
+                center_x=self.center_x + (math.sin(angle) * distance),
+                center_y=self.center_y + (math.cos(angle) * distance)
             )
 
             self.attacks.append(new_attack)
@@ -219,12 +217,11 @@ class Enemy(arcade.Sprite):
         if self.state == EnemyState.CHASING:
             self.path = []
 
-
             self.center_x += math.sin(angle_to_target) * self.speed
             self.center_y += math.cos(angle_to_target) * self.speed
 
             # DEMO: Showcasing attacks
-            self.attack(16, 16, 0.5)
+            self.attack(width=16, length=16, angle=angle_to_target, distance=32, duration=0.5, damage=2)
 
         # roaming state
         elif self.state == EnemyState.ROAMING:
@@ -277,8 +274,6 @@ class Enemy(arcade.Sprite):
         # update attacks
         for a in self.attacks:
             a.on_update()
-            a.center_x = self.center_x + math.sin(angle_to_target) * 16
-            a.center_y = self.center_y + math.cos(angle_to_target) * 16
         self.attack_timer += delta_time
 
         self._emotes.on_update(delta_time)
