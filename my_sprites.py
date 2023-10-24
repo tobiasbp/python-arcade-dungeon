@@ -19,30 +19,22 @@ class Attack(arcade.Sprite):
     A simple hitbox to track collisions with. Just has a hitbox and a duration.
 
     :param duration: the maximum lifetime of the sprite. Kills this number of seconds after creation.
-    :param target_list: the sprites to track collision with and inflict damage to. Should only contain sprites with hp.
     :param damage: the amount of damage to inflict upon each target's hp, upon collision.
     """
 
-    def __init__(self, duration: float, target_list: arcade.SpriteList, damage: int, **kwargs):
+    def __init__(self, duration: float, damage: int, **kwargs):
         super().__init__(**kwargs)
 
         self.duration = duration
-        self.timer = 0
-        self.target_list = target_list
         self.damage = damage
+
+        self.timer = 0
 
     def on_update(self, delta_time: float = 1 / 60):
 
-        kill = False  # we need this to run the full loop below and still kill afterwards
-
-        # if collides with target, inflict damage and remove self
-        for target_hit in arcade.check_for_collision_with_list(self, self.target_list):
-            target_hit.hp -= self.damage
-            kill = True
-
-        # if duration is up, or we have dealt damage, remove self
+        # if duration is up, remove self
         self.timer += delta_time
-        if self.timer > self.duration or kill:
+        if self.timer > self.duration:
             self.kill()
 
 
@@ -134,7 +126,7 @@ class Enemy(arcade.Sprite):
         assert type(new_state) == EnemyState, "state should be an EnemyState"
         self._state = new_state
 
-    def attack(self, width: float, length: float, duration: float, target_list: arcade.SpriteList, damage: int):
+    def attack(self, width: float, length: float, angle: float, distance: float, duration: float, damage: int):
         """spawn a harmful object in front of the sprite"""
 
         # can only have one attack at a time - for now
@@ -142,14 +134,13 @@ class Enemy(arcade.Sprite):
 
             new_attack = Attack(
                 duration=duration,
-                target_list=target_list,
                 damage=damage,
                 filename="images/RedBox.png",
                 image_width=width,
                 image_height=length,
                 scale=self.scale,
-                center_x=self.center_x+math.sin(self.angle)*width,
-                center_y=self.center_y+math.cos(self.angle)*length
+                center_x=self.center_x + (math.sin(angle) * distance),
+                center_y=self.center_y + (math.cos(angle) * distance)
             )
 
             self.attacks.append(new_attack)
@@ -193,12 +184,11 @@ class Enemy(arcade.Sprite):
         if self.state == EnemyState.CHASING:
             self.path = []
 
-
             self.center_x += math.sin(angle_to_target) * self.speed
             self.center_y += math.cos(angle_to_target) * self.speed
 
             # DEMO: Showcasing attacks
-            self.attack(width=16, length=16, duration=0.5, target_list=self.target_list, damage=2)
+            self.attack(width=16, length=16, angle=angle_to_target, distance=32, duration=0.5, damage=2)
 
         # roaming state
         elif self.state == EnemyState.ROAMING:
@@ -251,8 +241,6 @@ class Enemy(arcade.Sprite):
         # update attacks
         for a in self.attacks:
             a.on_update()
-            a.center_x = self.center_x + math.sin(angle_to_target) * 16
-            a.center_y = self.center_y + math.cos(angle_to_target) * 16
         self.attack_timer += delta_time
 
     def on_draw(self, draw_attack_hitboxes: bool=False):
