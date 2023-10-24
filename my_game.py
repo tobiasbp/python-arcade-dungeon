@@ -93,6 +93,13 @@ class GameView(arcade.View):
             colliding_tiles = background_tile.collides_with_list(self.tilemap.sprite_lists["impassable"])
             assert len(colliding_tiles) == 0, f"A tile on layer 'background' collides with a tile on layer 'impassable' at position {background_tile.position}"
 
+        # Add variable 'seen' to all tiles that has player line of sight. This will be used later on.
+        for layer_name in MAP_LAYER_CONFIG.keys():
+            if MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
+                for s in self.tilemap.sprite_lists[layer_name]:
+                    s.seen = False
+
+
         # Set up the player info
         # FIXME: Move this into the Player class
         self.player_score = 0
@@ -173,15 +180,16 @@ class GameView(arcade.View):
             if MAP_LAYER_CONFIG[layer_name].get("draw", True):
                 if MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
                     for s in layer_sprites:
-                        # Only if player has line of sight with tile, it can be drawn
+                        # Only if player has or has previously had line of sight with tile, it can be drawn
                         try:
                             if arcade.has_line_of_sight(
                                     point_1 = s.position,
                                     point_2 = self.player.position,
                                     walls = self.tilemap.sprite_lists["impassable"],
                                     check_resolution = TILE_SIZE
-                            ):
+                            ) or s.seen == True:
                                 s.draw(pixelated=DRAW_PIXELATED)
+                                s.seen = True
                         except ZeroDivisionError:
                             pass
                 else:
