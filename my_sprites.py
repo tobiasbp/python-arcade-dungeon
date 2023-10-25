@@ -433,6 +433,18 @@ class Player(arcade.Sprite):
             )
         )
 
+    @property
+    def max_hp(self):
+        return self._max_hp
+
+    @property
+    def hp(self):
+        return self._hp
+
+    @hp.setter
+    def hp(self, new_hp):
+        self._hp = max(0, min(new_hp, self.max_hp))  # hp should be greater than 0 and not greater than max hp
+
 
     @property
     def weapons(self):
@@ -610,7 +622,7 @@ class Emote(arcade.Sprite):
         sprite_width=16,
         sprite_height=16,
         columns=10,
-        count=3*10)
+        count=30)
 
     def __init__(
             self,
