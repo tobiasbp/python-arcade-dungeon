@@ -5,6 +5,16 @@ from typing import List, Optional
 from enum import IntEnum, Enum, auto, unique
 
 @unique
+class Direction(Enum):
+    """
+    Directions for players/enemies
+    """
+    LEFT = auto()
+    RIGHT = auto()
+    UP = auto()
+    DOWN = auto()
+
+@unique
 class EnemyState(Enum):
     """
     All possible states for enemies
@@ -271,6 +281,9 @@ class Player(arcade.Sprite):
         # Set current texture
         self.texture = self.textures[0]
 
+        # The direction the Player is facing
+        self._direction = Direction.RIGHT
+
         self._type = type
 
         self.key_left = key_left
@@ -290,32 +303,52 @@ class Player(arcade.Sprite):
         self.jitter_amount = jitter_amount
         self.jitter_likelihood = jitter_likelihood
 
+        # The weapons carried by the player
+        self._weapons = {}
+
+        # No weapon currently in use
+        self._equiped = None
+
+        # Add the default weapon
+        self.add_weapon(WeaponType.SWORD_SHORT)
+
         # Player's attacks will be stored here
+        # FIXME: Do we want this when we have weapons?
         self._attacks = arcade.SpriteList()
 
         # Player's emotes will be stored here
         self._emotes = arcade.SpriteList()
 
+
     def attack(self):
         """
-        Perform an attack
-        Only a single attack is allowed
+        Perform an attack using the equiped weapon
         """
-        if len(self._attacks) == 0:
-            self._attacks.append(
-                PlayerShot(
-                    center_x=self.center_x,
-                    center_y=self.center_y,
-                    max_y_pos=self.center_y+10,
-                    speed=50,
-                    scale=self.scale
-                )
+        if self.equiped is not None and self.equiped.is_idle:
+
+            # FIXME: Remove the weapon if it has no attacks left
+
+            success = self.equiped.attack(
+                position=self.position,
+                direction=self.direction,
             )
+
+            if success:
+                self.react(Reaction.ANGRY)
+            else:
+                self.react(Reaction.SAD)
+
+            return True
+
+        else:
+            return False
+
 
     def react(self, reaction):
         """
         Add an Emote
         """
+        # FIXME: Add a limit on number of emotes allowed
         self._emotes.append(
             Emote(
                 reaction=reaction,
@@ -323,6 +356,14 @@ class Player(arcade.Sprite):
                 scale=self.scale
             )
         )
+
+
+    @property
+    def weapons(self):
+        """
+        A list of weapon types carried by the player
+        """
+        return self._weapons.keys()
 
     @property
     def attacks(self):
@@ -336,6 +377,40 @@ class Player(arcade.Sprite):
     def type(self):
         return self._type
 
+    @property
+    def equiped(self):
+        return self._equiped
+
+    @property
+    def direction(self):
+        return self._direction
+
+    def add_weapon(self, type):
+        """
+        Add a weapon to the player's weapons.
+        """
+
+        # If we already have the weapon type,
+        # it will be replaced by the new weapon.
+        self._weapons[type] = Weapon(type)
+
+        # If no weapon is in use, start using the one that was picked up
+        if self.equiped is None:
+            self.equip(type)
+
+    def equip(self, type):
+        """
+        The player will start using this weapon type if available.
+        This should probably be all type of objects
+        Return value reports success.
+        """
+        if type in self._weapons.keys():
+            self._equiped = self._weapons[type]
+            return True
+
+        # Could not equip the weapon type
+        return False
+
     def on_key_press(self, key, modifiers):
         """
         Track the state of the control keys
@@ -344,16 +419,20 @@ class Player(arcade.Sprite):
             self.left_pressed = True
             # Turns the sprite to the left side.
             self.texture = self.textures[1]
+            self._direction = Direction.LEFT
             return
         elif key == self.key_right:
             self.right_pressed = True
             # Turns the sprite to the Right side
             self.texture = self.textures[0]
+            self._direction = Direction.RIGHT
             return
         elif key == self.key_up:
             self.up_pressed = True
+            self._direction = Direction.UP
         elif key == self.key_down:
             self.down_pressed = True
+            self._direction = Direction.DOWN
         elif key == self.key_atttack:
             self.atttack_pressed = True
             self.attack()
@@ -373,6 +452,16 @@ class Player(arcade.Sprite):
         elif key == self.key_atttack:
             self.atttack_pressed = False
 
+    def draw_sprites(self, pixelated):
+        """
+        Draw sprites handles by the Player
+        """
+        self.emotes.draw(pixelated=pixelated)
+        self.attacks.draw(pixelated=pixelated)
+        if self.equiped is not None:
+            # Only draw active weapons
+            if not self.equiped.is_idle:
+                self.equiped.draw(pixelated=pixelated)
 
     def update(self):
         """
@@ -381,6 +470,10 @@ class Player(arcade.Sprite):
         # Assume no keys are held
         self.change_x = 0
         self.change_y = 0
+
+        # Move the equiped item to the player's position
+        if self.equiped is not None:
+            self.equiped.update()
 
         # Update speed based on held keys
         if self.left_pressed and not self.right_pressed:
@@ -401,50 +494,6 @@ class Player(arcade.Sprite):
         # Note: We don't change the position of the sprite here, since that is done by the physics engine
 
 
-class PlayerShot(arcade.Sprite):
-    """
-    A shot fired by the Player
-    """
-
-    def __init__(self, center_x, center_y, max_y_pos, speed=4, scale=1, start_angle=90):
-        """
-        Setup new PlayerShot object
-        """
-
-        # Set the graphics to use for the sprite
-        # We need to flip it so it matches the mathematical angle/direction
-        super().__init__(
-            center_x=center_x,
-            center_y=center_y,
-            scale=scale,
-            filename="images/tiny_dungeon/Tiles/tile_0107.png",
-            flipped_diagonally=True,
-            flipped_horizontally=True,
-            flipped_vertically=False,
-        )
-
-        # The shoot will be removed when it is above this y position
-        self.max_y_pos = max_y_pos
-
-        # Shoot points in this direction
-        self.angle = start_angle
-
-        # Shot moves forward. Sets self.change_x and self.change_y
-        self.forward(speed)
-
-    def on_update(self, delta_time):
-        """
-        Move the sprite
-        """
-        # Update the position of the sprite
-        self.center_x += delta_time * self.change_x
-        self.center_y += delta_time * self.change_y
-
-        # Remove shot when over top of screen
-        if self.bottom > self.max_y_pos:
-            self.kill()
-
-
 @unique
 class Reaction(IntEnum):
     """
@@ -461,7 +510,6 @@ class Reaction(IntEnum):
     NOTE = 10
     LAUGH = 28
 
-
 class Emote(arcade.Sprite):
     """
     An emote to show the emotion of a character in the game.
@@ -474,7 +522,7 @@ class Emote(arcade.Sprite):
         sprite_width=16,
         sprite_height=16,
         columns=10,
-        count=30)
+        count=3*10)
 
     def __init__(
             self,
@@ -516,3 +564,123 @@ class Emote(arcade.Sprite):
 
         if self.time_left <= 0:
             self.kill()
+
+@unique
+class WeaponType(IntEnum):
+    """
+    Weapon types that map to weapon graphics
+    The values are calculated from image position in sprite sheet
+    """
+    SWORD_SHORT = 9*11+4
+    SWORD_LONG = 9*11+5
+    # FIXME: Add more weapon types
+
+
+class Weapon(arcade.Sprite):
+    """
+    A weapon of a given type.
+    Used with players and enemies when they attack.
+    """
+
+    # A list of weapon textures from a sprite sheet
+    textures: List[arcade.texture.Texture] = arcade.load_spritesheet(
+        file_name = "data/rooms/dungeon/tilemap.png",
+        sprite_width=16,
+        sprite_height=16,
+        columns=12,
+        count=12*11,
+        margin=1)
+
+    # range: How far from the user of the weapon will it attack
+    # strength: How much damage will the weapon inflict?
+    # speed: How often can the weapon be used (seconds)
+    # max_usage: How many times can the weapon be used?
+    data = {
+        WeaponType.SWORD_SHORT: {
+            # Remember to use scale with this when attacking
+            "range": 15,
+            "strength": 7,
+            "speed": 0.8,
+            "max_usage": 10
+        },
+        WeaponType.SWORD_LONG: {
+            # Remember to use scale with this when attacking
+            "range": 30,
+            "strength": 10,
+            "speed": 1.2,
+            "max_usage": math.inf
+        }
+        # FIXME: Add more weapon types
+    }
+
+    def __init__(self,type: WeaponType,position: tuple[int, int]=(0,0),scale:int=1):
+
+        super().__init__(
+            center_x = position[0],
+            center_y = position[1],
+            scale = scale,
+            texture = Weapon.textures[type]
+        )
+
+        self._type = type
+        self._attacks_left:int = Weapon.data[type]["max_usage"]
+
+        # Time in seconds left until weapon can be used again
+        self._time_to_idle = 0.0
+
+    @property
+    def is_idle(self):
+        """
+        If the weapon is idle, it can be used for an attack.
+        """
+        return self._time_to_idle <= 0.0
+
+    @property
+    def range(self):
+        return Weapon.data[self._type]["range"]
+
+    @property
+    def strength(self):
+        return Weapon.data[self._type]["strength"]
+
+    @property
+    def speed(self):
+        return Weapon.data[self._type]["speed"]
+
+    @property
+    def attacks_left(self):
+        return self._attacks_left
+
+    def attack(self, position: tuple[int,int], direction):
+        """
+        Weapon attacks at position
+        """
+        if self.is_idle:
+            if self.attacks_left <= 0:
+                return False
+
+            self._attacks_left -= 1
+            self.position = position
+            self._time_to_idle = self.speed
+
+            # Offset position of attack
+            if direction == Direction.LEFT:
+                self.center_x -= self.range
+            elif direction == Direction.RIGHT:
+                self.center_x += self.range
+            elif direction == Direction.UP:
+                self.center_y += self.range
+            elif direction == Direction.DOWN:
+                self.center_y -= self.range
+            else:
+                raise ValueError("Invalid direction:", direction)
+
+            return True
+
+    def update(self):
+        if not self.is_idle:
+            # FIXME: Just to illustrate an attack
+            self.angle += 4
+
+            # Time passes
+            self._time_to_idle -= 0.03

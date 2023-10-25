@@ -12,7 +12,7 @@ import random
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
-from my_sprites import Player, PlayerShot, Enemy, Emote, Reaction, EnemyState
+from my_sprites import Player, Enemy, Reaction
 
 # Set the scaling of all sprites in the game
 SCALING = 1
@@ -188,10 +188,9 @@ class GameView(arcade.View):
             bold=True,
         )
 
-        # Draw the player sprite and its attacks and emotes
+        # Draw the player sprite and its objects (weapon & emotes)
         self.player.draw(pixelated=DRAW_PIXELATED)
-        self.player.attacks.draw(pixelated=DRAW_PIXELATED)
-        self.player.emotes.draw(pixelated=DRAW_PIXELATED)
+        self.player.draw_sprites(pixelated=DRAW_PIXELATED)
 
         # Draw the enemy emotes
         for e in self.tilemap.sprite_lists["enemies"]:
@@ -201,10 +200,6 @@ class GameView(arcade.View):
         """
         Movement and game logic
         """
-
-        # DEMO: Random reactions for the player
-        if random.randint(1, 60) == 1:
-            self.player.react(random.choice(list(Reaction)))
 
         # Set x/y speed for the player based on key states
         self.player.update()
