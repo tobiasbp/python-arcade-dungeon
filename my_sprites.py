@@ -5,14 +5,14 @@ from typing import List, Optional
 from enum import IntEnum, Enum, auto, unique
 
 @unique
-class Direction(Enum):
+class Direction(IntEnum):
     """
     Directions for players/enemies
     """
-    LEFT = auto()
-    RIGHT = auto()
-    UP = auto()
-    DOWN = auto()
+    LEFT = 270
+    RIGHT = 90
+    UP = 0
+    DOWN = 180
 
 @unique
 class EnemyState(Enum):
@@ -148,25 +148,6 @@ class Enemy(arcade.Sprite):
     def emotes(self):
         return self._emotes
 
-    def make_attack(self, width: float, length: float, angle: float, distance: float, duration: float, damage: int):
-        """spawn a harmful object in front of the sprite"""
-
-        # can only have one attack at a time - for now
-        if not self.attacks and self.attack_timer >= self.attack_cooldown:
-
-            new_attack = Attack(
-                duration=duration,
-                filename="images/RedBox.png",
-                image_width=width,
-                image_height=length,
-                scale=self.scale,
-                center_x=self.center_x + (math.sin(angle) * distance),
-                center_y=self.center_y + (math.cos(angle) * distance)
-            )
-
-            self.attacks.append(new_attack)
-            self.attack_timer = 0
-
     def go_to_position(self, target_pos: tuple[int, int]):
         """
         calculates a path to the target pos. Sets the sprite's path to this path.
@@ -223,9 +204,6 @@ class Enemy(arcade.Sprite):
             for a in self.attacks:
                 a.center_x += math.sin(angle_to_target) * self.speed
                 a.center_y += math.cos(angle_to_target) * self.speed
-
-            # DEMO: Showcasing attacks
-            self.attack(width=16, length=16, angle=angle_to_target, distance=32, duration=0.5, damage=2)
 
         # roaming state
         elif self.state == EnemyState.ROAMING:
@@ -406,7 +384,7 @@ class Player(arcade.Sprite):
 
             success = self.equiped.attack(
                 position=self.position,
-                direction=self.direction,
+                angle=self.direction,
             )
 
             if success:
@@ -552,12 +530,15 @@ class Player(arcade.Sprite):
         elif key == self.key_atttack:
             self.atttack_pressed = False
 
-    def draw_sprites(self, pixelated):
+    def draw_sprites(self, pixelated, draw_attack_hitboxes: bool=False):
         """
         Draw sprites handles by the Player
         """
         self.emotes.draw(pixelated=pixelated)
         self.attacks.draw(pixelated=pixelated)
+        if draw_attack_hitboxes:
+            self.equiped.attacks.draw_hit_boxes(arcade.color.NEON_GREEN)
+
         if self.equiped is not None:
             # Only draw active weapons
             if not self.equiped.is_idle:
@@ -692,6 +673,9 @@ class Weapon(arcade.Sprite):
         margin=1)
 
     # range: How far from the user of the weapon will it attack
+    # hitbox_width: how wide the hitbox of the attack will be
+    # hitbox_height: how high/long the hitbox will be
+    # hitbox_duration: how lang the hitbox will be active (seconds)
     # strength: How much damage will the weapon inflict?
     # speed: How often can the weapon be used (seconds)
     # max_usage: How many times can the weapon be used?
@@ -699,6 +683,9 @@ class Weapon(arcade.Sprite):
         WeaponType.SWORD_SHORT: {
             # Remember to use scale with this when attacking
             "range": 15,
+            "hitbox_width": 13,
+            "hitbox_height": 13,
+            "hitbox_duration": 0.4,
             "strength": 7,
             "speed": 0.8,
             "max_usage": 10
@@ -724,6 +711,7 @@ class Weapon(arcade.Sprite):
 
         self._type = type
         self._attacks_left:int = Weapon.data[type]["max_usage"]
+        self.attacks = arcade.SpriteList()
 
         # Time in seconds left until weapon can be used again
         self._time_to_idle = 0.0
@@ -751,36 +739,46 @@ class Weapon(arcade.Sprite):
     def attacks_left(self):
         return self._attacks_left
 
-    def attack(self, position: tuple[int,int], direction):
+    def attack(self, position: tuple[int,int], angle):
         """
         Weapon attacks at position
         """
+
         if self.is_idle:
             if self.attacks_left <= 0:
                 return False
 
+            angle = math.radians(angle)
+
             self._attacks_left -= 1
-            self.position = position
             self._time_to_idle = self.speed
 
-            # Offset position of attack
-            if direction == Direction.LEFT:
-                self.center_x -= self.range
-            elif direction == Direction.RIGHT:
-                self.center_x += self.range
-            elif direction == Direction.UP:
-                self.center_y += self.range
-            elif direction == Direction.DOWN:
-                self.center_y -= self.range
-            else:
-                raise ValueError("Invalid direction:", direction)
+            distance = Weapon.data[self._type]["range"]
 
+            attack_x = position[0] + (math.sin(angle) * distance)
+            attack_y = position[1] + (math.cos(angle) * distance)
+
+            new_attack = Attack(
+                duration=Weapon.data[self._type]["hitbox_duration"],
+                filename="Images/RedBox.png",
+                scale=self.scale,
+                center_x=attack_x,
+                center_y=attack_y,
+                image_width=Weapon.data[self._type]["hitbox_width"],
+                image_height=Weapon.data[self._type]["hitbox_height"]
+            )
+
+            self.attacks.append(new_attack)
+
+            self._time_to_idle = Weapon.data[self._type]["speed"]
             return True
 
     def update(self):
         if not self.is_idle:
             # FIXME: Just to illustrate an attack
             self.angle += 4
+
+            self.attacks.on_update()
 
             # Time passes
             self._time_to_idle -= 0.03

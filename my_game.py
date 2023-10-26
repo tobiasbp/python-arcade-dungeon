@@ -191,7 +191,7 @@ class GameView(arcade.View):
 
         # Draw the player sprite and its objects (weapon & emotes)
         self.player.draw(pixelated=DRAW_PIXELATED)
-        self.player.draw_sprites(pixelated=DRAW_PIXELATED)
+        self.player.draw_sprites(pixelated=DRAW_PIXELATED, draw_attack_hitboxes=True)
 
         [s.on_draw(draw_attack_hitboxes=True) for s in self.tilemap.sprite_lists["enemies"]]
 
@@ -206,6 +206,7 @@ class GameView(arcade.View):
 
         # Set x/y speed for the player based on key states
         self.player.update()
+        self.player.equiped.update()
 
         # Update the player attacks and emotes
         self.player.attacks.on_update(delta_time)
