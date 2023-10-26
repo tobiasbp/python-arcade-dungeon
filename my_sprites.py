@@ -572,6 +572,10 @@ class Player(arcade.Sprite):
         else:
             self.angle = 0
 
+        for a in self.equiped.attacks:
+            a.center_x += self.change_x
+            a.center_y += self.change_y
+
         # Note: We don't change the position of the sprite here, since that is done by the physics engine
 
 
@@ -773,7 +777,7 @@ class Weapon(arcade.Sprite):
             self._time_to_idle = Weapon.data[self._type]["speed"]
             return True
 
-    def update(self):
+    def on_update(self, delta_time: float = 1/60):
         if not self.is_idle:
             # FIXME: Just to illustrate an attack
             self.angle += 4
@@ -781,4 +785,4 @@ class Weapon(arcade.Sprite):
             self.attacks.on_update()
 
             # Time passes
-            self._time_to_idle -= 0.03
+            self._time_to_idle -= delta_time
