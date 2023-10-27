@@ -12,7 +12,7 @@ import random
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
-from my_sprites import Player, Enemy, Reaction
+from my_sprites import Player, Enemy, Reaction, Weapon, WeaponType
 
 # Set the scaling of all sprites in the game
 SCALING = 1
@@ -115,6 +115,7 @@ class GameView(arcade.View):
                 grid_size=int(self.tilemap.tile_width),
                 window=self.window,
                 target_list=target_list,
+                equipped_weapon=Weapon(type=WeaponType.SWORD_SHORT),
                 scale=SCALING
             )
 

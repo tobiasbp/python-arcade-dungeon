@@ -67,6 +67,7 @@ class Enemy(arcade.Sprite):
             window: arcade.Window,
             grid_size: int,
             target_list: arcade.SpriteList,
+            equipped_weapon = None,
             filename: str = "images/tiny_dungeon/Tiles/tile_0087.png",
             state: EnemyState=EnemyState.ROAMING,
             max_hp: int = 10,
@@ -92,6 +93,10 @@ class Enemy(arcade.Sprite):
         self.target = None
         self.roaming_dist = roaming_dist
         self._state = state
+        if equipped_weapon is not None:
+            self._equipped = equipped_weapon
+        else:
+            self._equipped = None
 
         # attacks
         self.attacks = arcade.SpriteList()
@@ -148,6 +153,15 @@ class Enemy(arcade.Sprite):
     def emotes(self):
         return self._emotes
 
+    @property
+    def equipped(self):
+        return self._equipped
+
+    @equipped.setter
+    def equipped(self, weapon):
+        assert type(weapon) == Weapon, f"expected type WeaponType, got {type(Weapon)}"
+        self._equipped = weapon
+
     def go_to_position(self, target_pos: tuple[int, int]):
         """
         calculates a path to the target pos. Sets the sprite's path to this path.
@@ -197,6 +211,8 @@ class Enemy(arcade.Sprite):
         angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.target.center_x, self.target.center_y)  # we need this later as well
         if self.state == EnemyState.CHASING:
             self.path = []
+
+            self.equipped.attack(position=self.position, angle=angle_to_target)
 
             self.center_x += math.sin(angle_to_target) * self.speed
             self.center_y += math.cos(angle_to_target) * self.speed
@@ -254,15 +270,13 @@ class Enemy(arcade.Sprite):
             self.kill()
 
         # update attacks
-        for a in self.attacks:
-            a.on_update()
-        self.attack_timer += delta_time
+        self.equipped.on_update()
 
         self._emotes.on_update(delta_time)
 
     def on_draw(self, draw_attack_hitboxes: bool=False):
         if draw_attack_hitboxes:
-            self.attacks.draw_hit_boxes(arcade.color.NEON_GREEN)
+            self.equipped.attacks.draw_hit_boxes(arcade.color.NEON_GREEN)
         self.draw()
 
 @unique
