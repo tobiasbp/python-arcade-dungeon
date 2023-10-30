@@ -217,7 +217,7 @@ class Enemy(arcade.Sprite):
             self.center_x += math.sin(angle_to_target) * self.speed
             self.center_y += math.cos(angle_to_target) * self.speed
 
-            for a in self.attacks:
+            for a in self.equipped.attacks:
                 a.center_x += math.sin(angle_to_target) * self.speed
                 a.center_y += math.cos(angle_to_target) * self.speed
 
@@ -398,7 +398,7 @@ class Player(arcade.Sprite):
 
             success = self.equiped.attack(
                 position=self.position,
-                angle=self.direction,
+                angle=math.radians(self.direction),
             )
 
             if success:
@@ -765,8 +765,6 @@ class Weapon(arcade.Sprite):
         if self.is_idle:
             if self.attacks_left <= 0:
                 return False
-
-            angle = math.radians(angle)
 
             self._attacks_left -= 1
             self._time_to_idle = self.speed
