@@ -460,7 +460,7 @@ class Reaction(IntEnum):
     HEART_TWO = 6
     EXCLAMATION_BLACK = 7
     EXCLAMATION_RED = 8
-    QUESTION_MARK = 9
+    CHAR_QUESTION_MARK = 9
     SLEEP_ONE = 10
     SLEEP_TWO = 11
     LINES_VERT = 12
