@@ -98,6 +98,7 @@ class GameView(arcade.View):
         for layer_name in MAP_LAYER_CONFIG.keys():
             if MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
                 for s in self.tilemap.sprite_lists[layer_name]:
+                    # Tiles are unseen by default
                     s.seen = False
 
 
@@ -184,6 +185,7 @@ class GameView(arcade.View):
                         # Only if player has or has previously had line of sight with tile and is within range, it can be drawn.
                         if s.seen:
                             s.draw(pixelated=DRAW_PIXELATED)
+                            # If the tile has already been seen, skip the has_line_of_sight() function
                             continue
                         try:
                             # A error may occur in the has_line_of_sight() function, if the difference betweeen point_1 and point_2 is too close to zero.
