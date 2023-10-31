@@ -452,35 +452,35 @@ class Reaction(IntEnum):
     The values are calculated from image position in sprite sheet
     """
     BLANK = 0
-    ONE_DOT = 1
-    TWO_DOTS = 2
-    THREE_DOTS = 3
+    DOT_ONE = 1
+    DOT_TWO = 2
+    DOT_THREE = 3
     HEART_BROKEN = 4
     HEART = 5
-    TWO_HEARTS = 6
+    HEART_TWO = 6
     EXCLAMATION_BLACK = 7
     EXCLAMATION_RED = 8
     QUESTION_MARK = 9
-    ONE_Z_SLEEP = 10
-    TWO_Z_SLEEP = 11
-    VERT_LINES = 12
+    SLEEP_ONE = 10
+    SLEEP_TWO = 11
+    LINES_VERT = 12
     HAPPY = 13
     SAD = 14
     ANGRY = 15
     REACT = 16
     STAR = 17
-    STARS = 18
-    MUSIC_NOTE = 19
+    SPARKS = 18
+    NOTE = 19
     RAINDROP = 20
-    RAINDROPS = 21
+    RAINDROP_TWO = 21
     ANNOYED = 22
-    MONEY = 23
-    FAIL = 24
+    CHAR_DOLLAR = 23
+    CHAR_AT = 24
     DENIAL = 25
     HALO = 26
     BULB = 27
     LAUGH = 28
-    FAN = 29
+    CROSS_GREY = 29
 
 
 class Emote(arcade.Sprite):
