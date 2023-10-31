@@ -500,15 +500,36 @@ class Reaction(IntEnum):
     Reaction names that map to Emote graphics
     The values are calculated from image position in sprite sheet
     """
+    BLANK = 0
+    DOT_ONE = 1
+    DOT_TWO = 2
+    DOT_THREE = 3
     HEART_BROKEN = 4
     HEART = 5
+    HEART_TWO = 6
     EXCLAMATION_BLACK = 7
     EXCLAMATION_RED = 8
+    CHAR_QUESTION_MARK = 9
+    SLEEP_ONE = 10
+    SLEEP_TWO = 11
+    LINES_VERT = 12
     HAPPY = 13
     SAD = 14
     ANGRY = 15
-    NOTE = 10
+    SHARDS_GOLD = 16
+    STAR = 17
+    SPARKS = 18
+    NOTE = 19
+    RAINDROP = 20
+    RAINDROP_TWO = 21
+    AIM_RED = 22
+    CHAR_DOLLAR = 23
+    CHAR_AT = 24
+    ICON_CROSS_RED = 25
+    ICON_CIRCLE_BLUE = 26
+    LIGHTBULB = 27
     LAUGH = 28
+    CROSS_GREY = 29
 
 class Emote(arcade.Sprite):
     """
