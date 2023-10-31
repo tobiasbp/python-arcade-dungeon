@@ -180,7 +180,9 @@ class GameView(arcade.View):
         # Draw the sprite list from the map if configured to be drawn
         for layer_name, layer_sprites in self.tilemap.sprite_lists.items():
             if MAP_LAYER_CONFIG[layer_name].get("draw", True):
-                if MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
+                if not MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
+                    layer_sprites.draw(pixelated=DRAW_PIXELATED)
+                else:
                     for s in layer_sprites:
                         # Only if player has or has previously had line of sight with tile and is within range, it can be drawn.
                         if s.seen:
@@ -200,9 +202,6 @@ class GameView(arcade.View):
                                 # An error may occur in the has_line_of_sight() function if the distance between point_1 and point_2 is too close to zero.
                                 # In that case we assume that the tile has already been seen.
                                 pass
-
-                else:
-                    layer_sprites.draw(pixelated=DRAW_PIXELATED)
 
         # Draw players score on screen
         arcade.draw_text(
