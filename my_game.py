@@ -182,21 +182,22 @@ class GameView(arcade.View):
                 if MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
                     for s in layer_sprites:
                         # Only if player has or has previously had line of sight with tile and is within range, it can be drawn.
-                        if s.seen == True:
+                        if s.seen:
                             s.draw(pixelated=DRAW_PIXELATED)
-                        else:
-                            try:
-                                if arcade.has_line_of_sight(
-                                        point_1 = s.position,
-                                        point_2 = self.player.position,
-                                        walls = self.tilemap.sprite_lists["impassable"],
-                                        check_resolution = TILE_SIZE*2,
-                                        max_distance = PLAYER_SIGHT_RANGE
-                                ):
-                                    s.draw(pixelated=DRAW_PIXELATED)
-                                    s.seen = True
-                            except ZeroDivisionError:
+                            continue
+                        try:
+                            # A error may occur in the has_line_of_sight() function, if the difference betweeen point_1 and point_2 is too close to zero.
+                            if arcade.has_line_of_sight(
+                                    point_1 = s.position,
+                                    point_2 = self.player.position,
+                                    walls = self.tilemap.sprite_lists["impassable"],
+                                    check_resolution = TILE_SIZE*2,
+                                    max_distance = PLAYER_SIGHT_RANGE
+                            ):
                                 s.draw(pixelated=DRAW_PIXELATED)
+                                s.seen = True
+                        except ZeroDivisionError:
+                            s.draw(pixelated=DRAW_PIXELATED)
                 else:
                     layer_sprites.draw(pixelated=DRAW_PIXELATED)
 
