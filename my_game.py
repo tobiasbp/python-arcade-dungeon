@@ -183,8 +183,10 @@ class GameView(arcade.View):
                 if MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
                     for s in layer_sprites:
                         # Only if player has or has previously had line of sight with tile and is within range, it can be drawn.
-                        if not s.seen:
-                            # If the tile has not already been seen, check for line of sight.
+                        if s.seen:
+                            # If the tile has already been seen, draw it and skip the rest.
+                            s.draw(pixelated=DRAW_PIXELATED)
+                        else:
                             try:
                                 if arcade.has_line_of_sight(
                                         point_1 = s.position,
@@ -194,16 +196,11 @@ class GameView(arcade.View):
                                         max_distance = PLAYER_SIGHT_RANGE
                                 ):
                                     s.seen = True
-                                else:
-                                    # If the tile is not to be drawn, move on to the next one.
-                                    continue
                             except ZeroDivisionError:
                                 # An error may occur in the has_line_of_sight() function if the distance between point_1 and point_2 is too close to zero.
-                                # In that case we assume that there is line of sight.
+                                # In that case we assume that the tile has already been seen.
                                 pass
 
-                        # If the tile has not been skipped yet, it is time to draw it.
-                        s.draw(pixelated=DRAW_PIXELATED)
                 else:
                     layer_sprites.draw(pixelated=DRAW_PIXELATED)
 
