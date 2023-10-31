@@ -467,7 +467,7 @@ class Reaction(IntEnum):
     HAPPY = 13
     SAD = 14
     ANGRY = 15
-    REACT = 16
+    SHARDS_GOLD = 16
     STAR = 17
     SPARKS = 18
     NOTE = 19
@@ -478,7 +478,7 @@ class Reaction(IntEnum):
     CHAR_AT = 24
     DENIAL = 25
     HALO = 26
-    BULB = 27
+    LIGHTBULB = 27
     LAUGH = 28
     CROSS_GREY = 29
 
