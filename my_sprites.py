@@ -476,8 +476,8 @@ class Reaction(IntEnum):
     AIM_RED = 22
     CHAR_DOLLAR = 23
     CHAR_AT = 24
-    DENIAL = 25
-    HALO = 26
+    ICON_CROSS_RED = 25
+    ICON_CIRCLE_BLUE = 26
     LIGHTBULB = 27
     LAUGH = 28
     CROSS_GREY = 29
