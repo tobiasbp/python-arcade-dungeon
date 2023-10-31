@@ -24,7 +24,7 @@ class EnemyState(Enum):
     CHASING = auto()
 
 
-class Attack(arcade.SpriteSolidColor):
+class Attack(arcade.Sprite):
     """
     A simple hitbox to track collisions with. Just has a hitbox and a duration.
 
@@ -32,11 +32,8 @@ class Attack(arcade.SpriteSolidColor):
     :param damage: the amount of damage to inflict upon each target's hp, upon collision.
     """
 
-    def __init__(self, duration: float, position: tuple[float, float], **kwargs):
+    def __init__(self, duration: float, **kwargs):
         super().__init__(**kwargs)
-
-        self.center_x = position[0]
-        self.center_y = position[1]
 
         self.duration = duration
         self.timer = 0
@@ -784,10 +781,12 @@ class Weapon(arcade.Sprite):
 
             new_attack = Attack(
                 duration=Weapon.data[self.type]["hitbox_duration"],
-                color=arcade.color.RED,
-                position=(attack_x, attack_y),
-                width=Weapon.data[self.type]["hitbox_width"],
-                height=Weapon.data[self.type]["hitbox_height"]
+                filename="Images/RedBox.png",
+                scale=self.scale,
+                center_x=attack_x,
+                center_y=attack_y,
+                image_width=Weapon.data[self.type]["hitbox_width"],
+                image_height=Weapon.data[self.type]["hitbox_height"]
             )
 
             self.attacks.append(new_attack)
