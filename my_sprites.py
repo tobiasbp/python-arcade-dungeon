@@ -586,9 +586,10 @@ class Player(arcade.Sprite):
         else:
             self.angle = 0
 
+        # move weapon attacks with us
         for a in self.equiped.attacks:
-            a.center_x += self.change_x
-            a.center_y += self.change_y
+            a.center_x = self.center_x + math.sin(math.radians(self.direction)) * Weapon.data[self.equiped.type]["range"]
+            a.center_y = self.center_y + math.cos(math.radians(self.direction)) * Weapon.data[self.equiped.type]["range"]
 
         # Note: We don't change the position of the sprite here, since that is done by the physics engine
 
@@ -742,16 +743,20 @@ class Weapon(arcade.Sprite):
         return self._time_to_idle <= 0.0
 
     @property
+    def type(self):
+        return self._type
+
+    @property
     def range(self):
-        return Weapon.data[self._type]["range"]
+        return Weapon.data[self.type]["range"]
 
     @property
     def strength(self):
-        return Weapon.data[self._type]["strength"]
+        return Weapon.data[self.type]["strength"]
 
     @property
     def speed(self):
-        return Weapon.data[self._type]["speed"]
+        return Weapon.data[self.type]["speed"]
 
     @property
     def attacks_left(self):
@@ -769,24 +774,24 @@ class Weapon(arcade.Sprite):
             self._attacks_left -= 1
             self._time_to_idle = self.speed
 
-            distance = Weapon.data[self._type]["range"]
+            distance = Weapon.data[self.type]["range"]
 
             attack_x = position[0] + (math.sin(angle) * distance)
             attack_y = position[1] + (math.cos(angle) * distance)
 
             new_attack = Attack(
-                duration=Weapon.data[self._type]["hitbox_duration"],
+                duration=Weapon.data[self.type]["hitbox_duration"],
                 filename="Images/RedBox.png",
                 scale=self.scale,
                 center_x=attack_x,
                 center_y=attack_y,
-                image_width=Weapon.data[self._type]["hitbox_width"],
-                image_height=Weapon.data[self._type]["hitbox_height"]
+                image_width=Weapon.data[self.type]["hitbox_width"],
+                image_height=Weapon.data[self.type]["hitbox_height"]
             )
 
             self.attacks.append(new_attack)
 
-            self._time_to_idle = Weapon.data[self._type]["speed"]
+            self._time_to_idle = Weapon.data[self.type]["speed"]
             return True
 
     def on_update(self, delta_time: float = 1/60):
