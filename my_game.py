@@ -184,22 +184,27 @@ class GameView(arcade.View):
                     for s in layer_sprites:
                         # Only if player has or has previously had line of sight with tile and is within range, it can be drawn.
                         if s.seen:
-                            s.draw(pixelated=DRAW_PIXELATED)
-                            # If the tile has already been seen, skip the has_line_of_sight() function
-                            continue
-                        try:
-                            # A error may occur in the has_line_of_sight() function, if the difference betweeen point_1 and point_2 is too close to zero.
-                            if arcade.has_line_of_sight(
-                                    point_1 = s.position,
-                                    point_2 = self.player.position,
-                                    walls = self.tilemap.sprite_lists["impassable"],
-                                    check_resolution = TILE_SIZE*2,
-                                    max_distance = PLAYER_SIGHT_RANGE
-                            ):
-                                s.draw(pixelated=DRAW_PIXELATED)
-                                s.seen = True
-                        except ZeroDivisionError:
-                            s.draw(pixelated=DRAW_PIXELATED)
+                            # If the tile has already been seen, skip the has_line_of_sight() function.
+                            pass
+                        else:
+                            try:
+                                if arcade.has_line_of_sight(
+                                        point_1 = s.position,
+                                        point_2 = self.player.position,
+                                        walls = self.tilemap.sprite_lists["impassable"],
+                                        check_resolution = TILE_SIZE*2,
+                                        max_distance = PLAYER_SIGHT_RANGE
+                                ):
+                                    s.seen = True
+                                else:
+                                    # If the tile is not to be drawn, move on to the next one.
+                                    continue
+                            except ZeroDivisionError:
+                                # An error may occur in the has_line_of_sight() function if the distance between point_1 and point_2 is too close to zero.
+                                # In that case we assume that there is line of sight.
+                                pass
+                        # If the tile has not been skipped yet, it is time to draw it.
+                        s.draw(pixelated=DRAW_PIXELATED)
                 else:
                     layer_sprites.draw(pixelated=DRAW_PIXELATED)
 
