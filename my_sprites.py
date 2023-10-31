@@ -473,7 +473,7 @@ class Reaction(IntEnum):
     NOTE = 19
     RAINDROP = 20
     RAINDROP_TWO = 21
-    ANNOYED = 22
+    AIM_RED = 22
     CHAR_DOLLAR = 23
     CHAR_AT = 24
     DENIAL = 25
