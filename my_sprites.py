@@ -197,23 +197,20 @@ class Enemy(arcade.Sprite):
 
     def on_update(self, delta_time: float = 1 / 60):
 
-        # pick a target to go for. Target is the nearest target
-        dist_to_nearest = 9999999
-        for t in self.target_list:
-            if arcade.get_distance_between_sprites(self, t) < dist_to_nearest:
-                self.target = t
-                dist_to_nearest = arcade.get_distance_between_sprites(self, t)
-
         # state control
-        if arcade.has_line_of_sight(self.position, self.target.position, self.barriers.blocking_sprites):
-            self.state = EnemyState.CHASING
-        else:
+        self.target = None
+        for t in self.target_list:
+            if arcade.has_line_of_sight(t.position, self.position, self.barriers.blocking_sprites):
+                self.target = t
+                self.state = EnemyState.CHASING
+        if self.target is None:
             self.state = EnemyState.ROAMING
 
         # chasing state
-        angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.target.center_x, self.target.center_y)  # we need this later as well
         if self.state == EnemyState.CHASING:
             self.path = []
+
+            angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.target.center_x, self.target.center_y)  # we need this later as well
 
             self.equipped.attack(position=self.position, angle=angle_to_target)
 
