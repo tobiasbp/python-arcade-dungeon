@@ -767,6 +767,8 @@ class Weapon(arcade.Sprite):
         Weapon attacks at position
         """
 
+        # FIXME: Make resizable hitboxes work for all angles
+
         if self.is_idle:
             if self.attacks_left <= 0:
                 return False
