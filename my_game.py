@@ -220,6 +220,8 @@ class GameView(arcade.View):
         # Draw the player sprite and its objects (weapon & emotes)
         self.player.draw(pixelated=DRAW_PIXELATED)
         self.player.draw_sprites(pixelated=DRAW_PIXELATED)
+        self.player.health_bar.background_bar.draw()
+        self.player.health_bar.full_bar.draw()
 
         # Draw the enemy emotes
         for e in self.tilemap.sprite_lists["enemies"]:
@@ -229,6 +231,10 @@ class GameView(arcade.View):
         """
         Movement and game logic
         """
+
+        # DEMO: Random reactions for the player
+        if random.randint(1, 60) == 1:
+            self.player.react(random.choice(list(Reaction)))
 
         # Set x/y speed for the player based on key states
         self.player.update()
