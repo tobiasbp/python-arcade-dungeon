@@ -594,7 +594,16 @@ class WeaponType(IntEnum):
     """
     SWORD_SHORT = 9*11+4
     SWORD_LONG = 9*11+5
-    # FIXME: Add more weapon types
+    # Made the.. Shwovel
+    SWORD_SHOVEL = 9*11+6
+    SWORD_WIDE = 9*11+7
+    SWORD_WOOD = 9*11+8
+    HAMMER = 9*12+6
+    AXE_DOUBLE = 9*12+7
+    AXE_SINGLE = 9*12+8
+    STAFF_PURPLE = 9*13+6
+    STAFF_GREEN = 9*13+7
+    SPEAR = 9*13+8
 
 
 class Weapon(arcade.Sprite):
@@ -630,8 +639,70 @@ class Weapon(arcade.Sprite):
             "strength": 10,
             "speed": 1.2,
             "max_usage": math.inf
+        },
+        WeaponType.SWORD_SHOVEL: {
+            # Remember to use scale with this when attacking
+            "range": 35,
+            "strength": 15,
+            "speed": 3,
+            "max_usage": math.inf
+        },
+        WeaponType.SWORD_WIDE: {
+            # Remember to use scale with this when attacking
+            "range": 20,
+            "strength": 25,
+            "speed": 3.2,
+            "max_usage": math.inf
+        },
+        WeaponType.SWORD_WOOD: {
+            # Remember to use scale with this when attacking
+            "range": 30,
+            "strength": 15,
+            "speed": 1,
+            "max_usage": 15
+        },
+        WeaponType.AXE_SINGLE: {
+            # Remember to use scale with this when attacking
+            "range": 20,
+            "strength": 25,
+            "speed": 3,
+            "max_usage": math.inf
+        },
+        WeaponType.AXE_DOUBLE: {
+            # Remember to use scale with this when attacking
+            "range": 25,
+            "strength": 40,
+            "speed": 4.5,
+            "max_usage": math.inf
+        },
+        WeaponType.HAMMER: {
+            # Remember to use scale with this when attacking
+            "range": 15,
+            "strength": 30,
+            "speed": 2.5,
+            "max_usage": 30
+        },
+        WeaponType.STAFF_PURPLE: {
+            # FIXME: Need a setting for distance weapons!
+            "range": 15,
+            "strength": 10,
+            "speed": 1,
+            "max_usage": math.inf
+        },
+        WeaponType.STAFF_GREEN: {
+            # FIXME: Need a setting for distance weapons!
+            "range": 15,
+            "strength": 15,
+            "speed": 1,
+            "max_usage": math.inf
+        },
+        WeaponType.SPEAR: {
+            # Remember to use scale with this when attacking
+            "range": 40,
+            "strength": 20,
+            "speed": 1,
+            "max_usage": math.inf
         }
-        # FIXME: Add more weapon types
     }
 
     def __init__(self,type: WeaponType,position: tuple[int, int]=(0,0),scale:int=1):
