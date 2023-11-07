@@ -212,7 +212,8 @@ class Player(arcade.Sprite):
             key_right=arcade.key.RIGHT,
             key_attack=arcade.key.SPACE,
             jitter_amount:int=10, # How much to rotate when walking
-            jitter_likelihood:float=0.5 # How likely is jittering?
+            jitter_likelihood:float=0.5, # How likely is jittering?
+            max_hp:int=100
         ):
         """
         Setup new Player object
@@ -267,6 +268,11 @@ class Player(arcade.Sprite):
 
         # Player's emotes will be stored here
         self._emotes = arcade.SpriteList()
+
+        # Player's variables about hp
+        self._max_hp = max_hp
+        self._hp = max_hp
+        self.health_bar = HealthBar(max_health=max_hp)
 
     def attack(self):
         """
@@ -371,6 +377,11 @@ class Player(arcade.Sprite):
             self.angle = 0
 
         # Note: We don't change the position of the sprite here, since that is done by the physics engine
+        self._hp -= 0.3 # Just for testing the health-bar
+        # Update the health-bar
+        self.health_bar.health = self._hp
+        self.health_bar.position = self.position
+        self.health_bar.update()
 
 
 class PlayerShot(arcade.Sprite):
@@ -491,7 +502,7 @@ class Emote(arcade.Sprite):
 
 class HealthBar(arcade.Sprite):
 
-    def __init__(self, center_x=0, center_y=0, bar_width=100, bar_height=25, scale=1):
+    def __init__(self,  max_health, center_x=0, center_y=0, bar_width=32, bar_height=5, offset=15, scale=1):
 
         super().__init__(
             center_x=center_x,
@@ -500,10 +511,13 @@ class HealthBar(arcade.Sprite):
         )
 
         # variable controlling length of fullness of health bar
-        self._percentage = 100
+        self._max_health = max_health
+        self._current_health = self._max_health
 
-        self._bar_width = bar_width
-        self._bar_height = bar_height
+        self._bar_width = bar_width * scale
+        self._bar_height = bar_height * scale
+
+        self._offset = offset
 
         """
         static bar behind the dynamic bar
@@ -523,6 +537,10 @@ class HealthBar(arcade.Sprite):
         )
 
     @property
+    def max_health(self):
+        return self._max_health
+
+    @property
     def background_bar(self):
         return self._background_bar
 
@@ -531,16 +549,21 @@ class HealthBar(arcade.Sprite):
         return self._full_bar
 
     @property
-    def percentage(self):
-        return self._percentage
+    def health(self):
+        return self._current_health
 
-    @percentage.setter
-    def percentage(self, new_percentage):
+    @health.setter
+    def health(self, new_health):
         # Set the size of the bar
-        self._percentage = new_percentage
+        self._current_health = new_health / self._max_health
 
         self._full_bar = arcade.SpriteSolidColor(
-            self._bar_width * (new_percentage / 100),
+            max(int(self._bar_width * self._current_health), 0),  # make sure width doesn't go under 0
             self._bar_height,
             arcade.color.GREEN
         )
+
+    def update(self):
+        self._background_bar.position = (self.center_x, self.center_y + self._offset)
+        self._full_bar.left = self._background_bar.left
+        self._full_bar.center_y = self.center_y + self._offset

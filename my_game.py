@@ -192,6 +192,8 @@ class GameView(arcade.View):
         self.player.draw(pixelated=DRAW_PIXELATED)
         self.player.attacks.draw(pixelated=DRAW_PIXELATED)
         self.player.emotes.draw(pixelated=DRAW_PIXELATED)
+        self.player.health_bar.background_bar.draw()
+        self.player.health_bar.full_bar.draw()
 
 
     def on_update(self, delta_time):
