@@ -594,10 +594,9 @@ class WeaponType(IntEnum):
     """
     SWORD_SHORT = 9*11+4
     SWORD_LONG = 9*11+5
-    # Made the.. Shwovel
-    SWORD_SHOVEL = 9*11+6
-    SWORD_WIDE = 9*11+7
-    SWORD_WOOD = 9*11+8
+    SWORD_FALCHION = 9*11+6
+    SWORD_DOUBLE_SILVER = 9*11+7
+    SWORD_DOUBLE_BRONZE = 9*11+8
     HAMMER = 9*12+6
     AXE_DOUBLE = 9*12+7
     AXE_SINGLE = 9*12+8
