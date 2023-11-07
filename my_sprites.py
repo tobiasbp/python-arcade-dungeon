@@ -24,31 +24,6 @@ class EnemyState(Enum):
     CHASING = auto()
 
 
-class Attack(arcade.SpriteSolidColor):
-    """
-    A simple hitbox to track collisions with. Just has a hitbox and a duration.
-
-    :param duration: the maximum lifetime of the sprite. Kills this number of seconds after creation.
-    :param damage: the amount of damage to inflict upon each target's hp, upon collision.
-    """
-
-    def __init__(self, duration: float, position: tuple[float, float], **kwargs):
-        super().__init__(**kwargs)
-
-        self.center_x = position[0]
-        self.center_y = position[1]
-
-        self.duration = duration
-        self.timer = 0
-
-    def on_update(self, delta_time: float = 1 / 60):
-
-        # if duration is up, remove self
-        self.timer += delta_time
-        if self.timer > self.duration:
-            self.kill()
-
-
 class Enemy(arcade.Sprite):
     """
     parent class for all enemies in the game. Features include pathfinding, hp management and movement
@@ -217,10 +192,6 @@ class Enemy(arcade.Sprite):
             self.center_x += math.sin(angle_to_target) * self.speed
             self.center_y += math.cos(angle_to_target) * self.speed
 
-            for a in self.equipped.attacks:
-                a.center_x += math.sin(angle_to_target) * self.speed
-                a.center_y += math.cos(angle_to_target) * self.speed
-
         # roaming state
         elif self.state == EnemyState.ROAMING:
             if not self.path:
@@ -275,8 +246,9 @@ class Enemy(arcade.Sprite):
         self._emotes.on_update(delta_time)
 
     def on_draw(self, draw_attack_hitboxes: bool=False):
+        self.equipped.draw()
         if draw_attack_hitboxes:
-            self.equipped.attacks.draw_hit_boxes(arcade.color.NEON_GREEN)
+            self.equipped.draw_hit_box()
         self.draw()
 
 @unique
@@ -551,7 +523,7 @@ class Player(arcade.Sprite):
         self.emotes.draw(pixelated=pixelated)
         self.attacks.draw(pixelated=pixelated)
         if draw_attack_hitboxes:
-            self.equiped.attacks.draw_hit_boxes(arcade.color.NEON_GREEN)
+            self.equiped.draw_hit_box()
 
         if self.equiped is not None:
             # Only draw active weapons
@@ -585,11 +557,6 @@ class Player(arcade.Sprite):
             self.angle = random.randint(-self.jitter_amount, self.jitter_amount)
         else:
             self.angle = 0
-
-        # move weapon attacks with us
-        for a in self.equiped.attacks:
-            a.center_x = self.center_x + math.sin(math.radians(self.direction)) * Weapon.data[self.equiped.type]["range"]
-            a.center_y = self.center_y + math.cos(math.radians(self.direction)) * Weapon.data[self.equiped.type]["range"]
 
         # Note: We don't change the position of the sprite here, since that is done by the physics engine
 
@@ -692,9 +659,7 @@ class Weapon(arcade.Sprite):
         margin=1)
 
     # range: How far from the user of the weapon will it attack
-    # hitbox_width: how wide the hitbox of the attack will be
-    # hitbox_height: how high/long the hitbox will be
-    # hitbox_duration: how lang the hitbox will be active (seconds)
+    # hitbox: the points to use as the sprites hitbox
     # strength: How much damage will the weapon inflict?
     # speed: How often can the weapon be used (seconds)
     # max_usage: How many times can the weapon be used?
@@ -702,9 +667,7 @@ class Weapon(arcade.Sprite):
         WeaponType.SWORD_SHORT: {
             # Remember to use scale with this when attacking
             "range": 15,
-            "hitbox_width": 13,
-            "hitbox_height": 13,
-            "hitbox_duration": 0.4,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 7,
             "speed": 0.8,
             "max_usage": 10
@@ -725,12 +688,12 @@ class Weapon(arcade.Sprite):
             center_x = position[0],
             center_y = position[1],
             scale = scale,
-            texture = Weapon.textures[type]
+            texture = Weapon.textures[type],
+            hit_box_algorithm=None
         )
 
         self._type = type
         self._attacks_left:int = Weapon.data[type]["max_usage"]
-        self.attacks = arcade.SpriteList()
 
         # Time in seconds left until weapon can be used again
         self._time_to_idle = 0.0
@@ -769,6 +732,7 @@ class Weapon(arcade.Sprite):
 
         # FIXME: Make resizable hitboxes work for all angles
 
+        self.hit_box = Weapon.data[self.type]["hit_box"]
         if self.is_idle:
             if self.attacks_left <= 0:
                 return False
@@ -778,18 +742,8 @@ class Weapon(arcade.Sprite):
 
             distance = Weapon.data[self.type]["range"]
 
-            attack_x = position[0] + (math.sin(angle) * distance)
-            attack_y = position[1] + (math.cos(angle) * distance)
-
-            new_attack = Attack(
-                duration=Weapon.data[self.type]["hitbox_duration"],
-                color=arcade.color.RED,
-                position=(attack_x, attack_y),
-                width=Weapon.data[self.type]["hitbox_width"],
-                height=Weapon.data[self.type]["hitbox_height"]
-            )
-
-            self.attacks.append(new_attack)
+            self.center_x = position[0] + (math.sin(angle) * distance)
+            self.center_y = position[1] + (math.cos(angle) * distance)
 
             self._time_to_idle = Weapon.data[self.type]["speed"]
             return True
@@ -798,8 +752,6 @@ class Weapon(arcade.Sprite):
         if not self.is_idle:
             # FIXME: Just to illustrate an attack
             self.angle += 4
-
-            self.attacks.on_update()
 
             # Time passes
             self._time_to_idle -= delta_time
