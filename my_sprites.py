@@ -639,21 +639,21 @@ class Weapon(arcade.Sprite):
             "speed": 1.2,
             "max_usage": math.inf
         },
-        WeaponType.SWORD_SHOVEL: {
+        WeaponType.SWORD_FALCHION: {
             # Remember to use scale with this when attacking
             "range": 35,
             "strength": 15,
             "speed": 3,
             "max_usage": math.inf
         },
-        WeaponType.SWORD_WIDE: {
+        WeaponType.SWORD_DOUBLE_SILVER: {
             # Remember to use scale with this when attacking
             "range": 20,
             "strength": 25,
             "speed": 3.2,
             "max_usage": math.inf
         },
-        WeaponType.SWORD_WOOD: {
+        WeaponType.SWORD_DOUBLE_BRONZE: {
             # Remember to use scale with this when attacking
             "range": 30,
             "strength": 15,
