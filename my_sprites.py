@@ -137,7 +137,7 @@ class Enemy(arcade.Sprite):
 
     @equipped.setter
     def equipped(self, weapon):
-        assert type(weapon) == Weapon, f"expected type WeaponType, got {type(Weapon)}"
+        assert type(weapon) == Weapon or weapon is None, f"expected type WeaponType, or None, got {type(Weapon)}"
         self._equipped = weapon
 
     def go_to_position(self, target_pos: tuple[int, int]):
@@ -187,13 +187,13 @@ class Enemy(arcade.Sprite):
 
             angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.target.center_x, self.target.center_y)  # we need this later as well
 
-            self.equipped.attack(position=self.position, angle=angle_to_target)
-
             self.center_x += math.sin(angle_to_target) * self.speed
             self.center_y += math.cos(angle_to_target) * self.speed
 
-            self.equipped.center_x += math.sin(angle_to_target) * self.speed
-            self.equipped.center_y += math.cos(angle_to_target) * self.speed
+            if self.equipped is not None:
+                self.equipped.attack(position=self.position, angle=angle_to_target)
+                self.equipped.center_x += math.sin(angle_to_target) * self.speed
+                self.equipped.center_y += math.cos(angle_to_target) * self.speed
 
         # roaming state
         elif self.state == EnemyState.ROAMING:
@@ -243,15 +243,21 @@ class Enemy(arcade.Sprite):
         if self.hp <= 0:
             self.kill()
 
-        # update attacks
-        self.equipped.on_update()
+        # update weapon
+        if self.equipped is not None:
+            print(self.equipped)
+            self.equipped.on_update()
+            # check weapon durability
+            if self.equipped.attacks_left <= 0:
+                self.equipped = None
 
         self._emotes.on_update(delta_time)
 
     def on_draw(self, draw_attack_hitboxes: bool=False):
-        self.equipped.draw()
-        if draw_attack_hitboxes:
-            self.equipped.draw_hit_box()
+        if self.equipped is not None:
+            self.equipped.draw()
+            if draw_attack_hitboxes:
+                self.equipped.draw_hit_box()
         self.draw()
 
 @unique
@@ -478,6 +484,12 @@ class Player(arcade.Sprite):
         # Could not equip the weapon type
         return False
 
+    def unequip(self):
+        """
+        Unequip the currently held weapon
+        """
+        self._equiped = None
+
     def on_key_press(self, key, modifiers):
         """
         Track the state of the control keys
@@ -525,10 +537,10 @@ class Player(arcade.Sprite):
         """
         self.emotes.draw(pixelated=pixelated)
         self.attacks.draw(pixelated=pixelated)
-        if draw_attack_hitboxes:
-            self.equiped.draw_hit_box()
 
         if self.equiped is not None:
+            if draw_attack_hitboxes:
+                self.equiped.draw_hit_box()
             # Only draw active weapons
             if not self.equiped.is_idle:
                 self.equiped.draw(pixelated=pixelated)
@@ -541,9 +553,8 @@ class Player(arcade.Sprite):
         self.change_x = 0
         self.change_y = 0
 
-        # Move the equiped item to the player's position
         if self.equiped is not None:
-            self.equiped.update()
+            self.equiped.on_update()
 
         # Update speed based on held keys
         if self.left_pressed and not self.right_pressed:
@@ -561,9 +572,15 @@ class Player(arcade.Sprite):
         else:
             self.angle = 0
 
+        # Move equipped weapon to our position
         if self.equiped is not None:
             self.equiped.center_x += self.change_x
             self.equiped.center_y += self.change_y
+
+        # check weapon durability
+        if self.equiped is not None:
+            if self.equiped.attacks_left <= 0:
+                self.unequip()
 
         # Note: We don't change the position of the sprite here, since that is done by the physics engine
 
