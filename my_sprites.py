@@ -192,6 +192,9 @@ class Enemy(arcade.Sprite):
             self.center_x += math.sin(angle_to_target) * self.speed
             self.center_y += math.cos(angle_to_target) * self.speed
 
+            self.equipped.center_x += math.sin(angle_to_target) * self.speed
+            self.equipped.center_y += math.cos(angle_to_target) * self.speed
+
         # roaming state
         elif self.state == EnemyState.ROAMING:
             if not self.path:
@@ -557,6 +560,10 @@ class Player(arcade.Sprite):
             self.angle = random.randint(-self.jitter_amount, self.jitter_amount)
         else:
             self.angle = 0
+
+        if self.equiped is not None:
+            self.equiped.center_x += self.change_x
+            self.equiped.center_y += self.change_y
 
         # Note: We don't change the position of the sprite here, since that is done by the physics engine
 
