@@ -622,10 +622,9 @@ class Weapon(arcade.Sprite):
 
     # range: How far from the user of the weapon will it attack
     # strength: How much damage will the weapon inflict?
-    # speed: How often can the weapon be used (seconds)
+    # rate: How often can the weapon be used (seconds)
     # max_usage: How many times can the weapon be used?
 
-    # >>> REMEMBER TO CHANGE "speed" TO "rate" <<<
     data = {
         WeaponType.AXE_DOUBLE: {
             # Remember to use scale with this when attacking
