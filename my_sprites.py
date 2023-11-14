@@ -573,11 +573,8 @@ class Player(arcade.Sprite):
 
         # Move equipped weapon to our position
         if self.equiped is not None:
-            # if weapon is moving away from us (because we're running into a wall), stop it
-            if not abs(arcade.get_distance_between_sprites(self, self.equiped)) > Weapon.data[self.equiped.type]["range"]:
-
-                self.equiped.center_x += self.change_x
-                self.equiped.center_y += self.change_y
+            self.equiped.center_x = self.center_x + (math.sin(math.radians(self.direction)) * Weapon.data[self.equiped.type]["range"])
+            self.equiped.center_y = self.center_y + (math.cos(math.radians(self.direction)) * Weapon.data[self.equiped.type]["range"])
 
         # check weapon durability
         if self.equiped is not None:
