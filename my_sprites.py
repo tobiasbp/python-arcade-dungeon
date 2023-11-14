@@ -67,7 +67,7 @@ class Enemy(arcade.Sprite):
 
         self.window = window
         self.speed = speed
-        self.target_list = target_list
+        self.target_list = target_list  # list of sprites to chase when spotted
         self.target = None
         self.roaming_dist = roaming_dist
         self._state = state
@@ -573,8 +573,11 @@ class Player(arcade.Sprite):
 
         # Move equipped weapon to our position
         if self.equiped is not None:
-            self.equiped.center_x += self.change_x
-            self.equiped.center_y += self.change_y
+            # if weapon is moving away from us (because we're running into a wall), stop it
+            if not abs(arcade.get_distance_between_sprites(self, self.equiped)) > Weapon.data[self.equiped.type]["range"]:
+
+                self.equiped.center_x += self.change_x
+                self.equiped.center_y += self.change_y
 
         # check weapon durability
         if self.equiped is not None:
