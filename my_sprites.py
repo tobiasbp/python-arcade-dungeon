@@ -245,7 +245,6 @@ class Enemy(arcade.Sprite):
 
         # update weapon
         if self.equipped is not None:
-            print(self.equipped)
             self.equipped.on_update()
             # check weapon durability
             if self.equipped.attacks_left <= 0:
