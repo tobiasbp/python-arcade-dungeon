@@ -207,6 +207,7 @@ class GameView(arcade.View):
 
         # Set x/y speed for the player based on key states
         self.player.update()
+        self.player.equiped.on_update()
 
         # Update the player attacks and emotes
         self.player.attacks.on_update(delta_time)
