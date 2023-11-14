@@ -736,7 +736,7 @@ class Weapon(arcade.Sprite):
         return Weapon.data[self._type]["strength"]
 
     @property
-    def speed(self):
+    def rate(self):
         return Weapon.data[self._type]["rate"]
 
     @property
@@ -753,7 +753,7 @@ class Weapon(arcade.Sprite):
 
             self._attacks_left -= 1
             self.position = position
-            self._time_to_idle = self.speed
+            self._time_to_idle = self.rate
 
             # Offset position of attack
             if direction == Direction.LEFT:
