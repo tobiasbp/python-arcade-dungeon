@@ -624,83 +624,84 @@ class Weapon(arcade.Sprite):
     # strength: How much damage will the weapon inflict?
     # speed: How often can the weapon be used (seconds)
     # max_usage: How many times can the weapon be used?
+
+    # >>> REMEMBER TO CHANGE "speed" TO "rate" <<<
     data = {
-        WeaponType.SWORD_SHORT: {
+        WeaponType.AXE_DOUBLE: {
             # Remember to use scale with this when attacking
-            "range": 15,
-            "strength": 7,
-            "speed": 0.8,
-            "max_usage": 10
-        },
-        WeaponType.SWORD_LONG: {
-            # Remember to use scale with this when attacking
-            "range": 30,
-            "strength": 10,
-            "speed": 1.2,
+            "range": 25,
+            "strength": 40,
+            "rate": 4.5,
             "max_usage": math.inf
-        },
-        WeaponType.SWORD_FALCHION: {
-            # Remember to use scale with this when attacking
-            "range": 35,
-            "strength": 15,
-            "speed": 3,
-            "max_usage": math.inf
-        },
-        WeaponType.SWORD_DOUBLE_SILVER: {
-            # Remember to use scale with this when attacking
-            "range": 20,
-            "strength": 25,
-            "speed": 3.2,
-            "max_usage": math.inf
-        },
-        WeaponType.SWORD_DOUBLE_BRONZE: {
-            # Remember to use scale with this when attacking
-            "range": 30,
-            "strength": 15,
-            "speed": 1,
-            "max_usage": 15
         },
         WeaponType.AXE_SINGLE: {
             # Remember to use scale with this when attacking
             "range": 20,
             "strength": 25,
-            "speed": 3,
-            "max_usage": math.inf
-        },
-        WeaponType.AXE_DOUBLE: {
-            # Remember to use scale with this when attacking
-            "range": 25,
-            "strength": 40,
-            "speed": 4.5,
+            "rate": 3,
             "max_usage": math.inf
         },
         WeaponType.HAMMER: {
             # Remember to use scale with this when attacking
             "range": 15,
             "strength": 30,
-            "speed": 2.5,
+            "rate": 2.5,
             "max_usage": 30
-        },
-        WeaponType.STAFF_PURPLE: {
-            # FIXME: Need a setting for distance weapons!
-            "range": 15,
-            "strength": 10,
-            "speed": 1,
-            "max_usage": math.inf
-        },
-        WeaponType.STAFF_GREEN: {
-            # FIXME: Need a setting for distance weapons!
-            "range": 15,
-            "strength": 15,
-            "speed": 1,
-            "max_usage": math.inf
         },
         WeaponType.SPEAR: {
             # Remember to use scale with this when attacking
             "range": 40,
             "strength": 20,
-            "speed": 1,
+            "rate": 1,
             "max_usage": math.inf
+        },
+        WeaponType.STAFF_GREEN: {
+            # Need a setting for distance weapons!
+            "range": 15,
+            "strength": 15,
+            "rate": 1,
+            "max_usage": math.inf
+        },
+        WeaponType.STAFF_PURPLE: {
+            "range": 15,
+            "strength": 10,
+            "rate": 1,
+            "max_usage": math.inf
+        },
+        WeaponType.SWORD_DOUBLE_BRONZE: {
+            # Remember to use scale with this when attacking
+            "range": 30,
+            "strength": 15,
+            "rate": 1,
+            "max_usage": 15
+        },
+        WeaponType.SWORD_DOUBLE_SILVER: {
+            # Remember to use scale with this when attacking
+            "range": 20,
+            "strength": 25,
+            "rate": 3.2,
+            "max_usage": math.inf
+        },
+        WeaponType.SWORD_FALCHION: {
+            # Remember to use scale with this when attacking
+            "range": 35,
+            "strength": 15,
+            "rate": 3,
+            "max_usage": math.inf
+        },
+        WeaponType.SWORD_LONG: {
+            # Remember to use scale with this when attacking
+            "range": 30,
+            "strength": 10,
+            "rate": 1.2,
+            "max_usage": math.inf
+        },
+        WeaponType.SWORD_SHORT: {
+            # Remember to use scale with this when attacking
+            "range": 15,
+            "strength": 7,
+            "rate": 0.8,
+            "max_usage": 10
         }
     }
 
@@ -736,7 +737,7 @@ class Weapon(arcade.Sprite):
 
     @property
     def speed(self):
-        return Weapon.data[self._type]["speed"]
+        return Weapon.data[self._type]["rate"]
 
     @property
     def attacks_left(self):
