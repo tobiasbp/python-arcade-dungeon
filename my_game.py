@@ -43,11 +43,12 @@ SCREEN_HEIGHT = MAP_HEIGHT_TILES * TILE_SIZE * SCALING + GUI_HEIGHT
 # Variables controlling the player
 PLAYER_SPEED = 5
 PLAYER_SHOT_SPEED = 300
+PLAYER_SIGHT_RANGE = SCREEN_WIDTH/4 # How far can the player see?
 
 FIRE_KEY = arcade.key.SPACE
 
 # All layers configured must exist in the map file.
-# line_of_sight: Should sprites only be drawn if they are vissible to a player?
+# line_of_sight: Should sprites only be drawn if they are visible to a player?
 # draw: Should the sprites on this layer be drawn?. Config layers, like spawn points, should probably not be drawn
 # passable: Can players and enemies can move through sprites on this layer?
 MAP_LAYER_CONFIG = {
@@ -94,6 +95,14 @@ class GameView(arcade.View):
         for background_tile in self.tilemap.sprite_lists["background"]:
             colliding_tiles = background_tile.collides_with_list(self.tilemap.sprite_lists["impassable"])
             assert len(colliding_tiles) == 0, f"A tile on layer 'background' collides with a tile on layer 'impassable' at position {background_tile.position}"
+
+        # Add variable 'seen' to all tiles that has player line of sight. This will be used later on.
+        for layer_name in MAP_LAYER_CONFIG.keys():
+            if MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
+                for s in self.tilemap.sprite_lists[layer_name]:
+                    # Tiles are unseen by default
+                    s.seen = False
+
 
         # Set up the player info
         # FIXME: Move this into the Player class
@@ -173,14 +182,34 @@ class GameView(arcade.View):
         # Clear screen so we can draw new stuff
         self.clear()
 
-        # Draw the the sprite list from the map if configured to be drawn
+        # Draw the sprite list from the map if configured to be drawn
         for layer_name, layer_sprites in self.tilemap.sprite_lists.items():
             if MAP_LAYER_CONFIG[layer_name].get("draw", True):
-                if MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
-                    # FIXME: Add logic for drawing stuff that should only be drawn if players have line of sight here
-                    pass
-                else:
+                if not MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
+                    # If the layer is not configured as line_of_sight, all tiles will be drawn
                     layer_sprites.draw(pixelated=DRAW_PIXELATED)
+                else:
+                    # Run through line_of_sight tiles
+                    for s in layer_sprites:
+                        if s.seen:
+                            # If the tile has already been seen, draw it and skip the rest.
+                            s.draw(pixelated=DRAW_PIXELATED)
+                        else:
+                            # If player has line of sight to an unseen tile, it's marked as seen
+                            try:
+                                if arcade.has_line_of_sight(
+                                        point_1 = s.position,
+                                        point_2 = self.player.position,
+                                        walls = self.tilemap.sprite_lists["impassable"],
+                                        check_resolution = TILE_SIZE*2,
+                                        max_distance = PLAYER_SIGHT_RANGE
+                                ):
+                                    s.seen = True
+                            except ZeroDivisionError:
+                                # An error may occur in the has_line_of_sight() function
+                                # if the distance between point_1 and point_2 is too close to zero.
+                                # In that case we assume that the tile has already been seen.
+                                pass
 
         # Draw players score on screen
         arcade.draw_text(
