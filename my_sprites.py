@@ -711,6 +711,7 @@ class Weapon(arcade.Sprite):
         WeaponType.AXE_DOUBLE: {
             # Remember to use scale with this when attacking
             "range": 25,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 40,
             "rate": 4.5,
             "max_usage": math.inf
@@ -718,6 +719,7 @@ class Weapon(arcade.Sprite):
         WeaponType.AXE_SINGLE: {
             # Remember to use scale with this when attacking
             "range": 20,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 25,
             "rate": 3,
             "max_usage": math.inf
@@ -725,6 +727,7 @@ class Weapon(arcade.Sprite):
         WeaponType.HAMMER: {
             # Remember to use scale with this when attacking
             "range": 15,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 30,
             "rate": 2.5,
             "max_usage": 30
@@ -732,6 +735,7 @@ class Weapon(arcade.Sprite):
         WeaponType.SPEAR: {
             # Remember to use scale with this when attacking
             "range": 40,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 20,
             "rate": 1,
             "max_usage": math.inf
@@ -739,12 +743,14 @@ class Weapon(arcade.Sprite):
         WeaponType.STAFF_GREEN: {
             # Need a setting for distance weapons!
             "range": 15,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 15,
             "rate": 1,
             "max_usage": math.inf
         },
         WeaponType.STAFF_PURPLE: {
             "range": 15,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 10,
             "rate": 1,
             "max_usage": math.inf
@@ -752,6 +758,7 @@ class Weapon(arcade.Sprite):
         WeaponType.SWORD_DOUBLE_BRONZE: {
             # Remember to use scale with this when attacking
             "range": 30,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 15,
             "rate": 1,
             "max_usage": 15
@@ -759,6 +766,7 @@ class Weapon(arcade.Sprite):
         WeaponType.SWORD_DOUBLE_SILVER: {
             # Remember to use scale with this when attacking
             "range": 20,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 25,
             "rate": 3.2,
             "max_usage": math.inf
@@ -766,6 +774,7 @@ class Weapon(arcade.Sprite):
         WeaponType.SWORD_FALCHION: {
             # Remember to use scale with this when attacking
             "range": 35,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 15,
             "rate": 3,
             "max_usage": math.inf
@@ -773,6 +782,7 @@ class Weapon(arcade.Sprite):
         WeaponType.SWORD_LONG: {
             # Remember to use scale with this when attacking
             "range": 30,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 10,
             "rate": 1.2,
             "max_usage": math.inf
@@ -780,6 +790,7 @@ class Weapon(arcade.Sprite):
         WeaponType.SWORD_SHORT: {
             # Remember to use scale with this when attacking
             "range": 15,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 7,
             "rate": 0.8,
             "max_usage": 10
@@ -851,7 +862,7 @@ class Weapon(arcade.Sprite):
             self.center_x = position[0] + (math.sin(angle) * distance)
             self.center_y = position[1] + (math.cos(angle) * distance)
 
-            self._time_to_idle = Weapon.data[self.type]["speed"]
+            self._time_to_idle = Weapon.data[self.type]["rate"]
             return True
 
     def update(self):
