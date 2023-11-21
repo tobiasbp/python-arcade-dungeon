@@ -170,11 +170,11 @@ class Enemy(arcade.Sprite):
             )
         )
 
-    def on_update(self, delta_time: float = 1 / 60):
+    def update(self):
 
         # state control
         self.target = None
-        for t in self.target_list:
+        for t in self.target_list:  # FIXME: Make the enemy go for the closest player
             if arcade.has_line_of_sight(t.position, self.position, self.barriers.blocking_sprites):
                 self.target = t
                 self.state = EnemyState.CHASING
@@ -185,7 +185,7 @@ class Enemy(arcade.Sprite):
         if self.state == EnemyState.CHASING:
             self.path = []
 
-            angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.target.center_x, self.target.center_y)  # we need this later as well
+            angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.target.center_x, self.target.center_y)
 
             self.center_x += math.sin(angle_to_target) * self.speed
             self.center_y += math.cos(angle_to_target) * self.speed
@@ -245,12 +245,12 @@ class Enemy(arcade.Sprite):
 
         # update weapon
         if self.equipped is not None:
-            self.equipped.on_update()
+            self.equipped.update()
             # check weapon durability
             if self.equipped.attacks_left <= 0:
                 self.equipped = None
 
-        self._emotes.on_update(delta_time)
+        self._emotes.update()
 
     def on_draw(self, draw_attack_hitboxes: bool=False):
         if self.equipped is not None:
@@ -430,14 +430,6 @@ class Player(arcade.Sprite):
         return self._max_hp
 
     @property
-    def hp(self):
-        return self._hp
-
-    @hp.setter
-    def hp(self, new_hp):
-        self._hp = max(0, min(new_hp, self.max_hp))  # hp should be greater than 0 and not greater than max hp
-
-    @property
     def attacks(self):
         return self._attacks
 
@@ -553,7 +545,7 @@ class Player(arcade.Sprite):
         self.change_y = 0
 
         if self.equiped is not None:
-            self.equiped.on_update()
+            self.equiped.update()
 
         # Update speed based on held keys
         if self.left_pressed and not self.right_pressed:
@@ -642,12 +634,12 @@ class Emote(arcade.Sprite):
         self.change_x = random.uniform(-1 * float_x, float_x)
         self.change_y = float_y
 
-    def on_update(self, delta_time:float):
+    def update(self):
 
         self.center_x += self.change_x
         self.center_y += self.change_y
 
-        self.time_left -= delta_time
+        self.time_left -= 1/60  # we don't want to use on_update, so we just use the default delta_time
 
         if self.enable_fade:
             self.alpha = max(0, 255 * self.time_left/self.lifetime)
@@ -772,10 +764,10 @@ class Weapon(arcade.Sprite):
             self._time_to_idle = Weapon.data[self.type]["speed"]
             return True
 
-    def on_update(self, delta_time: float = 1/60):
+    def update(self):
         if not self.is_idle:
             # FIXME: Just to illustrate an attack
             self.angle += 4
 
             # Time passes
-            self._time_to_idle -= delta_time
+            self._time_to_idle -= 1/60  # we don't want to use on_update, so we just use the default delta time

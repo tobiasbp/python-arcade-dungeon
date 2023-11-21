@@ -203,7 +203,7 @@ class GameView(arcade.View):
         for e in self.tilemap.sprite_lists["enemies"]:
             e.emotes.draw()
 
-    def on_update(self, delta_time):
+    def on_update(self, delta_time: float = 1/60):
         """
         Movement and game logic
         """
@@ -212,15 +212,15 @@ class GameView(arcade.View):
         self.player.update()
 
         # Update the player attacks and emotes
-        self.player.attacks.on_update(delta_time)
-        self.player.emotes.on_update(delta_time)
+        self.player.attacks.update()
+        self.player.emotes.update()
 
         # Update the physics engine (including the player)
         # Return all sprites involved in collissions
         colliding_sprites = self.physics_engine.update()
 
         # Update the enemies
-        self.tilemap.sprite_lists["enemies"].on_update()
+        self.tilemap.sprite_lists["enemies"].update()
 
     def game_over(self):
         """
