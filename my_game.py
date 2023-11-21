@@ -101,9 +101,18 @@ class GameView(arcade.View):
                     # Tiles are unseen by default
                     s.seen = False
 
-
         # Set up the player info
         # FIXME: Move this into the Player class
+
+        # Get list of joysticks and select the first to be given to the player
+        joysticks = arcade.get_joysticks()
+        if joysticks:
+            print("Found {} joystick(s)".format(len(joysticks)))
+            joystick = joysticks[0]
+        else:
+            print("No joysticks found")
+            joystick = None
+
         self.player_score = 0
         self.player_lives = PLAYER_LIVES
 
@@ -112,6 +121,7 @@ class GameView(arcade.View):
             center_x=self.tilemap.sprite_lists["players"][0].center_x,
             center_y=self.tilemap.sprite_lists["players"][0].center_y,
             scale=SCALING,
+            joystick=joystick
         )
 
         # Change all tiles in the 'enemies' layer to Enemies
@@ -143,10 +153,7 @@ class GameView(arcade.View):
             walls = self.tilemap.sprite_lists["impassable"]
         )
 
-
-        # Get list of joysticks
-        joysticks = arcade.get_joysticks()
-
+        """
         if joysticks:
             print("Found {} joystick(s)".format(len(joysticks)))
 
@@ -165,6 +172,7 @@ class GameView(arcade.View):
         else:
             print("No joysticks found")
             self.joystick = None
+        """
 
         # Set the background color
         arcade.set_background_color(arcade.color.BLACK)
@@ -274,7 +282,7 @@ class GameView(arcade.View):
         print("Button released:", button_no)
 
     def on_joyaxis_motion(self, joystick, axis, value):
-        print("Joystick axis {}, value {}".format(axis, value))
+        print("Joystick axis {}, value {}".format(axis, round(value)))
 
     def on_joyhat_motion(self, joystick, hat_x, hat_y):
         print("Joystick hat ({}, {})".format(hat_x, hat_y))

@@ -249,6 +249,7 @@ class Player(arcade.Sprite):
             key_left=arcade.key.LEFT,
             key_right=arcade.key.RIGHT,
             key_attack=arcade.key.SPACE,
+            joystick=None,
             jitter_amount:int=10, # How much to rotate when walking
             jitter_likelihood:float=0.5 # How likely is jittering?
         ):
@@ -298,8 +299,22 @@ class Player(arcade.Sprite):
         self.up_pressed = False
         self.down_pressed = False
         self.atttack_pressed = False
+        self.joystick_x = 0
+        self.joystick_y = 0
 
-        # Save settings for animating the sprite when walking
+        # Configure Joystick
+        if joystick is not None:
+
+            # Communicate with joystick
+            joystick.open()
+
+            # Map joysticks functions to local functions
+            joystick.on_joybutton_press = self.on_joybutton_press
+            joystick.on_joybutton_release = self.on_joybutton_release
+            joystick.on_joyaxis_motion = self.on_joyaxis_motion
+            self.joystick.on_joyhat_motion = self.on_joyhat_motion
+
+            # Save settings for animating the sprite when walking
         self.jitter_amount = jitter_amount
         self.jitter_likelihood = jitter_likelihood
 
@@ -452,6 +467,25 @@ class Player(arcade.Sprite):
         elif key == self.key_atttack:
             self.atttack_pressed = False
 
+    def on_joybutton_press(self, joystick, button_no):
+        self.attack_pressed = True
+        self.attack()
+
+    def on_joybutton_release(self, joystick, button_no):
+        self.attack_pressed = False
+
+    def on_joyaxis_motion(self, joystick, axis, value):
+        # Round value to an integer to correct imprecise values
+        value = round(value)
+        if axis == "x":
+            self.joystick_x = value
+        else:
+            # y-value is misinterpreted as inverted, and needs to be corrected
+            self.joystick_y = value * -1
+
+    def on_joyhat_motion(self, joystick, hat_x, hat_y):
+        print("Note: This game is not compatible with Joyhats")
+
     def draw_sprites(self, pixelated):
         """
         Draw sprites handles by the Player
@@ -484,6 +518,12 @@ class Player(arcade.Sprite):
             self.change_y = self.speed
         elif self.down_pressed and not self.up_pressed:
             self.change_y = -1 * self.speed
+
+        # Update speed based on joystick axes
+        if self.joystick_x != 0:
+            self.change_x = self.joystick_x * self.speed
+        elif self.joystick_y != 0:
+            self.change_y = self.joystick_y * self.speed
 
         # Rotate the sprite a bit when it's moving
         if (self.change_x != 0 or self.change_y != 0) and random.random() <= self.jitter_likelihood:
