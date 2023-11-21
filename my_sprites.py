@@ -464,6 +464,7 @@ class Player(arcade.Sprite):
         """
         self.emotes.draw(pixelated=pixelated)
         self.attacks.draw(pixelated=pixelated)
+        self.health_bar.life_bar.draw(pixelated=pixelated)
         if self.equiped is not None:
             # Only draw active weapons
             if not self.equiped.is_idle:
@@ -823,6 +824,10 @@ class HealthBar(arcade.Sprite):
             arcade.color.GREEN
         )
 
+        self._life_bar_list = arcade.SpriteList()
+        self._life_bar_list.append(self._background_bar)
+        self._life_bar_list.append(self._full_bar)
+
     @property
     def max_health(self):
         return self._max_health
@@ -834,6 +839,10 @@ class HealthBar(arcade.Sprite):
     @property
     def full_bar(self):
         return self._full_bar
+
+    @property
+    def life_bar(self):
+        return self._life_bar_list
 
     @property
     def health(self):
@@ -854,3 +863,4 @@ class HealthBar(arcade.Sprite):
         self._background_bar.position = (self.center_x, self.center_y + self._offset)
         self._full_bar.left = self._background_bar.left
         self._full_bar.center_y = self.center_y + self._offset
+        self._life_bar_list[1] = self._full_bar
