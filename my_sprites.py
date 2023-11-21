@@ -326,6 +326,7 @@ class Player(arcade.Sprite):
         self._hp = max_hp
         self.health_bar = HealthBar(max_health=max_hp)
 
+
     def attack(self):
         """
         Perform an attack using the equiped weapon
@@ -636,7 +637,6 @@ class Weapon(arcade.Sprite):
     # strength: How much damage will the weapon inflict?
     # rate: How often can the weapon be used (seconds)
     # max_usage: How many times can the weapon be used?
-
     data = {
         WeaponType.AXE_DOUBLE: {
             # Remember to use scale with this when attacking

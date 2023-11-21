@@ -219,7 +219,11 @@ class GameView(arcade.View):
 
         # Draw the player sprite and its objects (weapon & emotes)
         self.player.draw(pixelated=DRAW_PIXELATED)
+
+        self.player.health_bar.background_bar.draw(pixelated=DRAW_PIXELATED)
+        self.player.health_bar.full_bar.draw(pixelated=DRAW_PIXELATED)
         self.player.draw_sprites(pixelated=DRAW_PIXELATED)
+
 
         # Draw the enemy emotes
         for e in self.tilemap.sprite_lists["enemies"]:
