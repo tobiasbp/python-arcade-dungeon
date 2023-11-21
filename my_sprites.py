@@ -445,6 +445,11 @@ class Player(arcade.Sprite):
     def equiped(self):
         return self._equiped
 
+    @equiped.setter
+    def equiped(self, weapon):
+        assert type(weapon) == Weapon or weapon is None, f"expected type Weapon or NoneType, got {type(weapon)}"
+        self._equiped = weapon
+
     @property
     def direction(self):
         return self._direction
@@ -474,12 +479,6 @@ class Player(arcade.Sprite):
 
         # Could not equip the weapon type
         return False
-
-    def unequip(self):
-        """
-        Unequip the currently held weapon
-        """
-        self._equiped = None
 
     def on_key_press(self, key, modifiers):
         """
@@ -571,7 +570,7 @@ class Player(arcade.Sprite):
         # check weapon durability
         if self.equiped is not None:
             if self.equiped.attacks_left <= 0:
-                self.unequip()
+                self.equiped = None
 
         # Note: We don't change the position of the sprite here, since that is done by the physics engine
 
