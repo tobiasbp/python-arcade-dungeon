@@ -417,32 +417,6 @@ class PlayerShot(arcade.Sprite):
             self.kill()
 
 
-class AttackStab(arcade.Sprite):
-    """
-    A shot fired by the Player
-    """
-
-    def __init__(self, center_x, center_y, target_sprite):
-        """
-        Setup new PlayerShot object
-        """
-
-        # Set the graphics to use for the sprite
-        # We need to flip it so it matches the mathematical angle/direction
-        super().__init__(
-            center_x=center_x,
-            center_y=center_y,
-
-            filename="images/tiny_dungeon/tiles/tile_0000.png",
-            flipped_diagonally=True,
-            flipped_horizontally=True,
-            flipped_vertically=False,
-
-        )
-
-        self.position = (center_x, center_y)
-        self.target_sprite = target_sprite
-        self.life_time = 1
 
     def on_update(self, delta_time):
         """
@@ -454,7 +428,6 @@ class AttackStab(arcade.Sprite):
             self.kill()
         self.position = self.target_sprite.position
         self.center_y += 20
-
 
 
 @unique
