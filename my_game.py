@@ -115,8 +115,8 @@ class GameView(arcade.View):
             scale=SCALING,
         )
 
-        target_list = arcade.SpriteList()
-        target_list.append(self.player)
+        player_list = arcade.SpriteList()
+        player_list.append(self.player)
 
         # Change all tiles in the 'enemies' layer to Enemies
         for enemy_index, enemy_position in enumerate([ s.position for s in self.tilemap.sprite_lists["enemies"]]):
@@ -126,7 +126,7 @@ class GameView(arcade.View):
                 impassables=self.tilemap.sprite_lists["impassable"],
                 grid_size=int(self.tilemap.tile_width),
                 window=self.window,
-                target_list=target_list,
+                potential_targets_list=player_list,
                 equipped_weapon=Weapon(type=WeaponType.SWORD_SHORT),
                 scale=SCALING
             )
@@ -241,7 +241,6 @@ class GameView(arcade.View):
         self.player.update()
 
         # Update the player attacks and emotes
-        self.player.attacks.update()
         self.player.emotes.update()
 
         # Update the physics engine (including the player)

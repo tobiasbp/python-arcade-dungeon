@@ -28,12 +28,11 @@ class Enemy(arcade.Sprite):
     """
     parent class for all enemies in the game. Features include pathfinding, hp management and movement
 
-    :param target: sprite to chase/harm if spotted.
+    :param potential_targets_list: list of sprites to chase/harm if spotted.
     :param filename: path to the file used as graphics for the sprite.
     :param position: tuple containing the x and y coordinate to create the sprite at.
     :param max_hp: the max hp for the enemy. Also determines starting hp.
     :param speed: the movement speed for the sprite in px/update.
-    :param attack_cooldown: how frequently the enemy can attack.
     :param roaming_dist: the distance to travel, before changing dir, while in roaming state.
     :param scale: the size multiplier for the graphics/hitbox of the sprite.
     """
@@ -44,13 +43,12 @@ class Enemy(arcade.Sprite):
             impassables: arcade.SpriteList,
             window: arcade.Window,
             grid_size: int,
-            target_list: arcade.SpriteList,
+            potential_targets_list: arcade.SpriteList,
             equipped_weapon = None,
             filename: str = "images/tiny_dungeon/Tiles/tile_0087.png",
             state: EnemyState=EnemyState.ROAMING,
             max_hp: int = 10,
             speed: int = 1,
-            attack_cooldown: int = 1,
             roaming_dist: float = 200,
             scale: float = 1.0):
 
@@ -67,7 +65,7 @@ class Enemy(arcade.Sprite):
 
         self.window = window
         self.speed = speed
-        self.potential_targets_list = target_list  # list of sprites to chase when spotted
+        self.potential_targets_list = potential_targets_list  # list of sprites to chase when spotted
         self.target = None
         self.roaming_dist = roaming_dist
         self._state = state
@@ -75,11 +73,6 @@ class Enemy(arcade.Sprite):
             self._equipped = equipped_weapon
         else:
             self._equipped = None
-
-        # attacks
-        self.attacks = arcade.SpriteList()
-        self.attack_cooldown = attack_cooldown  # the time in seconds between attacking
-        self.attack_timer = attack_cooldown  # the timer that we use to track attacking cooldown
 
         # pathfinding
         self.path = []
@@ -361,10 +354,6 @@ class Player(arcade.Sprite):
         # Add the default weapon
         self.add_weapon(WeaponType.SWORD_SHORT)
 
-        # Player's attacks will be stored here
-        # FIXME: Do we want this when we have weapons?
-        self._attacks = arcade.SpriteList()
-
         # Player's emotes will be stored here
         self._emotes = arcade.SpriteList()
 
@@ -428,10 +417,6 @@ class Player(arcade.Sprite):
     @property
     def max_hp(self):
         return self._max_hp
-
-    @property
-    def attacks(self):
-        return self._attacks
 
     @property
     def emotes(self):
@@ -526,7 +511,6 @@ class Player(arcade.Sprite):
         Draw sprites handles by the Player
         """
         self.emotes.draw(pixelated=pixelated)
-        self.attacks.draw(pixelated=pixelated)
 
         if self.equiped is not None:
             if draw_attack_hitboxes:
