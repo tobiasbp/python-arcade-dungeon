@@ -305,7 +305,7 @@ class IntroView(arcade.View):
         self.button_scaling = 1.6
 
         # Make the title Sprite
-        title_image = "images/GUI/Title.png"
+        title_image = "images/GUI/title.png"
         self.title = arcade.Sprite(title_image, self.button_scaling*1.5)
         self.title.center_x = SCREEN_WIDTH//2
         self.title.center_y = 350
@@ -315,8 +315,8 @@ class IntroView(arcade.View):
         self.manager.enable()
 
         # Loads the textures of the button. [Hovered/Not-hovered]
-        self.play_button_unhovered = arcade.load_texture("images/GUI/Start_button_(UNHOVERED).png")
-        self.play_button_hovered = arcade.load_texture("images/GUI/Start_button_(HOVERED).png")
+        self.play_button_unhovered = arcade.load_texture("images/GUI/start_button_unhovered.png")
+        self.play_button_hovered = arcade.load_texture("images/GUI/start_button_hovered.png")
 
         # Makes the play button.
         self.gui_play_button = arcade.gui.UITextureButton(
@@ -410,12 +410,12 @@ class GameOverView(arcade.View):
         underline_title_number = random.randint(1, 5)
 
         # Make the title Sprite
-        game_over_title_source = "images/GUI/Game_Over_Title.png"
+        game_over_title_source = "images/GUI/game_over_title.png"
         self.game_over_title = arcade.Sprite(game_over_title_source, self.button_scaling*2)
         self.game_over_title.center_x = SCREEN_WIDTH//2
         self.game_over_title.center_y = 350
 
-        underline_title_source = f"images/GUI/End_text{underline_title_number}.png"
+        underline_title_source = f"images/GUI/end_text{underline_title_number}.png"
         self.underline_title = arcade.Sprite(underline_title_source, self.button_scaling*2)
         self.underline_title.center_x = SCREEN_WIDTH // 2
         self.underline_title.center_y = 300
@@ -425,8 +425,8 @@ class GameOverView(arcade.View):
         self.manager.enable()
 
         # Loads the textures of the button. [Hovered/Not-hovered]
-        self.restart_button_unhovered = arcade.load_texture("images/GUI/Restart_button (UNHOVERED).png")
-        self.restart_button_hovered = arcade.load_texture("images/GUI/Restart_button (HOVERED).png")
+        self.restart_button_unhovered = arcade.load_texture("images/GUI/restart_button_unhovered.png")
+        self.restart_button_hovered = arcade.load_texture("images/GUI/restart_button_hovered.png")
 
         # Makes the play button.
         self.gui_play_button = arcade.gui.UITextureButton(
