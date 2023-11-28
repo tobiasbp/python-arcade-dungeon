@@ -230,7 +230,6 @@ class GameView(arcade.View):
         for s in self.tilemap.sprite_lists["enemies"]:
             s.on_draw(draw_attack_hitboxes=DEBUG_MODE)
 
-
         # Draw the enemy emotes
         for e in self.tilemap.sprite_lists["enemies"]:
             e.emotes.draw()
@@ -240,15 +239,8 @@ class GameView(arcade.View):
         Movement and game logic
         """
 
-        # DEMO: Random reactions for the player
-        if random.randint(1, 60) == 1:
-            self.player.react(random.choice(list(Reaction)))
-
-        # Set x/y speed for the player based on key states
+        # Update the player and all of the sprites it manages
         self.player.update()
-
-        # Update the player attacks and emotes
-        self.player.emotes.update()
 
         # Update the physics engine (including the player)
         # Return all sprites involved in collissions

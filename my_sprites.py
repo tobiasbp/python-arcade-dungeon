@@ -570,6 +570,8 @@ class Player(arcade.Sprite):
         self.health_bar.position = self.position
         self.health_bar.update()
 
+        self._emotes.update()
+
 
 @unique
 class Reaction(IntEnum):
