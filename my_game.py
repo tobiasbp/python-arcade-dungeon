@@ -8,6 +8,7 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 """
 
 import arcade
+import arcade.gui
 import random
 from pyglet.math import Vec2
 
@@ -296,11 +297,45 @@ class IntroView(arcade.View):
         """
 
         # Set the background color
-        arcade.set_background_color(arcade.csscolor.DARK_SLATE_BLUE)
+        arcade.set_background_color(arcade.csscolor.SLATE_GREY)
 
         # Reset the viewport, necessary if we have a scrolling game and we need
         # to reset the viewport back to the start so we can see what we draw.
         arcade.set_viewport(0, self.window.width, 0, self.window.height)
+
+        self.button_scaling = 1.6
+
+        # Make the title Sprite
+        title_image = "images/GUI/Title.png"
+        self.title = arcade.Sprite(title_image, self.button_scaling*1.5)
+        self.title.center_x = SCREEN_WIDTH//2
+        self.title.center_y = 350
+
+        # Makes the manager that contains the GUI button and enables it to the game.
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+
+        # Loads the textures of the button. [Hovered/Not-hovered]
+        self.play_button_unhovered = arcade.load_texture("images\GUI\Start_button_(UNHOVERED).png")
+        self.play_button_hovered = arcade.load_texture("images\GUI\Start_button_(HOVERED).png")
+
+        # Makes the play button.
+        self.gui_play_button = arcade.gui.UITextureButton(
+            x=150,
+            y=125,
+            width=100,
+            height=100,
+            texture=self.play_button_unhovered,
+            texture_hovered=self.play_button_hovered,
+            scale=self.button_scaling,
+            style=None
+        )
+
+        # Adds the play button to the manager.
+        self.manager.add(self.gui_play_button)
+
+        # Makes it to when the player presses the play button it starts the game.
+        self.gui_play_button.on_click = self.start_game
 
     def on_draw(self):
         """
@@ -308,32 +343,33 @@ class IntroView(arcade.View):
         """
         self.clear()
 
-        # Draw some text
+        # Draws the title and the manager which has the play button.
+        self.title.draw(pixelated=DRAW_PIXELATED)
+        self.manager.draw()
+
+        # Info how to also start the game.
         arcade.draw_text(
-            "Instructions Screen",
+            "Press Space to start!",
             self.window.width / 2,
-            self.window.height / 2,
-            arcade.color.WHITE,
-            font_size=20,
+            110,
+            arcade.color.BLACK,
+            font_size=15,
             font_name=MAIN_FONT_NAME,
             anchor_x="center",
             bold=True
         )
 
-        # Draw more text
-        arcade.draw_text(
-            "Press any key to start the game",
-            self.window.width / 2,
-            self.window.height / 2 - 75,
-            arcade.color.WHITE,
-            font_size=20,
-            font_name=MAIN_FONT_NAME,
-            anchor_x="center",
-        )
-
     def on_key_press(self, key: int, modifiers: int):
         """
         Start the game when any key is pressed
+        """
+        if key == arcade.key.SPACE:
+            game_view = GameView()
+            self.window.show_view(game_view)
+
+    def start_game(self, event):
+        """
+        Starts the game.
         """
         game_view = GameView()
         self.window.show_view(game_view)
