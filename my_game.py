@@ -473,7 +473,7 @@ class GameOverView(arcade.View):
 
     def on_key_press(self, key: int, modifiers: int):
         """
-        Return to intro screen when any key is pressed
+        Return to intro screen when any key is pressed.
         """
 
         if key == arcade.key.SPACE:
