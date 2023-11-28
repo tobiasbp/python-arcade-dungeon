@@ -302,11 +302,13 @@ class IntroView(arcade.View):
         # to reset the viewport back to the start so we can see what we draw.
         arcade.set_viewport(0, self.window.width, 0, self.window.height)
 
-        self.button_scaling = 1.6
+        button_scaling = 1.6
 
         # Make the title Sprite
-        title_image = "images/GUI/title.png"
-        self.title = arcade.Sprite(title_image, self.button_scaling*1.5)
+        self.title = arcade.Sprite(
+            "images/GUI/title_game_start.png",
+            button_scaling*1.5
+            )
         self.title.center_x = SCREEN_WIDTH//2
         self.title.center_y = 350
 
@@ -314,19 +316,15 @@ class IntroView(arcade.View):
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
 
-        # Loads the textures of the button. [Hovered/Not-hovered]
-        self.play_button_unhovered = arcade.load_texture("images/GUI/start_button_unhovered.png")
-        self.play_button_hovered = arcade.load_texture("images/GUI/start_button_hovered.png")
-
         # Makes the play button.
         self.gui_play_button = arcade.gui.UITextureButton(
             x=150,
             y=125,
             width=100,
             height=100,
-            texture=self.play_button_unhovered,
-            texture_hovered=self.play_button_hovered,
-            scale=self.button_scaling,
+            texture=arcade.load_texture("images/GUI/start_button_unhovered.png"),
+            texture_hovered=arcade.load_texture("images/GUI/start_button_hovered.png"),
+            scale=button_scaling,
             style=None
         )
 
@@ -385,8 +383,6 @@ class GameOverView(arcade.View):
         """
         self.score = score
 
-        self.button_scaling = 1.6
-
         super().__init__(window)
 
     def setup_old(self, score: int):
@@ -399,6 +395,7 @@ class GameOverView(arcade.View):
         """
         This is run once when we switch to this view
         """
+        button_scaling = 1.6
 
         # Set the background color
         arcade.set_background_color(arcade.csscolor.BLACK)
@@ -407,44 +404,43 @@ class GameOverView(arcade.View):
         # to reset the viewport back to the start so we can see what we draw.
         arcade.set_viewport(0, self.window.width, 0, self.window.height)
 
-        underline_title_number = random.randint(1, 5)
 
         # Make the title Sprite
-        game_over_title_source = "images/GUI/game_over_title.png"
-        self.game_over_title = arcade.Sprite(game_over_title_source, self.button_scaling*2)
-        self.game_over_title.center_x = SCREEN_WIDTH//2
-        self.game_over_title.center_y = 350
+        self.title = arcade.Sprite(
+            filename="images/GUI/title_game_over.png",
+            scale=button_scaling*2,
+            center_x=SCREEN_WIDTH//2,
+            center_y=350,
+            )
 
-        underline_title_source = f"images/GUI/end_text{underline_title_number}.png"
-        self.underline_title = arcade.Sprite(underline_title_source, self.button_scaling*2)
-        self.underline_title.center_x = SCREEN_WIDTH // 2
-        self.underline_title.center_y = 300
+        self.subtitle = arcade.Sprite(
+            filename=f"images/GUI/end_text_{random.randint(1, 5)}.png",
+            scale=button_scaling*2,
+            center_x=self.title.center_x,
+            center_y=self.title.center_y - 50
+            )
 
         # Makes the manager that contains the GUI button and enables it to the game.
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
 
-        # Loads the textures of the button. [Hovered/Not-hovered]
-        self.restart_button_unhovered = arcade.load_texture("images/GUI/restart_button_unhovered.png")
-        self.restart_button_hovered = arcade.load_texture("images/GUI/restart_button_hovered.png")
-
         # Makes the play button.
-        self.gui_play_button = arcade.gui.UITextureButton(
+        gui_play_button = arcade.gui.UITextureButton(
             x=150,
             y=125,
             width=100,
             height=100,
-            texture=self.restart_button_unhovered,
-            texture_hovered=self.restart_button_hovered,
-            scale=self.button_scaling,
+            texture=arcade.load_texture("images/GUI/restart_button_unhovered.png"),
+            texture_hovered=arcade.load_texture("images/GUI/restart_button_hovered.png"),
+            scale=button_scaling,
             style=None
         )
 
         # Adds the play button to the manager.
-        self.manager.add(self.gui_play_button)
+        self.manager.add(gui_play_button)
 
         # Makes it to when the player presses the play button it starts the game.
-        self.gui_play_button.on_click = self.restart
+        gui_play_button.on_click = self.restart
 
     def on_draw(self):
         """
@@ -454,8 +450,8 @@ class GameOverView(arcade.View):
         self.clear()
 
         # Draws the game over title and the under title.
-        self.game_over_title.draw(pixelated=DRAW_PIXELATED)
-        self.underline_title.draw(pixelated=DRAW_PIXELATED)
+        self.title.draw(pixelated=DRAW_PIXELATED)
+        self.subtitle.draw(pixelated=DRAW_PIXELATED)
 
         # Draws the manager.
         self.manager.draw()
