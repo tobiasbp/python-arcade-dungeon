@@ -453,9 +453,11 @@ class GameOverView(arcade.View):
 
         self.clear()
 
+        # Draws the game over title and the under title.
         self.game_over_title.draw(pixelated=DRAW_PIXELATED)
         self.underline_title.draw(pixelated=DRAW_PIXELATED)
 
+        # Draws the manager.
         self.manager.draw()
 
         # Draw player's score
