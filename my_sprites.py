@@ -67,7 +67,7 @@ class Enemy(arcade.Sprite):
 
         self.window = window
         self.speed = speed
-        self.target_list = target_list  # list of sprites to chase when spotted
+        self.potential_targets_list = target_list  # list of sprites to chase when spotted
         self.target = None
         self.roaming_dist = roaming_dist
         self._state = state
@@ -173,19 +173,19 @@ class Enemy(arcade.Sprite):
     def update(self):
 
         # state control
-        self.target = None
-        for t in self.target_list:  # FIXME: Make the enemy go for the closest player
+        self.cur_target = None
+        for t in self.potential_targets_list:  # FIXME: Make the enemy go for the closest player
             if arcade.has_line_of_sight(t.position, self.position, self.barriers.blocking_sprites):
-                self.target = t
+                self.cur_target = t
                 self.state = EnemyState.CHASING
-        if self.target is None:
+        if self.cur_target is None:
             self.state = EnemyState.ROAMING
 
         # chasing state
         if self.state == EnemyState.CHASING:
             self.path = []
 
-            angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.target.center_x, self.target.center_y)
+            angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
 
             self.center_x += math.sin(angle_to_target) * self.speed
             self.center_y += math.cos(angle_to_target) * self.speed
