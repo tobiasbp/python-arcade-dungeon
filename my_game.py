@@ -318,8 +318,8 @@ class IntroView(arcade.View):
         self.manager.enable()
 
         # Loads the textures of the button. [Hovered/Not-hovered]
-        self.play_button_unhovered = arcade.load_texture("images\GUI\Start_button_(UNHOVERED).png")
-        self.play_button_hovered = arcade.load_texture("images\GUI\Start_button_(HOVERED).png")
+        self.play_button_unhovered = arcade.load_texture("images/GUI/Start_button_(UNHOVERED).png")
+        self.play_button_hovered = arcade.load_texture("images/GUI/Start_button_(HOVERED).png")
 
         # Makes the play button.
         self.gui_play_button = arcade.gui.UITextureButton(
