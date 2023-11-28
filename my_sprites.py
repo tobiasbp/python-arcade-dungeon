@@ -275,12 +275,10 @@ class Player(arcade.Sprite):
         """
         if len(self._attacks) == 0:
             self._attacks.append(
-                PlayerShot(
+                AttackStab(
                     center_x=self.center_x,
                     center_y=self.center_y,
-                    max_y_pos=self.center_y+10,
-                    speed=50,
-                    scale=self.scale
+                    target_sprite=self
                 )
             )
 

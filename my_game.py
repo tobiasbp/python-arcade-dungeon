@@ -102,12 +102,17 @@ class GameView(arcade.View):
         self.player_score = 0
         self.player_lives = PLAYER_LIVES
 
-        # Create a Player object
-        self.player = Player(
-            center_x=self.tilemap.sprite_lists["players"][0].center_x,
-            center_y=self.tilemap.sprite_lists["players"][0].center_y,
-            scale=SCALING,
-        )
+        self.player_sprite_list = []
+
+        for i in range(2):
+            # Creates Player object
+            p = Player(
+                center_x=self.tilemap.sprite_lists["players"][0].center_x,
+                center_y=self.tilemap.sprite_lists["players"][0].center_y + random.randint(1,20),
+                scale=SCALING,
+            )
+            # Create Player spritelist
+            self.player_sprite_list.append(p)
 
         # Change all tiles in the 'enemies' layer to Enemies
         for enemy_index, enemy_position in enumerate([ s.position for s in self.tilemap.sprite_lists["enemies"]]):
@@ -117,7 +122,7 @@ class GameView(arcade.View):
                 impassables=self.tilemap.sprite_lists["impassable"],
                 grid_size=int(self.tilemap.tile_width),
                 window=self.window,
-                target=self.player,
+                target=self.player_sprite_list[0],
                 scale=SCALING
             )
 
@@ -125,7 +130,7 @@ class GameView(arcade.View):
             # FIXME: Often, no path will be found. Why is that??
             # e.go_to_position(random.choice(self.tilemap.sprite_lists["background"]).position)
             # Go to the player's position
-            e.go_to_position(self.player.position)
+            e.go_to_position(self.player_sprite_list[0].position)
 
             # Replace the spawn point with the new enemy
             self.tilemap.sprite_lists["enemies"][enemy_index] = e
@@ -134,7 +139,7 @@ class GameView(arcade.View):
         # Register player and walls with physics engine
         # FIXME: The physics engine can only handle a single player. How do we handle multiplayer?
         self.physics_engine =  arcade.PhysicsEngineSimple(
-            player_sprite=self.player,
+            player_sprite=self.player_sprite_list[0],
             walls = self.tilemap.sprite_lists["impassable"]
         )
 
@@ -150,7 +155,6 @@ class GameView(arcade.View):
 
             # Communicate with joystick
             self.joystick.open()
-
             # Map joysticks functions to local functions
             self.joystick.on_joybutton_press = self.on_joybutton_press
             self.joystick.on_joybutton_release = self.on_joybutton_release
@@ -185,7 +189,8 @@ class GameView(arcade.View):
         self.player_attack_list.draw(pixelated=DRAW_PIXELATED)
 
         # Draw the player sprite
-        self.player.draw(pixelated=DRAW_PIXELATED)
+        for p in self.player_sprite_list:
+            p.draw(pixelated=DRAW_PIXELATED)
 
         # Draw players score on screen
         arcade.draw_text(
@@ -201,28 +206,29 @@ class GameView(arcade.View):
         # Draw the player shot
         self.player_attack_list.draw(pixelated=DRAW_PIXELATED)
 
-        # Draw the player sprite
-        # Draw the player sprite and its attacks and emotes
-        self.player.draw(pixelated=DRAW_PIXELATED)
-        self.player.attacks.draw(pixelated=DRAW_PIXELATED)
-        self.player.emotes.draw(pixelated=DRAW_PIXELATED)
+        for p in self.player_sprite_list:
+            # Draw the player sprite
+            # Draw the player sprite and its attacks and emotes
+            p.draw(pixelated=DRAW_PIXELATED)
+            p.attacks.draw(pixelated=DRAW_PIXELATED)
+            p.emotes.draw(pixelated=DRAW_PIXELATED)
 
 
     def on_update(self, delta_time):
         """
         Movement and game logic
         """
+        for p in self.player_sprite_list:
+            # DEMO: Random reactions for the player
+            if random.randint(1, 60) == 1:
+                p.react(random.choice(list(Reaction)))
 
-        # DEMO: Random reactions for the player
-        if random.randint(1, 60) == 1:
-            self.player.react(random.choice(list(Reaction)))
+            # Set x/y speed for the player based on key states
+            p.update()
 
-        # Set x/y speed for the player based on key states
-        self.player.update()
-
-        # Update the player attacks and emotes
-        self.player.attacks.on_update(delta_time)
-        self.player.emotes.on_update(delta_time)
+            # Update the player attacks and emotes
+            p.attacks.on_update(delta_time)
+            p.emotes.on_update(delta_time)
 
         # Update the physics engine (including the player)
         # Return all sprites involved in collissions
@@ -245,7 +251,8 @@ class GameView(arcade.View):
         self.window.show_view(game_over_view)
 
     def on_key_press(self, key, modifiers):
-        self.player.on_key_press(key, modifiers)
+        for p in self.player_sprite_list:
+            p.on_key_press(key, modifiers)
 
         # End the game if the escape key is pressed
         if key == arcade.key.ESCAPE:
@@ -265,18 +272,11 @@ class GameView(arcade.View):
             # Player gets points for firing?
             self.player_score += 5
 
-            # Create the new shot
-            new_attack = AttackStab(
-                center_x=self.player.center_x,
-                center_y=self.player.center_y,
-                target_sprite=self.player
-            )
 
-            # Add the new shot to the list of shots
-            self.player_attack_list.append(new_attack)
 
     def on_key_release(self, key, modifiers):
-        self.player.on_key_release(key, modifiers)
+        for p in self.player_sprite_list:
+            p.on_key_release(key, modifiers)
 
     def on_joybutton_press(self, joystick, button_no):
         print("Button pressed:", button_no)
