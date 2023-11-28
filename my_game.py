@@ -460,7 +460,7 @@ class GameOverView(arcade.View):
         # Draws the manager.
         self.manager.draw()
 
-        # Draw player's score
+        # Draw player's score.
         arcade.draw_text(
             f"Your score: {self.score}",
             self.window.width / 2,
