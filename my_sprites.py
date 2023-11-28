@@ -558,6 +558,8 @@ class Player(arcade.Sprite):
 
         # Note: We don't change the position of the sprite here, since that is done by the physics engine
 
+        self._emotes.update()
+
 
 @unique
 class Reaction(IntEnum):

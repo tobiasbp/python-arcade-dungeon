@@ -239,11 +239,8 @@ class GameView(arcade.View):
         Movement and game logic
         """
 
-        # Set x/y speed for the player based on key states
+        # Update the player and all of the sprites it manages
         self.player.update()
-
-        # Update the player attacks and emotes
-        self.player.emotes.update()
 
         # Update the physics engine (including the player)
         # Return all sprites involved in collissions
