@@ -558,7 +558,6 @@ class Player(arcade.Sprite):
 
         # Note: We don't change the position of the sprite here, since that is done by the physics engine
 
-        self._attacks.update()
         self._emotes.update()
 
 
