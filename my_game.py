@@ -13,7 +13,7 @@ from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
 # from my_sprites import Player, PlayerShot, Enemy, AttackStab
-from my_sprites import Player, PlayerShot, Enemy, Emote, Reaction, EnemyState, AttackStab
+from my_sprites import Player, PlayerShot, Enemy, Emote, Reaction, EnemyState
 
 # Set the scaling of all sprites in the game
 SCALING = 1
@@ -257,21 +257,6 @@ class GameView(arcade.View):
         # End the game if the escape key is pressed
         if key == arcade.key.ESCAPE:
             self.game_over()
-
-        # Track state of arrow keys
-        if key == arcade.key.UP:
-            self.up_pressed = True
-        elif key == arcade.key.DOWN:
-            self.down_pressed = True
-        elif key == arcade.key.LEFT:
-            self.left_pressed = True
-        elif key == arcade.key.RIGHT:
-            self.right_pressed = True
-
-        if key == FIRE_KEY:
-            # Player gets points for firing?
-            self.player_score += 5
-
 
 
     def on_key_release(self, key, modifiers):
