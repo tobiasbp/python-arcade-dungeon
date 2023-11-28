@@ -299,6 +299,7 @@ class GameView(arcade.View):
         if key == arcade.key.ESCAPE:
             self.game_over()
 
+
     def on_key_release(self, key, modifiers):
         for p in self.player_sprite_list:
             p.on_key_release(key, modifiers)
