@@ -8,18 +8,21 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 """
 
 import arcade
+import arcade.gui
 import random
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
-# from my_sprites import Player, PlayerShot, Enemy, AttackStab
-from my_sprites import Player, PlayerShot, Enemy, Emote, Reaction, EnemyState
+from my_sprites import Player, Enemy, Reaction, Weapon, WeaponType
 
 # Set the scaling of all sprites in the game
 SCALING = 1
 
 # Draw bitmaps without smooth interpolation
 DRAW_PIXELATED = True
+
+# should we draw hitboxes, and other info relevant when debugging
+DEBUG_MODE = True
 
 # Tiles are squares
 TILE_SIZE = 16
@@ -39,14 +42,14 @@ SCREEN_WIDTH = MAP_WIDTH_TILES * TILE_SIZE * SCALING
 SCREEN_HEIGHT = MAP_HEIGHT_TILES * TILE_SIZE * SCALING + GUI_HEIGHT
 
 # Variables controlling the player
-PLAYER_LIVES = 3
 PLAYER_SPEED = 5
 PLAYER_SHOT_SPEED = 300
+PLAYER_SIGHT_RANGE = SCREEN_WIDTH/4 # How far can the player see?
 
 FIRE_KEY = arcade.key.SPACE
 
 # All layers configured must exist in the map file.
-# line_of_sight: Should sprites only be drawn if they are vissible to a player?
+# line_of_sight: Should sprites only be drawn if they are visible to a player?
 # draw: Should the sprites on this layer be drawn?. Config layers, like spawn points, should probably not be drawn
 # passable: Can players and enemies can move through sprites on this layer?
 MAP_LAYER_CONFIG = {
@@ -94,13 +97,17 @@ class GameView(arcade.View):
             colliding_tiles = background_tile.collides_with_list(self.tilemap.sprite_lists["impassable"])
             assert len(colliding_tiles) == 0, f"A tile on layer 'background' collides with a tile on layer 'impassable' at position {background_tile.position}"
 
-        # Variable that will hold a list of shots fired by the player
-        self.player_attack_list = arcade.SpriteList()
+        # Add variable 'seen' to all tiles that has player line of sight. This will be used later on.
+        for layer_name in MAP_LAYER_CONFIG.keys():
+            if MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
+                for s in self.tilemap.sprite_lists[layer_name]:
+                    # Tiles are unseen by default
+                    s.seen = False
+
 
         # Set up the player info
         # FIXME: Move this into the Player class
         self.player_score = 0
-        self.player_lives = PLAYER_LIVES
 
         self.player_sprite_list = []
 
@@ -125,7 +132,8 @@ class GameView(arcade.View):
                 impassables=self.tilemap.sprite_lists["impassable"],
                 grid_size=int(self.tilemap.tile_width),
                 window=self.window,
-                target=self.player_sprite_list[0],
+                potential_targets_list=player_list,
+                equipped_weapon=Weapon(type=WeaponType.SWORD_SHORT),
                 scale=SCALING
             )
 
@@ -158,6 +166,7 @@ class GameView(arcade.View):
 
             # Communicate with joystick
             self.joystick.open()
+
             # Map joysticks functions to local functions
             self.joystick.on_joybutton_press = self.on_joybutton_press
             self.joystick.on_joybutton_release = self.on_joybutton_release
@@ -182,18 +191,31 @@ class GameView(arcade.View):
         # Draw the sprite list from the map if configured to be drawn
         for layer_name, layer_sprites in self.tilemap.sprite_lists.items():
             if MAP_LAYER_CONFIG[layer_name].get("draw", True):
-                if MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
-                    # FIXME: Add logic for drawing stuff that should only be drawn if players have line of sight here
-                    pass
-                else:
+                if not MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
+                    # If the layer is not configured as line_of_sight, all tiles will be drawn
                     layer_sprites.draw(pixelated=DRAW_PIXELATED)
-
-        # Draw the player shot
-        self.player_attack_list.draw(pixelated=DRAW_PIXELATED)
-
-        # Draw the player sprite
-        for p in self.player_sprite_list:
-            p.draw(pixelated=DRAW_PIXELATED)
+                else:
+                    # Run through line_of_sight tiles
+                    for s in layer_sprites:
+                        if s.seen:
+                            # If the tile has already been seen, draw it and skip the rest.
+                            s.draw(pixelated=DRAW_PIXELATED)
+                        else:
+                            # If player has line of sight to an unseen tile, it's marked as seen
+                            try:
+                                if arcade.has_line_of_sight(
+                                        point_1 = s.position,
+                                        point_2 = self.player_sprite_list[0].position,
+                                        walls = self.tilemap.sprite_lists["impassable"],
+                                        check_resolution = TILE_SIZE*2,
+                                        max_distance = PLAYER_SIGHT_RANGE
+                                ):
+                                    s.seen = True
+                            except ZeroDivisionError:
+                                # An error may occur in the has_line_of_sight() function
+                                # if the distance between point_1 and point_2 is too close to zero.
+                                # In that case we assume that the tile has already been seen.
+                                pass
 
         # Draw players score on screen
         arcade.draw_text(
@@ -206,39 +228,35 @@ class GameView(arcade.View):
             bold=True,
         )
 
-        # Draw the player shot
-        self.player_attack_list.draw(pixelated=DRAW_PIXELATED)
+        # Draw the player sprite and its objects (weapon & emotes)
 
         for p in self.player_sprite_list:
             # Draw the player sprite
             # Draw the player sprite and its attacks and emotes
             p.draw(pixelated=DRAW_PIXELATED)
-            p.attacks.draw(pixelated=DRAW_PIXELATED)
             p.emotes.draw(pixelated=DRAW_PIXELATED)
 
+        for s in self.tilemap.sprite_lists["enemies"]:
+            s.on_draw(draw_attack_hitboxes=DEBUG_MODE)
 
-    def on_update(self, delta_time):
+        # Draw the enemy emotes
+        for e in self.tilemap.sprite_lists["enemies"]:
+            e.emotes.draw()
+
+    def on_update(self, delta_time: float = 1/60):
         """
         Movement and game logic
         """
         for p in self.player_sprite_list:
-            # DEMO: Random reactions for the player
-            if random.randint(1, 60) == 1:
-                p.react(random.choice(list(Reaction)))
 
-            # Set x/y speed for the player based on key states
+
             p.update()
 
-            # Update the player attacks and emotes
-            p.attacks.on_update(delta_time)
-            p.emotes.on_update(delta_time)
 
         # Update the physics engine (including the player)
         # Return all sprites involved in collissions
         colliding_sprites = self.physics_engine.update()
 
-        # Update the player shots
-        self.player_attack_list.on_update(delta_time)
         # Update the enemies
         self.tilemap.sprite_lists["enemies"].update()
 
@@ -291,11 +309,43 @@ class IntroView(arcade.View):
         """
 
         # Set the background color
-        arcade.set_background_color(arcade.csscolor.DARK_SLATE_BLUE)
+        arcade.set_background_color(arcade.csscolor.SLATE_GREY)
 
         # Reset the viewport, necessary if we have a scrolling game and we need
         # to reset the viewport back to the start so we can see what we draw.
         arcade.set_viewport(0, self.window.width, 0, self.window.height)
+
+        button_scaling = 1.6
+
+        # Make the title Sprite
+        self.title = arcade.Sprite(
+            "images/GUI/title_game_start.png",
+            button_scaling*1.5
+            )
+        self.title.center_x = SCREEN_WIDTH//2
+        self.title.center_y = 350
+
+        # Makes the manager that contains the GUI button and enables it to the game.
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+
+        # Makes the play button.
+        self.gui_play_button = arcade.gui.UITextureButton(
+            x=150,
+            y=125,
+            width=100,
+            height=100,
+            texture=arcade.load_texture("images/GUI/start_button_unhovered.png"),
+            texture_hovered=arcade.load_texture("images/GUI/start_button_hovered.png"),
+            scale=button_scaling,
+            style=None
+        )
+
+        # Adds the play button to the manager.
+        self.manager.add(self.gui_play_button)
+
+        # Makes it to when the player presses the play button it starts the game.
+        self.gui_play_button.on_click = self.start_game
 
     def on_draw(self):
         """
@@ -303,32 +353,33 @@ class IntroView(arcade.View):
         """
         self.clear()
 
-        # Draw some text
+        # Draws the title and the manager which has the play button.
+        self.title.draw(pixelated=DRAW_PIXELATED)
+        self.manager.draw()
+
+        # Info how to also start the game.
         arcade.draw_text(
-            "Instructions Screen",
+            "Press Space to start!",
             self.window.width / 2,
-            self.window.height / 2,
-            arcade.color.WHITE,
-            font_size=20,
+            110,
+            arcade.color.BLACK,
+            font_size=15,
             font_name=MAIN_FONT_NAME,
             anchor_x="center",
             bold=True
         )
 
-        # Draw more text
-        arcade.draw_text(
-            "Press any key to start the game",
-            self.window.width / 2,
-            self.window.height / 2 - 75,
-            arcade.color.WHITE,
-            font_size=20,
-            font_name=MAIN_FONT_NAME,
-            anchor_x="center",
-        )
-
     def on_key_press(self, key: int, modifiers: int):
         """
         Start the game when any key is pressed
+        """
+        if key == arcade.key.SPACE:
+            game_view = GameView()
+            self.window.show_view(game_view)
+
+    def start_game(self, event):
+        """
+        Starts the game.
         """
         game_view = GameView()
         self.window.show_view(game_view)
@@ -341,7 +392,7 @@ class GameOverView(arcade.View):
 
     def __init__(self, score, window=None):
         """
-        Create a Gaome Over view. Pass the final score to display.
+        Create a Game Over-view. Pass the final score to display.
         """
         self.score = score
 
@@ -357,13 +408,52 @@ class GameOverView(arcade.View):
         """
         This is run once when we switch to this view
         """
+        button_scaling = 1.6
 
         # Set the background color
-        arcade.set_background_color(arcade.csscolor.DARK_GOLDENROD)
+        arcade.set_background_color(arcade.csscolor.BLACK)
 
         # Reset the viewport, necessary if we have a scrolling game and we need
         # to reset the viewport back to the start so we can see what we draw.
         arcade.set_viewport(0, self.window.width, 0, self.window.height)
+
+
+        # Make the title Sprite
+        self.title = arcade.Sprite(
+            filename="images/GUI/title_game_over.png",
+            scale=button_scaling*2,
+            center_x=SCREEN_WIDTH//2,
+            center_y=350,
+            )
+
+        self.subtitle = arcade.Sprite(
+            filename=f"images/GUI/end_text_{random.randint(1, 5)}.png",
+            scale=button_scaling*2,
+            center_x=self.title.center_x,
+            center_y=self.title.center_y - 50
+            )
+
+        # Makes the manager that contains the GUI button and enables it to the game.
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+
+        # Makes the play button.
+        gui_play_button = arcade.gui.UITextureButton(
+            x=150,
+            y=125,
+            width=100,
+            height=100,
+            texture=arcade.load_texture("images/GUI/restart_button_unhovered.png"),
+            texture_hovered=arcade.load_texture("images/GUI/restart_button_hovered.png"),
+            scale=button_scaling,
+            style=None
+        )
+
+        # Adds the play button to the manager.
+        self.manager.add(gui_play_button)
+
+        # Makes it to when the player presses the play button it starts the game.
+        gui_play_button.on_click = self.restart
 
     def on_draw(self):
         """
@@ -372,23 +462,18 @@ class GameOverView(arcade.View):
 
         self.clear()
 
-        # Draw some text
-        arcade.draw_text(
-            "Game over!",
-            self.window.width / 2,
-            self.window.height / 2,
-            arcade.color.WHITE,
-            font_size=50,
-            font_name=MAIN_FONT_NAME,
-            anchor_x="center",
-            bold=True
-        )
+        # Draws the game over title and the under title.
+        self.title.draw(pixelated=DRAW_PIXELATED)
+        self.subtitle.draw(pixelated=DRAW_PIXELATED)
 
-        # Draw player's score
+        # Draws the manager.
+        self.manager.draw()
+
+        # Draw player's score.
         arcade.draw_text(
             f"Your score: {self.score}",
             self.window.width / 2,
-            self.window.height / 2 - 75,
+            self.window.height - 75,
             arcade.color.WHITE,
             font_size=20,
             font_name=MAIN_FONT_NAME,
@@ -397,7 +482,16 @@ class GameOverView(arcade.View):
 
     def on_key_press(self, key: int, modifiers: int):
         """
-        Return to intro screen when any key is pressed
+        Return to intro screen when any key is pressed.
+        """
+
+        if key == arcade.key.SPACE:
+            intro_view = IntroView()
+            self.window.show_view(intro_view)
+
+    def restart(self, event):
+        """
+        Return to intro screen when the restart button pressed
         """
         intro_view = IntroView()
         self.window.show_view(intro_view)
