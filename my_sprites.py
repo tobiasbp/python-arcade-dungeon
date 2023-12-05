@@ -889,19 +889,19 @@ class HealthBar(arcade.Sprite):
         self._bar_width = bar_width * scale
         self._bar_height = bar_height * scale
 
-        self._offset = offset
+        self._offset = offset # y offset, to offset the bar, so it is not drawn on top of the player
 
-        """
-        static bar behind the dynamic bar
-        """
+
+        # static bar behind the dynamic bar
+
         self._background_bar = arcade.SpriteSolidColor(
             self._bar_width,
             self._bar_height,
             arcade.color.RED
         )
-        """
-        bar changing depending on the percentage variable
-        """
+
+        # bar changing depending on the percentage variable
+
         self._full_bar = arcade.SpriteSolidColor(
             self._bar_width,
             self._bar_height,
@@ -940,7 +940,6 @@ class HealthBar(arcade.Sprite):
         self._background_bar.position = (self.center_x, self.center_y + self._offset)
         self._foreground_bar.left = self._background_bar.left
         self._foreground_bar.center_y = self.center_y + self._offset
-        self._life_bar_list[1] = self._foreground_bar
 
     def draw(self):
         self._background_bar.draw()
