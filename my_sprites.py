@@ -280,7 +280,6 @@ class Player(arcade.Sprite):
             center_y=0,
             speed=2,
             scale=1,
-            max_hp: int = 10,
             type:Optional[PlayerType]=None,
             key_up=arcade.key.UP,
             key_down=arcade.key.DOWN,
@@ -362,6 +361,7 @@ class Player(arcade.Sprite):
         self._max_hp = max_hp
         self._hp = max_hp
         self.health_bar = HealthBar(max_health=max_hp)
+
 
     def attack(self):
         """
@@ -518,9 +518,7 @@ class Player(arcade.Sprite):
         """
         self.emotes.draw(pixelated=pixelated)
 
-
         self.health_bar.draw()
-
         if self.equiped is not None:
             if draw_attack_hitboxes:
                 self.equiped.draw_hit_box()
@@ -571,8 +569,6 @@ class Player(arcade.Sprite):
         self.health_bar.health = self._hp
         self.health_bar.position = self.position
         self.health_bar.update()
-
-        self._emotes.update()
 
         self._emotes.update()
 
@@ -912,10 +908,6 @@ class HealthBar(arcade.Sprite):
             arcade.color.GREEN
         )
 
-        self._life_bar_list = arcade.SpriteList()
-        self._life_bar_list.append(self._background_bar)
-        self._life_bar_list.append(self._full_bar)
-
     @property
     def max_health(self):
         return self._max_health
@@ -925,12 +917,9 @@ class HealthBar(arcade.Sprite):
         return self._background_bar
 
     @property
-    def full_bar(self):
-        return self._full_bar
+    def foreground_bar(self):
+        return self._foreground_bar
 
-    @property
-    def life_bar(self):
-        return self._life_bar_list
 
     @property
     def health(self):
@@ -941,7 +930,7 @@ class HealthBar(arcade.Sprite):
         # Set the size of the bar
         self._current_health = new_health / self._max_health
 
-        self._full_bar = arcade.SpriteSolidColor(
+        self._foreground_bar = arcade.SpriteSolidColor(
             max(int(self._bar_width * self._current_health), 0),  # make sure width doesn't go under 0
             self._bar_height,
             arcade.color.GREEN
@@ -949,10 +938,10 @@ class HealthBar(arcade.Sprite):
 
     def update(self):
         self._background_bar.position = (self.center_x, self.center_y + self._offset)
-        self._full_bar.left = self._background_bar.left
-        self._full_bar.center_y = self.center_y + self._offset
-        self._life_bar_list[1] = self._full_bar
+        self._foreground_bar.left = self._background_bar.left
+        self._foreground_bar.center_y = self.center_y + self._offset
+        self._life_bar_list[1] = self._foreground_bar
 
     def draw(self):
-        self._life_bar_list.draw()
-
+        self._background_bar.draw()
+        self._foreground_bar.draw()
