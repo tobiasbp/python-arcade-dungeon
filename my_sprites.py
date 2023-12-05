@@ -5,14 +5,14 @@ from typing import List, Optional
 from enum import IntEnum, Enum, auto, unique
 
 @unique
-class Direction(Enum):
+class Direction(IntEnum):
     """
     Directions for players/enemies
     """
-    LEFT = auto()
-    RIGHT = auto()
-    UP = auto()
-    DOWN = auto()
+    LEFT = 270
+    RIGHT = 90
+    UP = 0
+    DOWN = 180
 
 @unique
 class EnemyState(Enum):
@@ -28,7 +28,7 @@ class Enemy(arcade.Sprite):
     """
     parent class for all enemies in the game. Features include pathfinding, hp management and movement
 
-    :param target: sprite to chase/harm if spotted.
+    :param potential_targets_list: list of sprites to chase/harm if spotted.
     :param filename: path to the file used as graphics for the sprite.
     :param position: tuple containing the x and y coordinate to create the sprite at.
     :param max_hp: the max hp for the enemy. Also determines starting hp.
@@ -43,7 +43,8 @@ class Enemy(arcade.Sprite):
             impassables: arcade.SpriteList,
             window: arcade.Window,
             grid_size: int,
-            target: arcade.Sprite,  # FIXME: Take multiple targets to support multiplayer
+            potential_targets_list: arcade.SpriteList,
+            equipped_weapon = None,
             filename: str = "images/tiny_dungeon/Tiles/tile_0087.png",
             state: EnemyState=EnemyState.ROAMING,
             max_hp: int = 10,
@@ -64,9 +65,14 @@ class Enemy(arcade.Sprite):
 
         self.window = window
         self.speed = speed
-        self.target = target
+        self.potential_targets_list = potential_targets_list  # list of sprites to chase when spotted
+        self.target = None
         self.roaming_dist = roaming_dist
         self._state = state
+        if equipped_weapon is not None:
+            self._equipped = equipped_weapon
+        else:
+            self._equipped = None
 
         # pathfinding
         self.path = []
@@ -118,6 +124,15 @@ class Enemy(arcade.Sprite):
     def emotes(self):
         return self._emotes
 
+    @property
+    def equipped(self):
+        return self._equipped
+
+    @equipped.setter
+    def equipped(self, weapon):
+        assert type(weapon) == Weapon or weapon is None, f"expected type WeaponType, or None, got {type(Weapon)}"
+        self._equipped = weapon
+
     def go_to_position(self, target_pos: tuple[int, int]):
         """
         calculates a path to the target pos. Sets the sprite's path to this path.
@@ -148,22 +163,30 @@ class Enemy(arcade.Sprite):
             )
         )
 
-    def on_update(self, delta_time: float = 1 / 60):
+    def update(self):
 
         # state control
-        if arcade.has_line_of_sight(self.position, self.target.position, self.barriers.blocking_sprites):
-            self.state = EnemyState.CHASING
-        else:
+        self.cur_target = None
+        for t in self.potential_targets_list:  # FIXME: Make the enemy go for the closest player
+            if arcade.has_line_of_sight(t.position, self.position, self.barriers.blocking_sprites):
+                self.cur_target = t
+                self.state = EnemyState.CHASING
+        if self.cur_target is None:
             self.state = EnemyState.ROAMING
 
         # chasing state
         if self.state == EnemyState.CHASING:
             self.path = []
 
-            angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.target.center_x, self.target.center_y)
+            angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
 
             self.center_x += math.sin(angle_to_target) * self.speed
             self.center_y += math.cos(angle_to_target) * self.speed
+
+            if self.equipped is not None:
+                self.equipped.attack(position=self.position, angle=angle_to_target)
+                self.equipped.center_x += math.sin(angle_to_target) * self.speed
+                self.equipped.center_y += math.cos(angle_to_target) * self.speed
 
         # roaming state
         elif self.state == EnemyState.ROAMING:
@@ -213,7 +236,21 @@ class Enemy(arcade.Sprite):
         if self.hp <= 0:
             self.kill()
 
-        self._emotes.on_update(delta_time)
+        # update weapon
+        if self.equipped is not None:
+            self.equipped.update()
+            # check weapon durability
+            if self.equipped.attacks_left <= 0:
+                self.equipped = None
+
+        self._emotes.update()
+
+    def on_draw(self, draw_attack_hitboxes: bool=False):
+        if self.equipped is not None:
+            self.equipped.draw()
+            if draw_attack_hitboxes:
+                self.equipped.draw_hit_box()
+        self.draw()
 
 @unique
 class PlayerType(IntEnum):
@@ -243,6 +280,7 @@ class Player(arcade.Sprite):
             center_y=0,
             speed=2,
             scale=1,
+            max_hp: int = 10,
             type:Optional[PlayerType]=None,
             key_up=arcade.key.UP,
             key_down=arcade.key.DOWN,
@@ -287,6 +325,10 @@ class Player(arcade.Sprite):
 
         self._type = type
 
+        # hp
+        self._max_hp = max_hp
+        self._hp = max_hp
+
         self.key_left = key_left
         self.key_right = key_right
         self.key_up = key_up
@@ -327,13 +369,8 @@ class Player(arcade.Sprite):
         # Add the default weapon
         self.add_weapon(WeaponType.SWORD_SHORT)
 
-        # Player's attacks will be stored here
-        # FIXME: Do we want this when we have weapons?
-        self._attacks = arcade.SpriteList()
-
         # Player's emotes will be stored here
         self._emotes = arcade.SpriteList()
-
 
     def attack(self):
         """
@@ -345,7 +382,7 @@ class Player(arcade.Sprite):
 
             success = self.equiped.attack(
                 position=self.position,
-                direction=self.direction,
+                angle=math.radians(self.direction),
             )
 
             if success:
@@ -372,6 +409,18 @@ class Player(arcade.Sprite):
             )
         )
 
+    @property
+    def max_hp(self):
+        return self._max_hp
+
+    @property
+    def hp(self):
+        return self._hp
+
+    @hp.setter
+    def hp(self, new_hp):
+        self._hp = max(0, min(new_hp, self.max_hp))  # hp should be greater than 0 and not greater than max hp
+
 
     @property
     def weapons(self):
@@ -381,8 +430,8 @@ class Player(arcade.Sprite):
         return self._weapons.keys()
 
     @property
-    def attacks(self):
-        return self._attacks
+    def max_hp(self):
+        return self._max_hp
 
     @property
     def emotes(self):
@@ -395,6 +444,11 @@ class Player(arcade.Sprite):
     @property
     def equiped(self):
         return self._equiped
+
+    @equiped.setter
+    def equiped(self, weapon):
+        assert type(weapon) == Weapon or weapon is None, f"expected type Weapon or NoneType, got {type(weapon)}"
+        self._equiped = weapon
 
     @property
     def direction(self):
@@ -486,13 +540,15 @@ class Player(arcade.Sprite):
     def on_joyhat_motion(self, joystick, hat_x, hat_y):
         print("Note: This game is not compatible with Joyhats")
 
-    def draw_sprites(self, pixelated):
+    def draw_sprites(self, pixelated, draw_attack_hitboxes: bool=False):
         """
         Draw sprites handles by the Player
         """
         self.emotes.draw(pixelated=pixelated)
-        self.attacks.draw(pixelated=pixelated)
+
         if self.equiped is not None:
+            if draw_attack_hitboxes:
+                self.equiped.draw_hit_box()
             # Only draw active weapons
             if not self.equiped.is_idle:
                 self.equiped.draw(pixelated=pixelated)
@@ -505,7 +561,6 @@ class Player(arcade.Sprite):
         self.change_x = 0
         self.change_y = 0
 
-        # Move the equiped item to the player's position
         if self.equiped is not None:
             self.equiped.update()
 
@@ -531,7 +586,19 @@ class Player(arcade.Sprite):
         else:
             self.angle = 0
 
+        # Move equipped weapon to our position
+        if self.equiped is not None:
+            self.equiped.center_x = self.center_x + (math.sin(math.radians(self.direction)) * Weapon.data[self.equiped.type]["range"])
+            self.equiped.center_y = self.center_y + (math.cos(math.radians(self.direction)) * Weapon.data[self.equiped.type]["range"])
+
+        # check weapon durability
+        if self.equiped is not None:
+            if self.equiped.attacks_left <= 0:
+                self.equiped = None
+
         # Note: We don't change the position of the sprite here, since that is done by the physics engine
+
+        self._emotes.update()
 
 
 @unique
@@ -583,7 +650,7 @@ class Emote(arcade.Sprite):
         sprite_width=16,
         sprite_height=16,
         columns=10,
-        count=3*10)
+        count=30)
 
     def __init__(
             self,
@@ -613,12 +680,12 @@ class Emote(arcade.Sprite):
         self.change_x = random.uniform(-1 * float_x, float_x)
         self.change_y = float_y
 
-    def on_update(self, delta_time:float):
+    def update(self):
 
         self.center_x += self.change_x
         self.center_y += self.change_y
 
-        self.time_left -= delta_time
+        self.time_left -= 1/60  # we don't want to use on_update, so we just use the default delta_time
 
         if self.enable_fade:
             self.alpha = max(0, 255 * self.time_left/self.lifetime)
@@ -634,7 +701,15 @@ class WeaponType(IntEnum):
     """
     SWORD_SHORT = 9*11+4
     SWORD_LONG = 9*11+5
-    # FIXME: Add more weapon types
+    SWORD_FALCHION = 9*11+6
+    SWORD_DOUBLE_SILVER = 9*11+7
+    SWORD_DOUBLE_BRONZE = 9*11+8
+    HAMMER = 9*12+6
+    AXE_DOUBLE = 9*12+7
+    AXE_SINGLE = 9*12+8
+    STAFF_PURPLE = 9*13+6
+    STAFF_GREEN = 9*13+7
+    SPEAR = 9*13+8
 
 
 class Weapon(arcade.Sprite):
@@ -653,25 +728,99 @@ class Weapon(arcade.Sprite):
         margin=1)
 
     # range: How far from the user of the weapon will it attack
+    # hitbox: the points to use as the sprites hitbox
     # strength: How much damage will the weapon inflict?
-    # speed: How often can the weapon be used (seconds)
+    # rate: How often can the weapon be used (seconds)
     # max_usage: How many times can the weapon be used?
+
     data = {
-        WeaponType.SWORD_SHORT: {
+        WeaponType.AXE_DOUBLE: {
+            # Remember to use scale with this when attacking
+            "range": 25,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
+            "strength": 40,
+            "rate": 4.5,
+            "max_usage": math.inf
+        },
+        WeaponType.AXE_SINGLE: {
+            # Remember to use scale with this when attacking
+            "range": 20,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
+            "strength": 25,
+            "rate": 3,
+            "max_usage": math.inf
+        },
+        WeaponType.HAMMER: {
             # Remember to use scale with this when attacking
             "range": 15,
-            "strength": 7,
-            "speed": 0.8,
-            "max_usage": 10
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
+            "strength": 30,
+            "rate": 2.5,
+            "max_usage": 30
+        },
+        WeaponType.SPEAR: {
+            # Remember to use scale with this when attacking
+            "range": 40,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
+            "strength": 20,
+            "rate": 1,
+            "max_usage": math.inf
+        },
+        WeaponType.STAFF_GREEN: {
+            # Need a setting for distance weapons!
+            "range": 15,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
+            "strength": 15,
+            "rate": 1,
+            "max_usage": math.inf
+        },
+        WeaponType.STAFF_PURPLE: {
+            "range": 15,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
+            "strength": 10,
+            "rate": 1,
+            "max_usage": math.inf
+        },
+        WeaponType.SWORD_DOUBLE_BRONZE: {
+            # Remember to use scale with this when attacking
+            "range": 30,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
+            "strength": 15,
+            "rate": 1,
+            "max_usage": 15
+        },
+        WeaponType.SWORD_DOUBLE_SILVER: {
+            # Remember to use scale with this when attacking
+            "range": 20,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
+            "strength": 25,
+            "rate": 3.2,
+            "max_usage": math.inf
+        },
+        WeaponType.SWORD_FALCHION: {
+            # Remember to use scale with this when attacking
+            "range": 35,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
+            "strength": 15,
+            "rate": 3,
+            "max_usage": math.inf
         },
         WeaponType.SWORD_LONG: {
             # Remember to use scale with this when attacking
             "range": 30,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 10,
-            "speed": 1.2,
+            "rate": 1.2,
             "max_usage": math.inf
+        },
+        WeaponType.SWORD_SHORT: {
+            # Remember to use scale with this when attacking
+            "range": 15,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
+            "strength": 7,
+            "rate": 0.8,
+            "max_usage": 10
         }
-        # FIXME: Add more weapon types
     }
 
     def __init__(self,type: WeaponType,position: tuple[int, int]=(0,0),scale:int=1):
@@ -680,7 +829,8 @@ class Weapon(arcade.Sprite):
             center_x = position[0],
             center_y = position[1],
             scale = scale,
-            texture = Weapon.textures[type]
+            texture = Weapon.textures[type],
+            hit_box_algorithm=None
         )
 
         self._type = type
@@ -697,45 +847,48 @@ class Weapon(arcade.Sprite):
         return self._time_to_idle <= 0.0
 
     @property
+    def type(self):
+        return self._type
+
+    @property
     def range(self):
-        return Weapon.data[self._type]["range"]
+        return Weapon.data[self.type]["range"]
 
     @property
     def strength(self):
-        return Weapon.data[self._type]["strength"]
+        return Weapon.data[self.type]["strength"]
 
     @property
-    def speed(self):
-        return Weapon.data[self._type]["speed"]
+    def rate(self):
+        return Weapon.data[self._type]["rate"]
 
     @property
     def attacks_left(self):
         return self._attacks_left
 
-    def attack(self, position: tuple[int,int], direction):
+    def attack(self, position: tuple[int,int], angle):
         """
         Weapon attacks at position
         """
+
+        # FIXME: Make resizable hitboxes work for all angles
+
+        self.hit_box = Weapon.data[self.type]["hit_box"]
         if self.is_idle:
             if self.attacks_left <= 0:
+                self.kill()
                 return False
 
             self._attacks_left -= 1
             self.position = position
-            self._time_to_idle = self.speed
+            self._time_to_idle = self.rate
 
-            # Offset position of attack
-            if direction == Direction.LEFT:
-                self.center_x -= self.range
-            elif direction == Direction.RIGHT:
-                self.center_x += self.range
-            elif direction == Direction.UP:
-                self.center_y += self.range
-            elif direction == Direction.DOWN:
-                self.center_y -= self.range
-            else:
-                raise ValueError("Invalid direction:", direction)
+            distance = Weapon.data[self.type]["range"]
 
+            self.center_x = position[0] + (math.sin(angle) * distance)
+            self.center_y = position[1] + (math.cos(angle) * distance)
+
+            self._time_to_idle = Weapon.data[self.type]["rate"]
             return True
 
     def update(self):
@@ -744,4 +897,4 @@ class Weapon(arcade.Sprite):
             self.angle += 4
 
             # Time passes
-            self._time_to_idle -= 0.03
+            self._time_to_idle -= 1/60  # we don't want to use on_update, so we just use the default delta time
