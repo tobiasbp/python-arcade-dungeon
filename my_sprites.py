@@ -280,6 +280,7 @@ class Player(arcade.Sprite):
             center_y=0,
             speed=2,
             scale=1,
+            max_hp: int = 10,
             type:Optional[PlayerType]=None,
             key_up=arcade.key.UP,
             key_down=arcade.key.DOWN,
@@ -361,7 +362,6 @@ class Player(arcade.Sprite):
         self._max_hp = max_hp
         self._hp = max_hp
         self.health_bar = HealthBar(max_health=max_hp)
-
 
     def attack(self):
         """
@@ -518,7 +518,9 @@ class Player(arcade.Sprite):
         """
         self.emotes.draw(pixelated=pixelated)
 
+
         self.health_bar.draw()
+
         if self.equiped is not None:
             if draw_attack_hitboxes:
                 self.equiped.draw_hit_box()
@@ -569,6 +571,8 @@ class Player(arcade.Sprite):
         self.health_bar.health = self._hp
         self.health_bar.position = self.position
         self.health_bar.update()
+
+        self._emotes.update()
 
         self._emotes.update()
 
@@ -951,3 +955,4 @@ class HealthBar(arcade.Sprite):
 
     def draw(self):
         self._life_bar_list.draw()
+
