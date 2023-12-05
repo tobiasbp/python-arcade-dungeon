@@ -564,7 +564,6 @@ class Player(arcade.Sprite):
                 self.equiped = None
 
         # Note: We don't change the position of the sprite here, since that is done by the physics engine
-        self._hp -= 0.3 # Just for testing the health-bar
         # Update the health-bar
         self.health_bar.health = self._hp
         self.health_bar.position = self.position
@@ -911,15 +910,6 @@ class HealthBar(arcade.Sprite):
     @property
     def max_health(self):
         return self._max_health
-
-    @property
-    def background_bar(self):
-        return self._background_bar
-
-    @property
-    def foreground_bar(self):
-        return self._foreground_bar
-
 
     @property
     def health(self):
