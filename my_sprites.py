@@ -288,7 +288,7 @@ class Player(arcade.Sprite):
             key_attack=arcade.key.SPACE,
             jitter_amount:int=10, # How much to rotate when walking
             jitter_likelihood:float=0.5, # How likely is jittering?
-            max_hp:int=100
+            max_hp:int=10
         ):
         """
         Setup new Player object
@@ -901,7 +901,7 @@ class HealthBar(arcade.Sprite):
 
         # bar changing depending on the percentage variable
 
-        self._full_bar = arcade.SpriteSolidColor(
+        self._foreground_bar = arcade.SpriteSolidColor(
             self._bar_width,
             self._bar_height,
             arcade.color.GREEN
@@ -920,11 +920,14 @@ class HealthBar(arcade.Sprite):
         # Set the size of the bar
         self._current_health = new_health / self._max_health
 
+        """
         self._foreground_bar = arcade.SpriteSolidColor(
             max(int(self._bar_width * self._current_health), 0),  # make sure width doesn't go under 0
             self._bar_height,
             arcade.color.GREEN
         )
+        """
+        self._foreground_bar.width = max(int(self._bar_width * self._current_health), 0)
 
     def update(self):
         self._background_bar.position = (self.center_x, self.center_y + self._offset)
