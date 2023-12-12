@@ -266,6 +266,11 @@ class GameView(arcade.View):
         # End the game if the escape key is pressed
         if key == arcade.key.ESCAPE:
             self.game_over()
+        elif key == arcade.key.R and DEBUG_MODE:
+            # Restarts the game when Debug mode is True and you pressed R.
+            game_view = GameView()
+            self.window.show_view(game_view)
+            print("Game Reset! 🔁 -- Turn Debug mode off to remove this feature! ✔")
 
     def on_key_release(self, key, modifiers):
         self.player.on_key_release(key, modifiers)
