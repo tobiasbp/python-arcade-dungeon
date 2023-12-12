@@ -914,25 +914,22 @@ class HealthBar(arcade.Sprite):
     @property
     def health(self):
         """
-        current_health is a ratio, return as actual value
+        Return current health (0 to max health)
         """
-        return self._current_health * self._max_health
+        return self._current_health
 
     @health.setter
     def health(self, new_health):
         """
-        Set the size of the bar
+        Updates health if health is a value over zero and under max_health
         """
-        self._current_health = new_health / self._max_health
+        if 0 < new_health < self._max_health:
+            self._current_health = new_health
 
         """
-        self._foreground_bar = arcade.SpriteSolidColor(
-            max(int(self._bar_width * self._current_health), 0),  # make sure width doesn't go under 0
-            self._bar_height,
-            arcade.color.GREEN
-        )
+        calculates ratio of current health and max health and multiplies it with max bar width to get new bar width
         """
-        self._foreground_bar.width = max(int(self._bar_width * self._current_health), 0)
+        self._foreground_bar.width = int((self._current_health / self._max_health) * self._bar_width)
 
     def update(self):
         self._background_bar.position = (self.center_x, self.center_y + self._offset)
