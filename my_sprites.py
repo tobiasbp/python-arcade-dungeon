@@ -913,7 +913,7 @@ class HealthBar(arcade.Sprite):
 
     @property
     def health(self):
-        return self._current_health
+        return self._current_health * self._max_health # current_health is a ratio, return as actual value
 
     @health.setter
     def health(self, new_health):
