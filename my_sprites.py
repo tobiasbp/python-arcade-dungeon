@@ -280,7 +280,6 @@ class Player(arcade.Sprite):
             center_y=0,
             speed=2,
             scale=1,
-            max_hp: int = 10,
             type:Optional[PlayerType]=None,
             key_up=arcade.key.UP,
             key_down=arcade.key.DOWN,
@@ -288,7 +287,8 @@ class Player(arcade.Sprite):
             key_right=arcade.key.RIGHT,
             key_attack=arcade.key.SPACE,
             jitter_amount:int=10, # How much to rotate when walking
-            jitter_likelihood:float=0.5 # How likely is jittering?
+            jitter_likelihood:float=0.5, # How likely is jittering?
+            max_hp:int=10
         ):
         """
         Setup new Player object
@@ -356,6 +356,12 @@ class Player(arcade.Sprite):
 
         # Player's emotes will be stored here
         self._emotes = arcade.SpriteList()
+
+        # Player's variables about hp
+        self._max_hp = max_hp
+        self._hp = max_hp
+        self.health_bar = HealthBar(max_health=max_hp)
+
 
     def attack(self):
         """
@@ -512,6 +518,7 @@ class Player(arcade.Sprite):
         """
         self.emotes.draw(pixelated=pixelated)
 
+        self.health_bar.draw()
         if self.equiped is not None:
             if draw_attack_hitboxes:
                 self.equiped.draw_hit_box()
@@ -557,6 +564,9 @@ class Player(arcade.Sprite):
                 self.equiped = None
 
         # Note: We don't change the position of the sprite here, since that is done by the physics engine
+        # Update the health-bar
+        self.health_bar.health = self._hp
+        self.health_bar.position = self.position
 
         self._emotes.update()
 
@@ -858,3 +868,81 @@ class Weapon(arcade.Sprite):
 
             # Time passes
             self._time_to_idle -= 1/60  # we don't want to use on_update, so we just use the default delta time
+
+
+class HealthBar(arcade.Sprite):
+
+    def __init__(self,  max_health, center_x=0, center_y=0, bar_width=32, bar_height=5, offset=15, scale=1):
+
+        super().__init__(
+            center_x=center_x,
+            center_y=center_y,
+            scale=scale,
+        )
+
+        # variable controlling length of fullness of health bar
+        self._max_health = max_health
+        self._current_health = self._max_health
+
+        self._bar_width = bar_width * scale
+        self._bar_height = bar_height * scale
+
+        self._offset = offset # y offset, to offset the bar, so it is not drawn on top of the player
+
+
+        # static bar behind the dynamic bar
+
+        self._background_bar = arcade.SpriteSolidColor(
+            self._bar_width,
+            self._bar_height,
+            arcade.color.RED
+        )
+
+        # bar changing depending on the percentage variable
+
+        self._foreground_bar = arcade.SpriteSolidColor(
+            self._bar_width,
+            self._bar_height,
+            arcade.color.GREEN
+        )
+
+    @property
+    def max_health(self):
+        return self._max_health
+
+    @property
+    def health(self):
+        """
+        Return current health (0 to max health)
+        """
+        return self._current_health
+
+    @health.setter
+    def health(self, new_health):
+        """
+        Updates health if health is a value over zero and under max_health
+        """
+        if 0 < new_health < self._max_health:
+            self._current_health = new_health
+
+        """
+        calculates ratio of current health and max health and multiplies it with max bar width to get new bar width
+        """
+        self._foreground_bar.width = int((self._current_health / self._max_health) * self._bar_width)
+
+    @property
+    def position(self):
+        return self.position
+
+    @position.setter
+    def position(self, new_position):
+        self.center_x = new_position[0]
+        self.center_y = new_position[1]
+
+        self._background_bar.position = (self.center_x, self.center_y + self._offset)
+        self._foreground_bar.left = self._background_bar.left
+        self._foreground_bar.center_y = self.center_y + self._offset
+
+    def draw(self):
+        self._background_bar.draw()
+        self._foreground_bar.draw()
