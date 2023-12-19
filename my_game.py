@@ -92,7 +92,7 @@ class GameView(arcade.View):
 
         # Ensure that no tile on the background layer collides with the impassibles layer
         # We want to be able to spawn enemies on the backgrounds layer, so we must ensure
-        # that the spawn point is not impassable 
+        # that the spawn point is not impassable
         for background_tile in self.tilemap.sprite_lists["background"]:
             colliding_tiles = background_tile.collides_with_list(self.tilemap.sprite_lists["impassable"])
             assert len(colliding_tiles) == 0, f"A tile on layer 'background' collides with a tile on layer 'impassable' at position {background_tile.position}"
@@ -109,15 +109,18 @@ class GameView(arcade.View):
         # FIXME: Move this into the Player class
         self.player_score = 0
 
-        # Create a Player object
-        self.player = Player(
-            center_x=self.tilemap.sprite_lists["players"][0].center_x,
-            center_y=self.tilemap.sprite_lists["players"][0].center_y,
-            scale=SCALING,
-        )
-
+        self.player_sprite_list = []
         player_list = arcade.SpriteList()
-        player_list.append(self.player)
+
+        for i in range(2):
+            # Creates Player object
+            p = Player(
+                center_x=self.tilemap.sprite_lists["players"][0].center_x,
+                center_y=self.tilemap.sprite_lists["players"][0].center_y + random.randint(1,20),
+                scale=SCALING,
+            )
+            # Create Player spritelist
+            self.player_sprite_list.append(p)
 
         # Change all tiles in the 'enemies' layer to Enemies
         for enemy_index, enemy_position in enumerate([ s.position for s in self.tilemap.sprite_lists["enemies"]]):
@@ -136,7 +139,7 @@ class GameView(arcade.View):
             # FIXME: Often, no path will be found. Why is that??
             # e.go_to_position(random.choice(self.tilemap.sprite_lists["background"]).position)
             # Go to the player's position
-            e.go_to_position(self.player.position)
+            e.go_to_position(self.player_sprite_list[0].position)
 
             # Replace the spawn point with the new enemy
             self.tilemap.sprite_lists["enemies"][enemy_index] = e
@@ -145,7 +148,7 @@ class GameView(arcade.View):
         # Register player and walls with physics engine
         # FIXME: The physics engine can only handle a single player. How do we handle multiplayer?
         self.physics_engine =  arcade.PhysicsEngineSimple(
-            player_sprite=self.player,
+            player_sprite=self.player_sprite_list[0],
             walls = self.tilemap.sprite_lists["impassable"]
         )
 
@@ -200,7 +203,7 @@ class GameView(arcade.View):
                             try:
                                 if arcade.has_line_of_sight(
                                         point_1 = s.position,
-                                        point_2 = self.player.position,
+                                        point_2 = self.player_sprite_list[0].position,
                                         walls = self.tilemap.sprite_lists["impassable"],
                                         check_resolution = TILE_SIZE*2,
                                         max_distance = PLAYER_SIGHT_RANGE
@@ -224,8 +227,12 @@ class GameView(arcade.View):
         )
 
         # Draw the player sprite and its objects (weapon & emotes)
-        self.player.draw(pixelated=DRAW_PIXELATED)
-        self.player.draw_sprites(pixelated=DRAW_PIXELATED, draw_attack_hitboxes=DEBUG_MODE)
+
+        for p in self.player_sprite_list:
+            # Draw the player sprite
+            # Draw the player sprite and its attacks and emotes
+            p.draw(pixelated=DRAW_PIXELATED)
+            p.emotes.draw(pixelated=DRAW_PIXELATED)
 
         for s in self.tilemap.sprite_lists["enemies"]:
             s.on_draw(draw_attack_hitboxes=DEBUG_MODE)
@@ -238,9 +245,11 @@ class GameView(arcade.View):
         """
         Movement and game logic
         """
+        for p in self.player_sprite_list:
 
-        # Update the player and all of the sprites it manages
-        self.player.update()
+
+            p.update()
+
 
         # Update the physics engine (including the player)
         # Return all sprites involved in collissions
@@ -261,7 +270,8 @@ class GameView(arcade.View):
         self.window.show_view(game_over_view)
 
     def on_key_press(self, key, modifiers):
-        self.player.on_key_press(key, modifiers)
+        for p in self.player_sprite_list:
+            p.on_key_press(key, modifiers)
 
         # End the game if the escape key is pressed
         if key == arcade.key.ESCAPE:
@@ -273,7 +283,8 @@ class GameView(arcade.View):
             print("Game Reset! 🔁 -- Turn Debug mode off to remove this feature! ✔")
 
     def on_key_release(self, key, modifiers):
-        self.player.on_key_release(key, modifiers)
+        for p in self.player_sprite_list:
+            p.on_key_release(key, modifiers)
 
     def on_joybutton_press(self, joystick, button_no):
         print("Button pressed:", button_no)

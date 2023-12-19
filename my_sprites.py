@@ -571,6 +571,7 @@ class Player(arcade.Sprite):
         self._emotes.update()
 
 
+
 @unique
 class Reaction(IntEnum):
     """
