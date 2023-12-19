@@ -110,6 +110,7 @@ class GameView(arcade.View):
         self.player_score = 0
 
         self.player_sprite_list = []
+        player_list = arcade.SpriteList()
 
         for i in range(2):
             # Creates Player object
@@ -120,9 +121,6 @@ class GameView(arcade.View):
             )
             # Create Player spritelist
             self.player_sprite_list.append(p)
-
-        player_list = arcade.SpriteList()
-        player_list.append(self.player)
 
         # Change all tiles in the 'enemies' layer to Enemies
         for enemy_index, enemy_position in enumerate([ s.position for s in self.tilemap.sprite_lists["enemies"]]):
