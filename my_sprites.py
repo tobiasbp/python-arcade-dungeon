@@ -567,7 +567,6 @@ class Player(arcade.Sprite):
         # Update the health-bar
         self.health_bar.health = self._hp
         self.health_bar.position = self.position
-        self.health_bar.update()
 
         self._emotes.update()
 
@@ -931,7 +930,15 @@ class HealthBar(arcade.Sprite):
         """
         self._foreground_bar.width = int((self._current_health / self._max_health) * self._bar_width)
 
-    def update(self):
+    @property
+    def position(self):
+        return self.position
+
+    @position.setter
+    def position(self, new_position):
+        self.center_x = new_position[0]
+        self.center_y = new_position[1]
+
         self._background_bar.position = (self.center_x, self.center_y + self._offset)
         self._foreground_bar.left = self._background_bar.left
         self._foreground_bar.center_y = self.center_y + self._offset
