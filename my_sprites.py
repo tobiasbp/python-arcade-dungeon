@@ -66,7 +66,7 @@ class Enemy(arcade.Sprite):
         self.window = window
         self.speed = speed
         self.potential_targets_list = potential_targets_list  # list of sprites to chase when spotted
-        self.target = None
+        self.cur_target = None
         self.roaming_dist = roaming_dist
         self._state = state
         if equipped_weapon is not None:
@@ -170,13 +170,14 @@ class Enemy(arcade.Sprite):
 
         if self.update_state_timer <= 0:
             # state control
-            self.cur_target = None
             for t in self.potential_targets_list:  # FIXME: Make the enemy go for the closest player
                 if arcade.has_line_of_sight(t.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
                     self.cur_target = t
                     self.state = EnemyState.CHASING
-            if self.cur_target is None:
-                self.state = EnemyState.ROAMING
+                elif self.cur_target is not None:
+                    self.go_to_position(self.cur_target.position)
+                    self.cur_target = None
+                    self.state = EnemyState.ROAMING
 
             self.update_state_timer = random.random()
 
