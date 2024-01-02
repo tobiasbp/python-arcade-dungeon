@@ -306,16 +306,16 @@ class Player(arcade.Sprite):
             center_y=0,
             speed=2,
             scale=1,
-            max_hp: int = 10,
-            type: Optional[PlayerType] = None,
+            max_hp:int = 10,
+            type:Optional[PlayerType] = None,
             key_up=arcade.key.UP,
             key_down=arcade.key.DOWN,
             key_left=arcade.key.LEFT,
             key_right=arcade.key.RIGHT,
             key_attack=arcade.key.SPACE,
-            jitter_amount: int = 10,  # How much to rotate when walking
-            jitter_likelihood: float = 0.5  # How likely is jittering?
-    ):
+            jitter_amount:int = 10,  # How much to rotate when walking
+            jitter_likelihood:float = 0.5  # How likely is jittering?
+        ):
         """
         Setup new Player object
         """
