@@ -312,8 +312,8 @@ class Player(arcade.Sprite):
             key_left=arcade.key.LEFT,
             key_right=arcade.key.RIGHT,
             key_attack=arcade.key.SPACE,
-            jitter_amount:int=10,  # How much to rotate when walking
-            jitter_likelihood:float=0.5,  # How likely is jittering?
+            jitter_amount:int=10, # How much to rotate when walking
+            jitter_likelihood:float=0.5, # How likely is jittering?
             max_hp:int=10
         ):
         """
