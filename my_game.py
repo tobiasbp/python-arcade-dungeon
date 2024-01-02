@@ -48,6 +48,12 @@ PLAYER_SIGHT_RANGE = SCREEN_WIDTH/4 # How far can the player see?
 
 FIRE_KEY = arcade.key.SPACE
 
+# The keys to control player 1 & 2
+PLAYER_KEYS = [
+    {"up": arcade.key.UP, "down": arcade.key.DOWN, "left": arcade.key.LEFT, "right": arcade.key.RIGHT, "attack": arcade.key.SPACE},
+    {"up": arcade.key.W, "down": arcade.key.S, "left": arcade.key.A, "right": arcade.key.D, "attack": arcade.key.TAB},
+]
+
 # All layers configured must exist in the map file.
 # line_of_sight: Should sprites only be drawn if they are visible to a player?
 # draw: Should the sprites on this layer be drawn?. Config layers, like spawn points, should probably not be drawn
@@ -115,9 +121,14 @@ class GameView(arcade.View):
         for i in range(2):
             # Creates Player object
             p = Player(
-                center_x=self.tilemap.sprite_lists["players"][0].center_x,
-                center_y=self.tilemap.sprite_lists["players"][0].center_y + random.randint(1,20),
+                center_x=self.tilemap.sprite_lists["players"][0].center_x + random.randint(1,8) * TILE_SIZE * SCALING,
+                center_y=self.tilemap.sprite_lists["players"][0].center_y,
                 scale=SCALING,
+                key_up=PLAYER_KEYS[i]["up"],
+                key_down=PLAYER_KEYS[i]["down"],
+                key_left=PLAYER_KEYS[i]["left"],
+                key_right=PLAYER_KEYS[i]["right"],
+                key_attack=PLAYER_KEYS[i]["attack"],
             )
             # Create Player spritelist
             self.player_sprite_list.append(p)

@@ -332,7 +332,7 @@ class Player(arcade.Sprite):
         self.key_right = key_right
         self.key_up = key_up
         self.key_down = key_down
-        self.key_atttack = key_attack
+        self.key_attack = key_attack
 
         # Track state of controls (could also be a joystick in the future)
         self.left_pressed = False
@@ -405,7 +405,6 @@ class Player(arcade.Sprite):
     @hp.setter
     def hp(self, new_hp):
         self._hp = max(0, min(new_hp, self.max_hp))  # hp should be greater than 0 and not greater than max hp
-
 
     @property
     def weapons(self):
@@ -487,7 +486,7 @@ class Player(arcade.Sprite):
         elif key == self.key_down:
             self.down_pressed = True
             self._direction = Direction.DOWN
-        elif key == self.key_atttack:
+        elif key == self.key_attack:
             self.atttack_pressed = True
             self.attack()
 
@@ -503,7 +502,7 @@ class Player(arcade.Sprite):
             self.up_pressed = False
         elif key == self.key_down:
             self.down_pressed = False
-        elif key == self.key_atttack:
+        elif key == self.key_attack:
             self.atttack_pressed = False
 
     def draw_sprites(self, pixelated, draw_attack_hitboxes: bool=False):
