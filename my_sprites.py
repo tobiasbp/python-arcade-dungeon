@@ -31,20 +31,20 @@ class Sound(Enum):
     Sound effects
     """
 
-    KNIFE_SLICE = arcade.load_sound("data/audio/knifeSlice.ogg")
-    PING = arcade.load_sound("data/audio/creak1.ogg")
+    KNIFE_SLICE = arcade.load_sound("data/audio/rpg/knifeSlice.ogg")
+    PING = arcade.load_sound("data/audio/rpg/creak1.ogg")
 
     # Footstep sounds.
-    FOOTSTEP_00 = arcade.load_sound("data/audio/footstep00.ogg")
-    FOOTSTEP_01 = arcade.load_sound("data/audio/footstep01.ogg")
-    FOOTSTEP_02 = arcade.load_sound("data/audio/footstep02.ogg")
-    FOOTSTEP_03 = arcade.load_sound("data/audio/footstep03.ogg")
-    FOOTSTEP_04 = arcade.load_sound("data/audio/footstep04.ogg")
-    FOOTSTEP_05 = arcade.load_sound("data/audio/footstep05.ogg")
-    FOOTSTEP_06 = arcade.load_sound("data/audio/footstep06.ogg")
-    FOOTSTEP_07 = arcade.load_sound("data/audio/footstep07.ogg")
-    FOOTSTEP_08 = arcade.load_sound("data/audio/footstep08.ogg")
-    FOOTSTEP_09 = arcade.load_sound("data/audio/footstep09.ogg")
+    FOOTSTEP_00 = arcade.load_sound("data/audio/rpg/footstep00.ogg")
+    FOOTSTEP_01 = arcade.load_sound("data/audio/rpg/footstep01.ogg")
+    FOOTSTEP_02 = arcade.load_sound("data/audio/rpg/footstep02.ogg")
+    FOOTSTEP_03 = arcade.load_sound("data/audio/rpg/footstep03.ogg")
+    FOOTSTEP_04 = arcade.load_sound("data/audio/rpg/footstep04.ogg")
+    FOOTSTEP_05 = arcade.load_sound("data/audio/rpg/footstep05.ogg")
+    FOOTSTEP_06 = arcade.load_sound("data/audio/rpg/footstep06.ogg")
+    FOOTSTEP_07 = arcade.load_sound("data/audio/rpg/footstep07.ogg")
+    FOOTSTEP_08 = arcade.load_sound("data/audio/rpg/footstep08.ogg")
+    FOOTSTEP_09 = arcade.load_sound("data/audio/rpg/footstep09.ogg")
 
 
 class Enemy(arcade.Sprite):
