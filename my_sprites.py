@@ -902,4 +902,4 @@ class Weapon(arcade.Sprite):
             self.angle += 4
 
             # Time passes
-            self._time_to_idle -= 1 / 60  # we don't want to use on_update, so we just use the default delta time
+            self._time_to_idle -= 1/60  # we don't want to use on_update, so we just use the default delta time
