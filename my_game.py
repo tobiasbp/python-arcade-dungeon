@@ -145,13 +145,18 @@ class GameView(arcade.View):
             self.tilemap.sprite_lists["enemies"][enemy_index] = e
 
 
-        # Register player and walls with physics engine
-        # FIXME: The physics engine can only handle a single player. How do we handle multiplayer?
-        self.physics_engine =  arcade.PhysicsEngineSimple(
-            player_sprite=self.player_sprite_list[0],
-            walls = self.tilemap.sprite_lists["impassable"]
-        )
+        # We need a physics engine for each player since
+        # the one we ar eusing can anly handle a single player
+        self.physics_engines = []
 
+        # Create a physics engine for each player.
+        # Register player and walls with physics engine
+        for p in self.player_sprite_list:
+            pe = arcade.PhysicsEngineSimple(
+                player_sprite=p,
+                walls=self.tilemap.sprite_lists["impassable"]
+            )
+            self.physics_engines.append(pe)
 
         # Get list of joysticks
         joysticks = arcade.get_joysticks()
@@ -246,14 +251,12 @@ class GameView(arcade.View):
         Movement and game logic
         """
         for p in self.player_sprite_list:
-
-
             p.update()
 
-
-        # Update the physics engine (including the player)
+        # Update the physics engine for each player
         # Return all sprites involved in collissions
-        colliding_sprites = self.physics_engine.update()
+        for pe in self.physics_engines:
+            colliding_sprites = pe.update()
 
         # Update the enemies
         self.tilemap.sprite_lists["enemies"].update()
