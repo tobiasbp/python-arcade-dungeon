@@ -110,8 +110,8 @@ class GameView(arcade.View):
         self.player_score = 0
 
         self.player_sprite_list = []
-        player_list = arcade.SpriteList()
 
+        # FIXME: How do we chose the number of players? Number of joysticks connected?
         for i in range(2):
             # Creates Player object
             p = Player(
@@ -130,7 +130,7 @@ class GameView(arcade.View):
                 impassables=self.tilemap.sprite_lists["impassable"],
                 grid_size=int(self.tilemap.tile_width),
                 window=self.window,
-                potential_targets_list=player_list,
+                potential_targets_list=self.player_sprite_list,
                 equipped_weapon=Weapon(type=WeaponType.SWORD_SHORT),
                 scale=SCALING
             )
