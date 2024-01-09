@@ -275,24 +275,6 @@ class GameView(arcade.View):
         if key == arcade.key.ESCAPE:
             self.game_over()
 
-    def on_key_release(self, key, modifiers):
-        self.player.on_key_release(key, modifiers)
-
-    def on_joybutton_press(self, joystick, button_no):
-        print("Button pressed:", button_no)
-        # Press the fire key
-        self.on_key_press(FIRE_KEY, [])
-
-    def on_joybutton_release(self, joystick, button_no):
-        print("Button released:", button_no)
-
-    def on_joyaxis_motion(self, joystick, axis, value):
-        print("Joystick axis {}, value {}".format(axis, round(value)))
-
-    def on_joyhat_motion(self, joystick, hat_x, hat_y):
-        print("Joystick hat ({}, {})".format(hat_x, hat_y))
-
-
 class IntroView(arcade.View):
     """
     View to show instructions

@@ -528,32 +528,30 @@ class Player(arcade.Sprite):
         self.on_key_release(self.key_atttack, [])
 
     def on_joyaxis_motion(self, joystick, axis, value):
-        value = round(value) # Round value to an integer to correct imprecise values
+        # Round value to an integer to correct imprecise values (negative X value is interpreted as -0.007827878233005237)
+        value = round(value)
         if axis == "x":
+            print("x: ", value)
             if value > 0:
-                print("x+")
                 self.on_key_press(self.key_right, [])
                 self.on_key_release(self.key_left, [])
             elif value < 0:
-                print("x-")
                 self.on_key_press(self.key_left, [])
                 self.on_key_release(self.key_right, [])
             else:
-                print("x0")
                 self.on_key_release(self.key_right, [])
                 self.on_key_release(self.key_left, [])
+
         if axis == "y":
+            print("y: ", value)
             # y-value is misinterpreted as inverted, and needs to be corrected
             if value > 0:
-                print("y+")
                 self.on_key_press(self.key_down, [])
                 self.on_key_release(self.key_up, [])
             elif value < 0:
-                print("y-")
                 self.on_key_press(self.key_up, [])
                 self.on_key_release(self.key_down, [])
             else:
-                print("y0")
                 self.on_key_release(self.key_up, [])
                 self.on_key_release(self.key_down, [])
 
