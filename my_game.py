@@ -159,27 +159,6 @@ class GameView(arcade.View):
             walls = self.tilemap.sprite_lists["impassable"]
         )
 
-        """
-        if joysticks:
-            print("Found {} joystick(s)".format(len(joysticks)))
-
-            # Use 1st joystick found
-            self.joystick = joysticks[0]
-
-            # Communicate with joystick
-            self.joystick.open()
-
-            # Map joysticks functions to local functions
-            self.joystick.on_joybutton_press = self.on_joybutton_press
-            self.joystick.on_joybutton_release = self.on_joybutton_release
-            self.joystick.on_joyaxis_motion = self.on_joyaxis_motion
-            self.joystick.on_joyhat_motion = self.on_joyhat_motion
-
-        else:
-            print("No joysticks found")
-            self.joystick = None
-        """
-
         # Set the background color
         arcade.set_background_color(arcade.color.BLACK)
 
