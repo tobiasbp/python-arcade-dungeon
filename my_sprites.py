@@ -21,6 +21,7 @@ class EnemyState(Enum):
     """
 
     ROAMING = auto()
+    SEARCHING = auto()
     CHASING = auto()
 
 
@@ -177,7 +178,7 @@ class Enemy(arcade.Sprite):
                 elif self.cur_target is not None:
                     self.go_to_position(self.cur_target.position)
                     self.cur_target = None
-                    self.state = EnemyState.ROAMING
+                    self.state = EnemyState.SEARCHING
 
             self.update_state_timer = random.random()
 
@@ -194,6 +195,11 @@ class Enemy(arcade.Sprite):
                 self.equipped.attack(position=self.position, angle=angle_to_target)
                 self.equipped.center_x += math.sin(angle_to_target) * self.speed
                 self.equipped.center_y += math.cos(angle_to_target) * self.speed
+
+        # searching state
+        elif self.state == EnemyState.SEARCHING:
+            if not self.path:
+                self.state = EnemyState.ROAMING
 
         # roaming state
         elif self.state == EnemyState.ROAMING:
