@@ -536,10 +536,10 @@ class Player(arcade.Sprite):
         value = round(value)
         if axis == "x":
             print("x: ", value)
-            if value > 0:
+            if value == 1:
                 self.on_key_press(self.key_right, [])
                 self.on_key_release(self.key_left, [])
-            elif value < 0:
+            elif value == -1:
                 self.on_key_press(self.key_left, [])
                 self.on_key_release(self.key_right, [])
             else:
@@ -549,10 +549,10 @@ class Player(arcade.Sprite):
         if axis == "y":
             print("y: ", value)
             # y-value is misinterpreted as inverted, and needs to be corrected
-            if value > 0:
+            if value == 1:
                 self.on_key_press(self.key_down, [])
                 self.on_key_release(self.key_up, [])
-            elif value < 0:
+            elif value == -1:
                 self.on_key_press(self.key_up, [])
                 self.on_key_release(self.key_down, [])
             else:
