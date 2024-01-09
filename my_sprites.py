@@ -354,7 +354,7 @@ class Player(arcade.Sprite):
             joystick.on_joyaxis_motion = self.on_joyaxis_motion
             joystick.on_joyhat_motion = self.on_joyhat_motion
 
-            # Save settings for animating the sprite when walking
+        # Save settings for animating the sprite when walking
         self.jitter_amount = jitter_amount
         self.jitter_likelihood = jitter_likelihood
 
