@@ -78,7 +78,9 @@ class Enemy(arcade.Sprite):
         # pathfinding
         self.path = []
         self.cur_path_position = 0  # which point on the path we are heading for.
-        self.update_state_timer = random.random()  # how frequently the sprite updates its state, in seconds. it's for speed
+        self.calculate_path_timer = random.random()  # how frequently the sprite can calcuæate a new path, in seconds. it's for speed
+
+        self.pause_timer = random.random()  # hold still for the first frames of the game - to prevent enemies from calculating paths simultaneously
 
         # create our own map of barriers
         self.barriers = arcade.AStarBarrierList(
@@ -167,9 +169,13 @@ class Enemy(arcade.Sprite):
 
     def update(self):
 
-        self.update_state_timer -= 1/60
+        if self.pause_timer > 0:
+            self.pause_timer -= 1/60
+            return 0
 
-        if self.update_state_timer <= 0:
+        self.calculate_path_timer -= 1/60
+
+        if self.calculate_path_timer <= 0:
             # state control
             for t in self.potential_targets_list:  # FIXME: Make the enemy go for the closest player
                 if arcade.has_line_of_sight(t.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
@@ -180,7 +186,8 @@ class Enemy(arcade.Sprite):
                     self.cur_target = None
                     self.state = EnemyState.SEARCHING
 
-            self.update_state_timer = random.random()
+            # to prevent the sprite from calculating LOS every frame (very taxing)
+            self.calculate_path_timer = random.random()
 
         # chasing state
         if self.state == EnemyState.CHASING:
@@ -216,6 +223,8 @@ class Enemy(arcade.Sprite):
                     if arcade.get_distance(self.center_x, self.center_y, next_pos[0], next_pos[1]) > self.roaming_dist:
                         self.go_to_position(next_pos)
                         break
+
+
 
             # follow the path, if present
         if self.path:
