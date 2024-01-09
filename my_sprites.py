@@ -341,8 +341,6 @@ class Player(arcade.Sprite):
         self.up_pressed = False
         self.down_pressed = False
         self.atttack_pressed = False
-        self.joystick_x = 0
-        self.joystick_y = 0
 
         # Configure Joystick
         if joystick is not None:
