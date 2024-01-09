@@ -523,7 +523,7 @@ class Player(arcade.Sprite):
         elif key == self.key_down:
             self.down_pressed = False
         elif key == self.key_atttack:
-            self.attack_pressed = False
+            self.atttack_pressed = False
 
     def on_joybutton_press(self, joystick, button_no):
         self.on_key_press(self.key_atttack, [])
