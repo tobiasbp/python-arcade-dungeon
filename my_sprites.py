@@ -157,6 +157,38 @@ class Enemy(arcade.Sprite):
         # reset this because we are at the start of a new path
         self.cur_path_position = 0
 
+    def move_along_path(self):
+        """
+        Move along the current path, if present.
+        """
+
+        if self.path:
+
+            # next position to move to
+            dest_pos = self.path[self.cur_path_position]
+
+            # calculate angle to next point
+            angle_to_dest = arcade.get_angle_radians(dest_pos[0], dest_pos[1], self.center_x, self.center_y)
+
+            # calculate distance
+            distance_to_dest = arcade.get_distance(dest_pos[0], dest_pos[1], self.center_x, self.center_y)
+
+            # this is so we don't move too far
+            this_move_length = min(self.speed, distance_to_dest)
+
+            # if we are there, set the next position to move to
+            if distance_to_dest <= self.speed:
+                self.cur_path_position += 1
+
+                # if we are finished with this path, stand still
+                if self.cur_path_position == len(self.path):
+                    self.path = []
+
+            else:
+                # testing shows that we need to reverse the direction...
+                self.center_x += -math.sin(angle_to_dest) * this_move_length
+                self.center_y += -math.cos(angle_to_dest) * this_move_length
+
     def react(self, reaction):
         """
         Add an Emote
@@ -207,11 +239,13 @@ class Enemy(arcade.Sprite):
 
         # searching state
         elif self.state == EnemyState.SEARCHING:
+            self.move_along_path()
             if not self.path:
                 self.state = EnemyState.ROAMING
 
         # roaming state
         elif self.state == EnemyState.ROAMING:
+            self.move_along_path()
             if not self.path:
 
                 # reset movement vectors, so we stop when a path is finished
@@ -225,36 +259,6 @@ class Enemy(arcade.Sprite):
                     if arcade.get_distance(self.center_x, self.center_y, next_pos[0], next_pos[1]) > self.roaming_dist:
                         self.go_to_position(next_pos)
                         break
-
-
-
-            # follow the path, if present
-        if self.path:
-
-            # next position to move to
-            dest_pos = self.path[self.cur_path_position]
-
-            # calculate angle to next point
-            angle_to_dest = arcade.get_angle_radians(dest_pos[0], dest_pos[1], self.center_x, self.center_y)
-
-            # calculate distance
-            distance_to_dest = arcade.get_distance(dest_pos[0], dest_pos[1], self.center_x, self.center_y)
-
-            # this is so we don't move too far
-            this_move_length = min(self.speed, distance_to_dest)
-
-            # if we are there, set the next position to move to
-            if distance_to_dest <= self.speed:
-                self.cur_path_position += 1
-
-                # if we are finished with this path, stand still
-                if self.cur_path_position == len(self.path):
-                    self.path = []
-
-            else:
-                # testing shows that we need to reverse the direction...
-                self.center_x += -math.sin(angle_to_dest) * this_move_length
-                self.center_y += -math.cos(angle_to_dest) * this_move_length
 
         # remove the sprite if hp is 0 or less
         if self.hp <= 0:
