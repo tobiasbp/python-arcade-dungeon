@@ -239,14 +239,18 @@ class Enemy(arcade.Sprite):
 
         # searching state
         elif self.state == EnemyState.SEARCHING:
-            self.move_along_path()
-            if not self.path:
+            # if we are currently moving to the last known point of the player, move along that path, else hop to roaming state
+            if self.path:
+                self.move_along_path()
+            else:
                 self.state = EnemyState.ROAMING
 
         # roaming state
         elif self.state == EnemyState.ROAMING:
-            self.move_along_path()
-            if not self.path:
+            # if we have a path, follow it, otherwise calculate a path to a random position
+            if self.path:
+                self.move_along_path()
+            else:
 
                 # reset movement vectors, so we stop when a path is finished
                 self.change_x = 0
