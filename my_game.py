@@ -342,6 +342,9 @@ class IntroView(arcade.View):
             game_view = GameView()
             self.window.show_view(game_view)
 
+    def on_key_release(self, key, modifiers):
+        self.player.on_key_release(key, modifiers)
+
     def start_game(self, event):
         """
         Starts the game.
