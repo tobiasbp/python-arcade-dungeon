@@ -567,7 +567,6 @@ class Player(arcade.Sprite):
         # Round value to an integer to correct imprecise values (negative X value is interpreted as -0.007827878233005237)
         value = round(value)
         if axis == "x":
-            print("x: ", value)
             if value == 1:
                 self.on_key_press(self.key_right, [])
                 self.on_key_release(self.key_left, [])
@@ -579,7 +578,6 @@ class Player(arcade.Sprite):
                 self.on_key_release(self.key_left, [])
 
         if axis == "y":
-            print("y: ", value)
             # y-value is misinterpreted as inverted, and needs to be corrected
             if value == 1:
                 self.on_key_press(self.key_down, [])
