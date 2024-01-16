@@ -558,6 +558,7 @@ class Player(arcade.Sprite):
             self.atttack_pressed = False
 
     def on_joybutton_press(self, joystick, button_no):
+        # Any button press is an attack
         self.on_key_press(self.key_atttack, [])
 
     def on_joybutton_release(self, joystick, button_no):
