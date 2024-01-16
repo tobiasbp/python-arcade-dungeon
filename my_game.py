@@ -259,6 +259,10 @@ class GameView(arcade.View):
             self.window.show_view(game_view)
             print("Game Reset! 🔁 -- Turn Debug mode off to remove this feature! ✔")
 
+    def on_key_release(self, key, modifiers):
+        self.player.on_key_release(key, modifiers)
+
+
 class IntroView(arcade.View):
     """
     View to show instructions
