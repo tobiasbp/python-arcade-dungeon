@@ -248,7 +248,7 @@ class GameView(arcade.View):
             # Draw the player sprite
             # Draw the player sprite and its attacks and emotes
             p.draw(pixelated=DRAW_PIXELATED)
-            p.emotes.draw(pixelated=DRAW_PIXELATED)
+            p.draw_sprites(pixelated=DRAW_PIXELATED)
 
         for s in self.tilemap.sprite_lists["enemies"]:
             s.on_draw(draw_attack_hitboxes=DEBUG_MODE)
