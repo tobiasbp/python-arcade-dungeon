@@ -221,7 +221,7 @@ class Enemy(arcade.Sprite):
                     self.state = EnemyState.SEARCHING
 
             # to prevent the sprite from calculating LOS every frame (very taxing)
-            self.calculate_path_timer = random.random() / 2
+            self.calculate_path_timer = random.random()
 
         # chasing state
         if self.state == EnemyState.CHASING:
@@ -252,9 +252,9 @@ class Enemy(arcade.Sprite):
                 self.move_along_path()
             else:
 
-                # reset movement vectors, so we stop when a path is finished
-                self.change_x = 0
-                self.change_y = 0
+                # occationally the enemy gets stuck in a wall (due to the chasing state), and cannot find a path, in that case move backwards until we can
+                self.change_x = -self.change_x
+                self.change_y = -self.change_y
 
                 while True:
                     next_pos = (random.randrange(0, self.window.width), random.randrange(0, self.window.height))
