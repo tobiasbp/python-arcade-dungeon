@@ -221,7 +221,7 @@ class Enemy(arcade.Sprite):
                     self.state = EnemyState.SEARCHING
 
             # to prevent the sprite from calculating LOS every frame (very taxing)
-            self.calculate_path_timer = random.random()
+            self.calculate_path_timer = random.random() / 2
 
         # chasing state
         if self.state == EnemyState.CHASING:
