@@ -20,9 +20,9 @@ class EnemyState(Enum):
     All possible states for enemies
     """
 
-    ROAMING = auto()
-    SEARCHING = auto()
-    CHASING = auto()
+    RANDOM_WALK = auto()
+    GOING_TO_LAST_KNOWN_PLAYER_POS = auto()
+    CHASING_PLAYER = auto()
 
 
 class Enemy(arcade.Sprite):
@@ -47,7 +47,7 @@ class Enemy(arcade.Sprite):
             potential_targets_list: arcade.SpriteList,
             equipped_weapon = None,
             filename: str = "images/tiny_dungeon/Tiles/tile_0087.png",
-            state: EnemyState=EnemyState.ROAMING,
+            state: EnemyState=EnemyState.RANDOM_WALK,
             max_hp: int = 10,
             speed: int = 1,
             roaming_dist: float = 200,
@@ -119,9 +119,9 @@ class Enemy(arcade.Sprite):
         assert type(new_state) == EnemyState, "state should be an EnemyState"
         # Checks if the _state is the same as the new_state.
         if self._state is not new_state:
-            if new_state == EnemyState.CHASING:
+            if new_state == EnemyState.CHASING_PLAYER:
                 self.react(Reaction.EXCLAMATION_RED)
-            elif new_state == EnemyState.ROAMING:
+            elif new_state == EnemyState.RANDOM_WALK:
                 self.react(Reaction.HEART_BROKEN)
 
         self._state = new_state
@@ -186,8 +186,8 @@ class Enemy(arcade.Sprite):
 
             else:
                 # testing shows that we need to reverse the direction...
-                self.center_x += -math.sin(angle_to_dest) * this_move_length
-                self.center_y += -math.cos(angle_to_dest) * this_move_length
+                self.change_x = -math.sin(angle_to_dest) * this_move_length
+                self.change_y = -math.cos(angle_to_dest) * this_move_length
 
     def react(self, reaction):
         """
@@ -206,6 +206,9 @@ class Enemy(arcade.Sprite):
         if self.pause_timer > 0:
             self.pause_timer -= 1/60
             return 0
+        # update position
+        self.center_x += self.change_x
+        self.center_y += self.change_y
 
         self.calculate_path_timer -= 1/60
 
@@ -214,23 +217,23 @@ class Enemy(arcade.Sprite):
             for t in self.potential_targets_list:  # FIXME: Make the enemy go for the closest player (multiplayer scenario only)
                 if arcade.has_line_of_sight(t.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
                     self.cur_target = t
-                    self.state = EnemyState.CHASING
+                    self.state = EnemyState.CHASING_PLAYER
                 elif self.cur_target is not None:
                     self.go_to_position(self.cur_target.position)
                     self.cur_target = None
-                    self.state = EnemyState.SEARCHING
+                    self.state = EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS
 
             # to prevent the sprite from calculating LOS every frame (very taxing)
             self.calculate_path_timer = random.random()
 
         # chasing state
-        if self.state == EnemyState.CHASING:
+        if self.state == EnemyState.CHASING_PLAYER:
             self.path = []
 
             angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
 
-            self.center_x += math.sin(angle_to_target) * self.speed
-            self.center_y += math.cos(angle_to_target) * self.speed
+            self.change_x = math.sin(angle_to_target) * self.speed
+            self.change_y = math.cos(angle_to_target) * self.speed
 
             if self.equipped is not None:
                 self.equipped.attack(position=self.position, angle=angle_to_target)
@@ -238,25 +241,26 @@ class Enemy(arcade.Sprite):
                 self.equipped.center_y += math.cos(angle_to_target) * self.speed
 
         # searching state
-        elif self.state == EnemyState.SEARCHING:
+        elif self.state == EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS:
             # if we are currently moving to the last known point of the player, move along that path, else hop to roaming state
             if self.path:
                 self.move_along_path()
             else:
-                self.state = EnemyState.ROAMING
+                self.state = EnemyState.RANDOM_WALK
 
         # roaming state
-        elif self.state == EnemyState.ROAMING:
+        elif self.state == EnemyState.RANDOM_WALK:
             # if we have a path, follow it, otherwise calculate a path to a random position
             if self.path:
                 self.move_along_path()
             else:
 
-                # occationally the enemy gets stuck in a wall (due to the chasing state), and cannot find a path, in that case move backwards until we can
-                self.change_x = -self.change_x
-                self.change_y = -self.change_y
+                # if we cannot find a path (to a random point) it is because we are stuck. In that case move backwards until we can
+                self.change_x = -self.change_x if self.change_x < 0 else self.change_x
+                self.change_y = -self.change_y if self.change_y < 0 else self.change_y
 
                 while True:
+
                     next_pos = (random.randrange(0, self.window.width), random.randrange(0, self.window.height))
 
                     # if position is too close, find a new one
