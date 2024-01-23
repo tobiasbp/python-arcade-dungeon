@@ -68,9 +68,9 @@ class Enemy(arcade.Sprite):
             window: arcade.Window,
             grid_size: int,
             potential_targets_list: arcade.SpriteList,
-            equipped_weapon=None,
+            equipped_weapon = None,
             filename: str = "images/tiny_dungeon/Tiles/tile_0087.png",
-            state: EnemyState = EnemyState.ROAMING,
+            state: EnemyState=EnemyState.ROAMING,
             max_hp: int = 10,
             speed: int = 1,
             roaming_dist: float = 200,
@@ -169,10 +169,7 @@ class Enemy(arcade.Sprite):
         target_pos = (int(target_pos[0]), int(target_pos[1]))
 
         # calculate the path. It will be a list of positions(lists)
-        self.path = arcade.astar_calculate_path(self.position,
-                                                target_pos,
-                                                self.barriers,
-                                                diagonal_movement=True)
+        self.path = arcade.astar_calculate_path(self.position, target_pos, self.barriers, diagonal_movement=True)
 
         # reset this because we are at the start of a new path
         self.cur_path_position = 0
@@ -272,7 +269,7 @@ class Enemy(arcade.Sprite):
 
         self._emotes.update()
 
-    def on_draw(self, draw_attack_hitboxes: bool = False):
+    def on_draw(self, draw_attack_hitboxes: bool=False):
         if self.equipped is not None:
             self.equipped.draw()
             if draw_attack_hitboxes:
@@ -342,7 +339,7 @@ class Player(arcade.Sprite):
         # Load the image twice, with one flipped, so we have left/right facing textures
         self.textures = arcade.load_texture_pair(
             f"images/tiny_dungeon/Tiles/tile_{type:0=4}.png"
-        )
+            )
 
         # Set current texture
         self.texture = self.textures[0]
@@ -410,6 +407,7 @@ class Player(arcade.Sprite):
         else:
             return False
 
+
     def react(self, reaction):
         """
         Add an Emote
@@ -438,6 +436,7 @@ class Player(arcade.Sprite):
     @hp.setter
     def hp(self, new_hp):
         self._hp = max(0, min(new_hp, self.max_hp))  # hp should be greater than 0 and not greater than max hp
+
 
     @property
     def weapons(self):
@@ -591,10 +590,8 @@ class Player(arcade.Sprite):
 
         # Move equipped weapon to our position
         if self.equiped is not None:
-            self.equiped.center_x = self.center_x + (
-                        math.sin(math.radians(self.direction)) * Weapon.data[self.equiped.type]["range"])
-            self.equiped.center_y = self.center_y + (
-                        math.cos(math.radians(self.direction)) * Weapon.data[self.equiped.type]["range"])
+            self.equiped.center_x = self.center_x + (math.sin(math.radians(self.direction)) * Weapon.data[self.equiped.type]["range"])
+            self.equiped.center_y = self.center_y + (math.cos(math.radians(self.direction)) * Weapon.data[self.equiped.type]["range"])
 
         # check weapon durability
         if self.equiped is not None:
@@ -643,7 +640,6 @@ class Reaction(IntEnum):
     LAUGH = 28
     CROSS_GREY = 29
 
-
 class Emote(arcade.Sprite):
     """
     An emote to show the emotion of a character in the game.
@@ -652,7 +648,7 @@ class Emote(arcade.Sprite):
 
     # A list of emotes as textures from a sprite sheet
     emotes: List[arcade.texture.Texture] = arcade.load_spritesheet(
-        file_name="data/emotes/pixel_style2.png",
+        file_name = "data/emotes/pixel_style2.png",
         sprite_width=16,
         sprite_height=16,
         columns=10,
@@ -662,12 +658,12 @@ class Emote(arcade.Sprite):
             self,
             reaction: Reaction,
             position: tuple[int, int],
-            offset_x: int = 0,
-            offset_y: int = 16,
-            float_x: float = 0.1,
-            float_y: float = 0.2,
-            scale: int = 1,
-            lifetime: float = 5.0,
+            offset_x:int = 0,
+            offset_y:int = 16,
+            float_x:float=0.1,
+            float_y:float=0.2,
+            scale:int=1,
+            lifetime:float = 5.0,
             enable_fade=True):
 
         # The emote will disapear after this many seconds
@@ -677,10 +673,10 @@ class Emote(arcade.Sprite):
         self.enable_fade = enable_fade
 
         super().__init__(
-            center_x=position[0] + offset_x,
-            center_y=position[1] + offset_y,
-            scale=scale,
-            texture=Emote.emotes[reaction]
+            center_x = position[0] + offset_x,
+            center_y = position[1] + offset_y,
+            scale = scale,
+            texture = Emote.emotes[reaction]
         )
 
         self.change_x = random.uniform(-1 * float_x, float_x)
@@ -691,14 +687,13 @@ class Emote(arcade.Sprite):
         self.center_x += self.change_x
         self.center_y += self.change_y
 
-        self.time_left -= 1 / 60  # we don't want to use on_update, so we just use the default delta_time
+        self.time_left -= 1/60  # we don't want to use on_update, so we just use the default delta_time
 
         if self.enable_fade:
-            self.alpha = max(0, 255 * self.time_left / self.lifetime)
+            self.alpha = max(0, 255 * self.time_left/self.lifetime)
 
         if self.time_left <= 0:
             self.kill()
-
 
 @unique
 class WeaponType(IntEnum):
@@ -706,17 +701,17 @@ class WeaponType(IntEnum):
     Weapon types that map to weapon graphics
     The values are calculated from image position in sprite sheet
     """
-    SWORD_SHORT = 9 * 11 + 4
-    SWORD_LONG = 9 * 11 + 5
-    SWORD_FALCHION = 9 * 11 + 6
-    SWORD_DOUBLE_SILVER = 9 * 11 + 7
-    SWORD_DOUBLE_BRONZE = 9 * 11 + 8
-    HAMMER = 9 * 12 + 6
-    AXE_DOUBLE = 9 * 12 + 7
-    AXE_SINGLE = 9 * 12 + 8
-    STAFF_PURPLE = 9 * 13 + 6
-    STAFF_GREEN = 9 * 13 + 7
-    SPEAR = 9 * 13 + 8
+    SWORD_SHORT = 9*11+4
+    SWORD_LONG = 9*11+5
+    SWORD_FALCHION = 9*11+6
+    SWORD_DOUBLE_SILVER = 9*11+7
+    SWORD_DOUBLE_BRONZE = 9*11+8
+    HAMMER = 9*12+6
+    AXE_DOUBLE = 9*12+7
+    AXE_SINGLE = 9*12+8
+    STAFF_PURPLE = 9*13+6
+    STAFF_GREEN = 9*13+7
+    SPEAR = 9*13+8
 
 
 class Weapon(arcade.Sprite):
@@ -727,11 +722,11 @@ class Weapon(arcade.Sprite):
 
     # A list of weapon textures from a sprite sheet
     textures: List[arcade.texture.Texture] = arcade.load_spritesheet(
-        file_name="data/rooms/dungeon/tilemap.png",
+        file_name = "data/rooms/dungeon/tilemap.png",
         sprite_width=16,
         sprite_height=16,
         columns=12,
-        count=12 * 11,
+        count=12*11,
         margin=1)
 
     # range: How far from the user of the weapon will it attack
@@ -830,7 +825,7 @@ class Weapon(arcade.Sprite):
         }
     }
 
-    def __init__(self, type: WeaponType, position: tuple[int, int] = (0, 0), scale: int = 1):
+    def __init__(self,type: WeaponType,position: tuple[int, int]=(0,0),scale:int=1):
 
         super().__init__(
             center_x=position[0],
@@ -841,7 +836,7 @@ class Weapon(arcade.Sprite):
         )
 
         self._type = type
-        self._attacks_left: int = Weapon.data[type]["max_usage"]
+        self._attacks_left:int = Weapon.data[type]["max_usage"]
 
         # Time in seconds left until weapon can be used again
         self._time_to_idle = 0.0
@@ -873,7 +868,7 @@ class Weapon(arcade.Sprite):
     def attacks_left(self):
         return self._attacks_left
 
-    def attack(self, position: tuple[int, int], angle):
+    def attack(self, position: tuple[int,int], angle):
         """
         Weapon attacks at position
         """
