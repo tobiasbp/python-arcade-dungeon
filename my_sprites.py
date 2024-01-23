@@ -481,19 +481,19 @@ class Player(arcade.Sprite):
             self.texture = self.textures[1]
             self._direction = Direction.LEFT
             return
-        elif key == self.key_right:
+        if key == self.key_right:
             self.right_pressed = True
             # Turns the sprite to the Right side
             self.texture = self.textures[0]
             self._direction = Direction.RIGHT
             return
-        elif key == self.key_up:
+        if key == self.key_up:
             self.up_pressed = True
             self._direction = Direction.UP
-        elif key == self.key_down:
+        if key == self.key_down:
             self.down_pressed = True
             self._direction = Direction.DOWN
-        elif key == self.key_atttack:
+        if key == self.key_atttack:
             self.atttack_pressed = True
             self.attack()
 
@@ -503,13 +503,13 @@ class Player(arcade.Sprite):
         """
         if key == self.key_left:
             self.left_pressed = False
-        elif key == self.key_right:
+        if key == self.key_right:
             self.right_pressed = False
-        elif key == self.key_up:
+        if key == self.key_up:
             self.up_pressed = False
-        elif key == self.key_down:
+        if key == self.key_down:
             self.down_pressed = False
-        elif key == self.key_atttack:
+        if key == self.key_atttack:
             self.atttack_pressed = False
 
     def draw_sprites(self, pixelated, draw_attack_hitboxes: bool=False):
@@ -540,12 +540,21 @@ class Player(arcade.Sprite):
         # Update speed based on held keys
         if self.left_pressed and not self.right_pressed:
             self.change_x = -1 * self.speed
-        elif self.right_pressed and not self.left_pressed:
+        if self.right_pressed and not self.left_pressed:
             self.change_x = self.speed
-        elif self.up_pressed and not self.down_pressed:
+        if self.up_pressed and not self.down_pressed:
             self.change_y = self.speed
-        elif self.down_pressed and not self.up_pressed:
+        if self.down_pressed and not self.up_pressed:
             self.change_y = -1 * self.speed
+
+        # normalize diagonal movement
+        if self.change_x != 0 and self.change_y != 0:
+            # calculate the length of the vector
+            vector_length = math.sqrt(self.change_x ** 2 + self.change_y ** 2)
+
+            scale_factor = self.speed / vector_length
+            self.change_x *= scale_factor
+            self.change_y *= scale_factor
 
         # Rotate the sprite a bit when it's moving
         if (self.change_x != 0 or self.change_y != 0) and random.random() <= self.jitter_likelihood:
