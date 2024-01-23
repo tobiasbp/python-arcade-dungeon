@@ -223,8 +223,12 @@ class Enemy(arcade.Sprite):
                     self.cur_target = None
                     self.state = EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS
 
+                    # if we are stuck in a wall move backwards (if we are stuck we cannot find a path)
+                    self.change_x = -self.change_x
+                    self.change_y = -self.change_y
+
             # to prevent the sprite from calculating LOS every frame (very taxing)
-            self.calculate_path_timer = random.random()
+            self.calculate_path_timer = random.random() / 2
 
         # chasing state
         if self.state == EnemyState.CHASING_PLAYER:
@@ -254,10 +258,6 @@ class Enemy(arcade.Sprite):
             if self.path:
                 self.move_along_path()
             else:
-
-                # if we cannot find a path (to a random point) it is because we are stuck. In that case move backwards until we can
-                self.change_x = -self.change_x if self.change_x < 0 else self.change_x
-                self.change_y = -self.change_y if self.change_y < 0 else self.change_y
 
                 while True:
 
