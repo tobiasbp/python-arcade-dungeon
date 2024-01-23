@@ -22,6 +22,7 @@ class EnemyState(Enum):
     """
 
     ROAMING = auto()
+    SEARCHING = auto()
     CHASING = auto()
 
 
@@ -90,7 +91,7 @@ class Enemy(arcade.Sprite):
         self.window = window
         self.speed = speed
         self.potential_targets_list = potential_targets_list  # list of sprites to chase when spotted
-        self.target = None
+        self.cur_target = None
         self.roaming_dist = roaming_dist
         self._state = state
         if equipped_weapon is not None:
@@ -101,6 +102,11 @@ class Enemy(arcade.Sprite):
         # pathfinding
         self.path = []
         self.cur_path_position = 0  # which point on the path we are heading for.
+        # how frequently the sprite can calculate a new path, in seconds. it's for performance
+        self.calculate_path_timer = random.random()
+
+        # pauses all updates for this number of seconds. hold still for the first frames of the game - to prevent enemies from calculating paths simultaneously
+        self.pause_timer = random.random()
 
         # create our own map of barriers
         self.barriers = arcade.AStarBarrierList(
@@ -174,61 +180,11 @@ class Enemy(arcade.Sprite):
         # reset this because we are at the start of a new path
         self.cur_path_position = 0
 
-    def react(self, reaction):
+    def move_along_path(self):
         """
-        Add an Emote
+        Move along the current path, if present.
         """
-        self._emotes.append(
-            Emote(
-                reaction=reaction,
-                position=self.position,
-                scale=self.scale
-            )
-        )
 
-    def update(self):
-
-        # state control
-        self.cur_target = None
-        for t in self.potential_targets_list:  # FIXME: Make the enemy go for the closest player
-            if arcade.has_line_of_sight(t.position, self.position, self.barriers.blocking_sprites):
-                self.cur_target = t
-                self.state = EnemyState.CHASING
-        if self.cur_target is None:
-            self.state = EnemyState.ROAMING
-
-        # chasing state
-        if self.state == EnemyState.CHASING:
-            self.path = []
-
-            angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.cur_target.center_x,
-                                                       self.cur_target.center_y)
-
-            self.center_x += math.sin(angle_to_target) * self.speed
-            self.center_y += math.cos(angle_to_target) * self.speed
-
-            if self.equipped is not None:
-                self.equipped.attack(position=self.position, angle=angle_to_target)
-                self.equipped.center_x += math.sin(angle_to_target) * self.speed
-                self.equipped.center_y += math.cos(angle_to_target) * self.speed
-
-        # roaming state
-        elif self.state == EnemyState.ROAMING:
-            if not self.path:
-
-                # reset movement vectors, so we stop when a path is finished
-                self.change_x = 0
-                self.change_y = 0
-
-                while True:
-                    next_pos = (random.randrange(0, self.window.width), random.randrange(0, self.window.height))
-
-                    # if position is too close, find a new one
-                    if arcade.get_distance(self.center_x, self.center_y, next_pos[0], next_pos[1]) > self.roaming_dist:
-                        self.go_to_position(next_pos)
-                        break
-
-            # follow the path, if present
         if self.path:
 
             # next position to move to
@@ -255,6 +211,82 @@ class Enemy(arcade.Sprite):
                 # testing shows that we need to reverse the direction...
                 self.center_x += -math.sin(angle_to_dest) * this_move_length
                 self.center_y += -math.cos(angle_to_dest) * this_move_length
+
+    def react(self, reaction):
+        """
+        Add an Emote
+        """
+        self._emotes.append(
+            Emote(
+                reaction=reaction,
+                position=self.position,
+                scale=self.scale
+            )
+        )
+
+    def update(self):
+
+        if self.pause_timer > 0:
+            self.pause_timer -= 1/60
+            return 0
+
+        self.calculate_path_timer -= 1/60
+
+        if self.calculate_path_timer <= 0:
+            # state control
+            for t in self.potential_targets_list:  # FIXME: Make the enemy go for the closest player (multiplayer scenario only)
+                if arcade.has_line_of_sight(t.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
+                    self.cur_target = t
+                    self.state = EnemyState.CHASING
+                elif self.cur_target is not None:
+                    self.go_to_position(self.cur_target.position)
+                    self.cur_target = None
+                    self.state = EnemyState.SEARCHING
+
+            # to prevent the sprite from calculating LOS every frame (very taxing)
+            self.calculate_path_timer = random.random()
+
+        # chasing state
+        if self.state == EnemyState.CHASING:
+            self.path = []
+
+            angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.cur_target.center_x,
+                                                       self.cur_target.center_y)
+
+            self.center_x += math.sin(angle_to_target) * self.speed
+            self.center_y += math.cos(angle_to_target) * self.speed
+
+            if self.equipped is not None:
+                self.equipped.attack(position=self.position, angle=angle_to_target)
+                self.equipped.center_x += math.sin(angle_to_target) * self.speed
+                self.equipped.center_y += math.cos(angle_to_target) * self.speed
+
+        # searching state
+        elif self.state == EnemyState.SEARCHING:
+            # if we are currently moving to the last known point of the player, move along that path, else hop to roaming state
+            if self.path:
+                self.move_along_path()
+            else:
+                self.state = EnemyState.ROAMING
+
+        # roaming state
+        elif self.state == EnemyState.ROAMING:
+            # if we have a path, follow it, otherwise calculate a path to a random position
+            if self.path:
+                self.move_along_path()
+            else:
+
+                # reset movement vectors, so we stop when a path is finished
+                self.change_x = 0
+                self.change_y = 0
+
+                while True:
+                    next_pos = (random.randrange(0, self.window.width), random.randrange(0, self.window.height))
+
+                    # if position is too close, find a new one
+                    if arcade.get_distance(self.center_x, self.center_y, next_pos[0], next_pos[1]) > self.roaming_dist:
+                        self.go_to_position(next_pos)
+                        break
 
         # remove the sprite if hp is 0 or less
         if self.hp <= 0:
@@ -311,6 +343,7 @@ class Player(arcade.Sprite):
             key_left=arcade.key.LEFT,
             key_right=arcade.key.RIGHT,
             key_attack=arcade.key.SPACE,
+            joystick=None,
             jitter_amount:int=10, # How much to rotate when walking
             jitter_likelihood:float=0.5, # How likely is jittering?
             max_hp:int=10
@@ -366,6 +399,18 @@ class Player(arcade.Sprite):
         self.down_pressed = False
         self.atttack_pressed = False
 
+        # Configure Joystick
+        if joystick is not None:
+
+            # Communicate with joystick
+            joystick.open()
+
+            # Map joysticks functions to local functions
+            joystick.on_joybutton_press = self.on_joybutton_press
+            joystick.on_joybutton_release = self.on_joybutton_release
+            joystick.on_joyaxis_motion = self.on_joyaxis_motion
+            joystick.on_joyhat_motion = self.on_joyhat_motion
+
         # Save settings for animating the sprite when walking
         self.jitter_amount = jitter_amount
         self.jitter_likelihood = jitter_likelihood
@@ -381,6 +426,12 @@ class Player(arcade.Sprite):
 
         # Player's emotes will be stored here
         self._emotes = arcade.SpriteList()
+
+        # Player's variables about hp
+        self._max_hp = max_hp
+        self._hp = max_hp
+        self.health_bar = HealthBar(max_health=max_hp)
+
 
     def attack(self):
         """
@@ -543,12 +594,50 @@ class Player(arcade.Sprite):
         elif key == self.key_atttack:
             self.atttack_pressed = False
 
-    def draw_sprites(self, pixelated, draw_attack_hitboxes: bool = False):
+
+    def on_joybutton_press(self, joystick, button_no):
+        # Any button press is an attack
+        self.on_key_press(self.key_atttack, [])
+
+    def on_joybutton_release(self, joystick, button_no):
+        self.on_key_release(self.key_atttack, [])
+
+    def on_joyaxis_motion(self, joystick, axis, value):
+        # Round value to an integer to correct imprecise values (negative X value is interpreted as -0.007827878233005237)
+        value = round(value)
+        if axis == "x":
+            if value == 1:
+                self.on_key_press(self.key_right, [])
+                self.on_key_release(self.key_left, [])
+            elif value == -1:
+                self.on_key_press(self.key_left, [])
+                self.on_key_release(self.key_right, [])
+            else:
+                self.on_key_release(self.key_right, [])
+                self.on_key_release(self.key_left, [])
+
+        if axis == "y":
+            # y-value is misinterpreted as inverted, and needs to be corrected
+            if value == 1:
+                self.on_key_press(self.key_down, [])
+                self.on_key_release(self.key_up, [])
+            elif value == -1:
+                self.on_key_press(self.key_up, [])
+                self.on_key_release(self.key_down, [])
+            else:
+                self.on_key_release(self.key_up, [])
+                self.on_key_release(self.key_down, [])
+
+    def on_joyhat_motion(self, joystick, hat_x, hat_y):
+        print("Note: This game is not compatible with Joyhats")
+
+    def draw_sprites(self, pixelated, draw_attack_hitboxes: bool=False):
         """
         Draw sprites handles by the Player
         """
         self.emotes.draw(pixelated=pixelated)
 
+        self.health_bar.draw()
         if self.equiped is not None:
             if draw_attack_hitboxes:
                 self.equiped.draw_hit_box()
@@ -599,6 +688,9 @@ class Player(arcade.Sprite):
                 self.equiped = None
 
         # Note: We don't change the position of the sprite here, since that is done by the physics engine
+        # Update the health-bar
+        self.health_bar.health = self._hp
+        self.health_bar.position = self.position
 
         self._emotes.update()
 
@@ -900,3 +992,81 @@ class Weapon(arcade.Sprite):
 
             # Time passes
             self._time_to_idle -= 1/60  # we don't want to use on_update, so we just use the default delta time
+
+
+class HealthBar(arcade.Sprite):
+
+    def __init__(self,  max_health, center_x=0, center_y=0, bar_width=32, bar_height=5, offset=15, scale=1):
+
+        super().__init__(
+            center_x=center_x,
+            center_y=center_y,
+            scale=scale,
+        )
+
+        # variable controlling length of fullness of health bar
+        self._max_health = max_health
+        self._current_health = self._max_health
+
+        self._bar_width = bar_width * scale
+        self._bar_height = bar_height * scale
+
+        self._offset = offset # y offset, to offset the bar, so it is not drawn on top of the player
+
+
+        # static bar behind the dynamic bar
+
+        self._background_bar = arcade.SpriteSolidColor(
+            self._bar_width,
+            self._bar_height,
+            arcade.color.RED
+        )
+
+        # bar changing depending on the percentage variable
+
+        self._foreground_bar = arcade.SpriteSolidColor(
+            self._bar_width,
+            self._bar_height,
+            arcade.color.GREEN
+        )
+
+    @property
+    def max_health(self):
+        return self._max_health
+
+    @property
+    def health(self):
+        """
+        Return current health (0 to max health)
+        """
+        return self._current_health
+
+    @health.setter
+    def health(self, new_health):
+        """
+        Updates health if health is a value over zero and under max_health
+        """
+        if 0 < new_health < self._max_health:
+            self._current_health = new_health
+
+        """
+        calculates ratio of current health and max health and multiplies it with max bar width to get new bar width
+        """
+        self._foreground_bar.width = int((self._current_health / self._max_health) * self._bar_width)
+
+    @property
+    def position(self):
+        return self.position
+
+    @position.setter
+    def position(self, new_position):
+        self.center_x = new_position[0]
+        self.center_y = new_position[1]
+
+        self._background_bar.position = (self.center_x, self.center_y + self._offset)
+        self._foreground_bar.left = self._background_bar.left
+        self._foreground_bar.center_y = self.center_y + self._offset
+
+    def draw(self):
+        self._background_bar.draw()
+        self._foreground_bar.draw()
