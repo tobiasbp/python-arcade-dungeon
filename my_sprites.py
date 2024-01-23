@@ -175,7 +175,10 @@ class Enemy(arcade.Sprite):
         target_pos = (int(target_pos[0]), int(target_pos[1]))
 
         # calculate the path. It will be a list of positions(lists)
-        self.path = arcade.astar_calculate_path(self.position, target_pos, self.barriers, diagonal_movement=True)
+        self.path = arcade.astar_calculate_path(self.position,
+                                                target_pos,
+                                                self.barriers,
+                                                diagonal_movement=True)
 
         # reset this because we are at the start of a new path
         self.cur_path_position = 0
@@ -250,8 +253,7 @@ class Enemy(arcade.Sprite):
         if self.state == EnemyState.CHASING:
             self.path = []
 
-            angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.cur_target.center_x,
-                                                       self.cur_target.center_y)
+            angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
 
             self.center_x += math.sin(angle_to_target) * self.speed
             self.center_y += math.cos(angle_to_target) * self.speed
@@ -307,7 +309,6 @@ class Enemy(arcade.Sprite):
             if draw_attack_hitboxes:
                 self.equipped.draw_hit_box()
         self.draw()
-
 
 @unique
 class PlayerType(IntEnum):
@@ -593,7 +594,6 @@ class Player(arcade.Sprite):
             self.down_pressed = False
         elif key == self.key_atttack:
             self.atttack_pressed = False
-
 
     def on_joybutton_press(self, joystick, button_no):
         # Any button press is an attack
@@ -920,10 +920,10 @@ class Weapon(arcade.Sprite):
     def __init__(self,type: WeaponType,position: tuple[int, int]=(0,0),scale:int=1):
 
         super().__init__(
-            center_x=position[0],
-            center_y=position[1],
-            scale=scale,
-            texture=Weapon.textures[type],
+            center_x = position[0],
+            center_y = position[1],
+            scale = scale,
+            texture = Weapon.textures[type],
             hit_box_algorithm=None
         )
 
