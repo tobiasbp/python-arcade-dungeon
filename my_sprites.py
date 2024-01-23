@@ -14,7 +14,6 @@ class Direction(IntEnum):
     UP = 0
     DOWN = 180
 
-
 @unique
 class EnemyState(Enum):
     """
