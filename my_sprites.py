@@ -398,6 +398,8 @@ class Player(arcade.Sprite):
                 angle=math.radians(self.direction),
             )
 
+            arcade.play_sound(Sound.KNIFE_SLICE.value)
+
             if success:
                 self.react(Reaction.ANGRY)
             else:
@@ -523,7 +525,6 @@ class Player(arcade.Sprite):
         elif key == self.key_atttack:
             self.atttack_pressed = True
             self.attack()
-            arcade.play_sound(Sound.KNIFE_SLICE.value)
 
         if previous_direction in [self]:
             arcade.play_sound(Sound.FOOTSTEP_00.value)
@@ -564,7 +565,6 @@ class Player(arcade.Sprite):
         if self.is_walking and random.randint(1, 20) == 1:
             s = random.choice([s for s in Sound if s.name.startswith("FOOTSTEP_")])
             arcade.play_sound(s.value)
-            print(s.name)
 
         # Assume no keys are held
         self.change_x = 0
