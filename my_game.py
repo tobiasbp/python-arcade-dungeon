@@ -300,6 +300,9 @@ class IntroView(arcade.View):
         This is run once when we switch to this view
         """
 
+        self.opening = arcade.load_sound("data/audio/rpg/opening_sound.wav")
+        self.opening_play = arcade.play_sound(self.opening)
+
         # Set the background color
         arcade.set_background_color(arcade.csscolor.SLATE_GREY)
 
@@ -368,11 +371,13 @@ class IntroView(arcade.View):
         if key == arcade.key.SPACE:
             game_view = GameView()
             self.window.show_view(game_view)
+            self.opening.stop(self.opening_play)
 
     def start_game(self, event):
         """
         Starts the game.
         """
+        self.opening.stop(self.opening_play)
         game_view = GameView()
         self.window.show_view(game_view)
 

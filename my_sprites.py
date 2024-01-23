@@ -32,7 +32,8 @@ class Sound(Enum):
     """
 
     KNIFE_SLICE = arcade.load_sound("data/audio/rpg/knifeSlice.ogg")
-    PING = arcade.load_sound("data/audio/rpg/creak1.ogg")
+    MONSTER_GRUNT = arcade.load_sound("data/audio/rpg/monster_grunt.wav")
+    MONSTER_SNARL = arcade.load_sound("data/audio/rpg/monster_snarl.wav")
 
     # Footstep sounds.
     FOOTSTEP_00 = arcade.load_sound("data/audio/rpg/footstep00.ogg")
@@ -138,9 +139,10 @@ class Enemy(arcade.Sprite):
         if self._state is not new_state:
             if new_state == EnemyState.CHASING:
                 self.react(Reaction.EXCLAMATION_RED)
-                arcade.play_sound(Sound.PING.value)
+                arcade.play_sound(Sound.MONSTER_GRUNT.value)
             elif new_state == EnemyState.ROAMING:
                 self.react(Reaction.HEART_BROKEN)
+                arcade.play_sound(Sound.MONSTER_SNARL.value)
 
         self._state = new_state
 
