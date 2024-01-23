@@ -318,6 +318,7 @@ class Player(arcade.Sprite):
             key_left=arcade.key.LEFT,
             key_right=arcade.key.RIGHT,
             key_attack=arcade.key.SPACE,
+            joystick=None,
             jitter_amount:int=10, # How much to rotate when walking
             jitter_likelihood:float=0.5, # How likely is jittering?
             max_hp:int=10
@@ -372,6 +373,18 @@ class Player(arcade.Sprite):
         self.up_pressed = False
         self.down_pressed = False
         self.atttack_pressed = False
+
+        # Configure Joystick
+        if joystick is not None:
+
+            # Communicate with joystick
+            joystick.open()
+
+            # Map joysticks functions to local functions
+            joystick.on_joybutton_press = self.on_joybutton_press
+            joystick.on_joybutton_release = self.on_joybutton_release
+            joystick.on_joyaxis_motion = self.on_joyaxis_motion
+            joystick.on_joyhat_motion = self.on_joyhat_motion
 
         # Save settings for animating the sprite when walking
         self.jitter_amount = jitter_amount
@@ -543,6 +556,42 @@ class Player(arcade.Sprite):
             self.down_pressed = False
         elif key == self.key_atttack:
             self.atttack_pressed = False
+
+    def on_joybutton_press(self, joystick, button_no):
+        # Any button press is an attack
+        self.on_key_press(self.key_atttack, [])
+
+    def on_joybutton_release(self, joystick, button_no):
+        self.on_key_release(self.key_atttack, [])
+
+    def on_joyaxis_motion(self, joystick, axis, value):
+        # Round value to an integer to correct imprecise values (negative X value is interpreted as -0.007827878233005237)
+        value = round(value)
+        if axis == "x":
+            if value == 1:
+                self.on_key_press(self.key_right, [])
+                self.on_key_release(self.key_left, [])
+            elif value == -1:
+                self.on_key_press(self.key_left, [])
+                self.on_key_release(self.key_right, [])
+            else:
+                self.on_key_release(self.key_right, [])
+                self.on_key_release(self.key_left, [])
+
+        if axis == "y":
+            # y-value is misinterpreted as inverted, and needs to be corrected
+            if value == 1:
+                self.on_key_press(self.key_down, [])
+                self.on_key_release(self.key_up, [])
+            elif value == -1:
+                self.on_key_press(self.key_up, [])
+                self.on_key_release(self.key_down, [])
+            else:
+                self.on_key_release(self.key_up, [])
+                self.on_key_release(self.key_down, [])
+
+    def on_joyhat_motion(self, joystick, hat_x, hat_y):
+        print("Note: This game is not compatible with Joyhats")
 
     def draw_sprites(self, pixelated, draw_attack_hitboxes: bool=False):
         """

@@ -110,14 +110,22 @@ class GameView(arcade.View):
                     # Tiles are unseen by default
                     s.seen = False
 
-
         # Set up the player info
         # FIXME: Move this into the Player class
+
+        # Get list of joysticks and select the first to be given to the player
+        joysticks = arcade.get_joysticks()
+        if joysticks:
+            print("Found {} joystick(s)".format(len(joysticks)))
+            joystick = joysticks[0]
+        else:
+            print("No joysticks found")
+            joystick = None
+
         self.player_score = 0
 
         self.player_sprite_list = []
 
-        # FIXME: How do we chose the number of players? Number of joysticks connected?
         for i in range(2):
             # Creates Player object
             p = Player(
@@ -299,20 +307,6 @@ class GameView(arcade.View):
     def on_key_release(self, key, modifiers):
         for p in self.player_sprite_list:
             p.on_key_release(key, modifiers)
-
-    def on_joybutton_press(self, joystick, button_no):
-        print("Button pressed:", button_no)
-        # Press the fire key
-        self.on_key_press(FIRE_KEY, [])
-
-    def on_joybutton_release(self, joystick, button_no):
-        print("Button released:", button_no)
-
-    def on_joyaxis_motion(self, joystick, axis, value):
-        print("Joystick axis {}, value {}".format(axis, value))
-
-    def on_joyhat_motion(self, joystick, hat_x, hat_y):
-        print("Joystick hat ({}, {})".format(hat_x, hat_y))
 
 
 class IntroView(arcade.View):
