@@ -8,6 +8,8 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 """
 
 import arcade
+import arcade.gui
+import random
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
@@ -45,6 +47,12 @@ PLAYER_SHOT_SPEED = 300
 PLAYER_SIGHT_RANGE = SCREEN_WIDTH/4 # How far can the player see?
 
 FIRE_KEY = arcade.key.SPACE
+
+# The keys to control player 1 & 2
+PLAYER_KEYS = [
+    {"up": arcade.key.UP, "down": arcade.key.DOWN, "left": arcade.key.LEFT, "right": arcade.key.RIGHT, "attack": arcade.key.SPACE},
+    {"up": arcade.key.W, "down": arcade.key.S, "left": arcade.key.A, "right": arcade.key.D, "attack": arcade.key.TAB},
+]
 
 # All layers configured must exist in the map file.
 # line_of_sight: Should sprites only be drawn if they are visible to a player?
@@ -95,9 +103,6 @@ class GameView(arcade.View):
             colliding_tiles = background_tile.collides_with_list(self.tilemap.sprite_lists["impassable"])
             assert len(colliding_tiles) == 0, f"A tile on layer 'background' collides with a tile on layer 'impassable' at position {background_tile.position}"
 
-        # Variable that will hold a list of shots fired by the player
-        self.player_attack_list = arcade.SpriteList()
-
         # Add variable 'seen' to all tiles that has player line of sight. This will be used later on.
         for layer_name in MAP_LAYER_CONFIG.keys():
             if MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
@@ -105,9 +110,18 @@ class GameView(arcade.View):
                     # Tiles are unseen by default
                     s.seen = False
 
-
         # Set up the player info
         # FIXME: Move this into the Player class
+
+        # Get list of joysticks and select the first to be given to the player
+        joysticks = arcade.get_joysticks()
+        if joysticks:
+            print("Found {} joystick(s)".format(len(joysticks)))
+            joystick = joysticks[0]
+        else:
+            print("No joysticks found")
+            joystick = None
+
         self.player_score = 0
 
         self.player_sprite_list = []
@@ -115,15 +129,17 @@ class GameView(arcade.View):
         for i in range(2):
             # Creates Player object
             p = Player(
-                center_x=self.tilemap.sprite_lists["players"][0].center_x,
-                center_y=self.tilemap.sprite_lists["players"][0].center_y + random.randint(1,20),
+                center_x=self.tilemap.sprite_lists["players"][0].center_x + random.randint(1,8) * TILE_SIZE * SCALING,
+                center_y=self.tilemap.sprite_lists["players"][0].center_y,
                 scale=SCALING,
+                key_up=PLAYER_KEYS[i]["up"],
+                key_down=PLAYER_KEYS[i]["down"],
+                key_left=PLAYER_KEYS[i]["left"],
+                key_right=PLAYER_KEYS[i]["right"],
+                key_attack=PLAYER_KEYS[i]["attack"],
             )
             # Create Player spritelist
             self.player_sprite_list.append(p)
-
-        player_list = arcade.SpriteList()
-        player_list.append(self.player)
 
         # Change all tiles in the 'enemies' layer to Enemies
         for enemy_index, enemy_position in enumerate([ s.position for s in self.tilemap.sprite_lists["enemies"]]):
@@ -133,8 +149,7 @@ class GameView(arcade.View):
                 impassables=self.tilemap.sprite_lists["impassable"],
                 grid_size=int(self.tilemap.tile_width),
                 window=self.window,
-                target=self.player_sprite_list[0],
-                potential_targets_list=player_list,
+                potential_targets_list=self.player_sprite_list,
                 equipped_weapon=Weapon(type=WeaponType.SWORD_SHORT),
                 scale=SCALING
             )
@@ -149,13 +164,18 @@ class GameView(arcade.View):
             self.tilemap.sprite_lists["enemies"][enemy_index] = e
 
 
-        # Register player and walls with physics engine
-        # FIXME: The physics engine can only handle a single player. How do we handle multiplayer?
-        self.physics_engine =  arcade.PhysicsEngineSimple(
-            player_sprite=self.player_sprite_list[0],
-            walls = self.tilemap.sprite_lists["impassable"]
-        )
+        # We need a physics engine for each player since
+        # the one we ar eusing can anly handle a single player
+        self.physics_engines = []
 
+        # Create a physics engine for each player.
+        # Register player and walls with physics engine
+        for p in self.player_sprite_list:
+            pe = arcade.PhysicsEngineSimple(
+                player_sprite=p,
+                walls=self.tilemap.sprite_lists["impassable"]
+            )
+            self.physics_engines.append(pe)
 
         # Get list of joysticks
         joysticks = arcade.get_joysticks()
@@ -168,6 +188,7 @@ class GameView(arcade.View):
 
             # Communicate with joystick
             self.joystick.open()
+
             # Map joysticks functions to local functions
             self.joystick.on_joybutton_press = self.on_joybutton_press
             self.joystick.on_joybutton_release = self.on_joybutton_release
@@ -192,18 +213,6 @@ class GameView(arcade.View):
         # Draw the sprite list from the map if configured to be drawn
         for layer_name, layer_sprites in self.tilemap.sprite_lists.items():
             if MAP_LAYER_CONFIG[layer_name].get("draw", True):
-                if MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
-                    # FIXME: Add logic for drawing stuff that should only be drawn if players have line of sight here
-                    pass
-                else:
-                    layer_sprites.draw(pixelated=DRAW_PIXELATED)
-
-        # Draw the player shot
-        self.player_attack_list.draw(pixelated=DRAW_PIXELATED)
-
-        # Draw the player sprite
-        for p in self.player_sprite_list:
-            p.draw(pixelated=DRAW_PIXELATED)
                 if not MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
                     # If the layer is not configured as line_of_sight, all tiles will be drawn
                     layer_sprites.draw(pixelated=DRAW_PIXELATED)
@@ -218,7 +227,7 @@ class GameView(arcade.View):
                             try:
                                 if arcade.has_line_of_sight(
                                         point_1 = s.position,
-                                        point_2 = self.player.position,
+                                        point_2 = self.player_sprite_list[0].position,
                                         walls = self.tilemap.sprite_lists["impassable"],
                                         check_resolution = TILE_SIZE*2,
                                         max_distance = PLAYER_SIGHT_RANGE
@@ -241,18 +250,13 @@ class GameView(arcade.View):
             bold=True,
         )
 
-        # Draw the player shot
-        self.player_attack_list.draw(pixelated=DRAW_PIXELATED)
+        # Draw the player sprite and its objects (weapon & emotes)
 
         for p in self.player_sprite_list:
             # Draw the player sprite
             # Draw the player sprite and its attacks and emotes
             p.draw(pixelated=DRAW_PIXELATED)
-            p.attacks.draw(pixelated=DRAW_PIXELATED)
-            p.emotes.draw(pixelated=DRAW_PIXELATED)
-        # Draw the player sprite and its objects (weapon & emotes)
-        self.player.draw(pixelated=DRAW_PIXELATED)
-        self.player.draw_sprites(pixelated=DRAW_PIXELATED, draw_attack_hitboxes=DEBUG_MODE)
+            p.draw_sprites(pixelated=DRAW_PIXELATED)
 
         for s in self.tilemap.sprite_lists["enemies"]:
             s.on_draw(draw_attack_hitboxes=DEBUG_MODE)
@@ -266,16 +270,12 @@ class GameView(arcade.View):
         Movement and game logic
         """
         for p in self.player_sprite_list:
-            # Update the player and all of the sprites it manages
             p.update()
 
-            # Update the player attacks and emotes
-            p.attacks.on_update(delta_time)
-            p.emotes.on_update(delta_time)
-
-        # Update the physics engine (including the player)
+        # Update the physics engine for each player
         # Return all sprites involved in collissions
-        colliding_sprites = self.physics_engine.update()
+        for pe in self.physics_engines:
+            colliding_sprites = pe.update()
 
         # Update the enemies
         self.tilemap.sprite_lists["enemies"].update()
@@ -304,24 +304,9 @@ class GameView(arcade.View):
             self.window.show_view(game_view)
             print("Game Reset! 🔁 -- Turn Debug mode off to remove this feature! ✔")
 
-
     def on_key_release(self, key, modifiers):
         for p in self.player_sprite_list:
             p.on_key_release(key, modifiers)
-
-    def on_joybutton_press(self, joystick, button_no):
-        print("Button pressed:", button_no)
-        # Press the fire key
-        self.on_key_press(FIRE_KEY, [])
-
-    def on_joybutton_release(self, joystick, button_no):
-        print("Button released:", button_no)
-
-    def on_joyaxis_motion(self, joystick, axis, value):
-        print("Joystick axis {}, value {}".format(axis, value))
-
-    def on_joyhat_motion(self, joystick, hat_x, hat_y):
-        print("Joystick hat ({}, {})".format(hat_x, hat_y))
 
 
 class IntroView(arcade.View):
@@ -333,6 +318,9 @@ class IntroView(arcade.View):
         """
         This is run once when we switch to this view
         """
+
+        self.opening_sound = arcade.load_sound("data/audio/rpg/opening_sound.wav")
+        self.opening_sound_player = self.opening_sound.play()
 
         # Set the background color
         arcade.set_background_color(arcade.csscolor.SLATE_GREY)
@@ -400,13 +388,13 @@ class IntroView(arcade.View):
         Start the game when any key is pressed
         """
         if key == arcade.key.SPACE:
-            game_view = GameView()
-            self.window.show_view(game_view)
+            self.start_game()
 
-    def start_game(self, event):
+    def start_game(self, event=None):
         """
         Starts the game.
         """
+        self.opening_sound.stop(self.opening_sound_player)
         game_view = GameView()
         self.window.show_view(game_view)
 
