@@ -129,8 +129,8 @@ class GameView(arcade.View):
         for i in range(2):
             # Creates Player object
             p = Player(
-                center_x=self.tilemap.sprite_lists["players"][0].center_x + random.randint(1,8) * TILE_SIZE * SCALING,
-                center_y=self.tilemap.sprite_lists["players"][0].center_y,
+                center_x=self.tilemap.sprite_lists["players"][i].center_x,
+                center_y=self.tilemap.sprite_lists["players"][i].center_y,
                 scale=SCALING,
                 key_up=PLAYER_KEYS[i]["up"],
                 key_down=PLAYER_KEYS[i]["down"],
