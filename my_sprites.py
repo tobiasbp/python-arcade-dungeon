@@ -25,6 +25,31 @@ class EnemyState(Enum):
     CHASING = auto()
 
 
+@unique
+class Sound(Enum):
+    """
+    Sound effects
+    """
+
+    KNIFE_SLICE = arcade.load_sound("data/audio/rpg/knifeSlice.ogg")
+    MONSTER_GRUNT = arcade.load_sound("data/audio/rpg/monster_grunt.wav")
+    MONSTER_SNARL = arcade.load_sound("data/audio/rpg/monster_snarl.wav")
+    CREAK = arcade.load_sound("data/audio/rpg/creak1.ogg")
+    OPENING_SOUND = arcade.load_sound("data/audio/rpg/opening_sound.wav")
+
+    # Footstep sounds.
+    FOOTSTEP_00 = arcade.load_sound("data/audio/rpg/footstep00.ogg")
+    FOOTSTEP_01 = arcade.load_sound("data/audio/rpg/footstep01.ogg")
+    FOOTSTEP_02 = arcade.load_sound("data/audio/rpg/footstep02.ogg")
+    FOOTSTEP_03 = arcade.load_sound("data/audio/rpg/footstep03.ogg")
+    FOOTSTEP_04 = arcade.load_sound("data/audio/rpg/footstep04.ogg")
+    FOOTSTEP_05 = arcade.load_sound("data/audio/rpg/footstep05.ogg")
+    FOOTSTEP_06 = arcade.load_sound("data/audio/rpg/footstep06.ogg")
+    FOOTSTEP_07 = arcade.load_sound("data/audio/rpg/footstep07.ogg")
+    FOOTSTEP_08 = arcade.load_sound("data/audio/rpg/footstep08.ogg")
+    FOOTSTEP_09 = arcade.load_sound("data/audio/rpg/footstep09.ogg")
+
+
 class Enemy(arcade.Sprite):
     """
     parent class for all enemies in the game. Features include pathfinding, hp management and movement
@@ -121,8 +146,10 @@ class Enemy(arcade.Sprite):
         if self._state is not new_state:
             if new_state == EnemyState.CHASING:
                 self.react(Reaction.EXCLAMATION_RED)
+                arcade.play_sound(Sound.MONSTER_GRUNT.value)
             elif new_state == EnemyState.ROAMING:
                 self.react(Reaction.HEART_BROKEN)
+                arcade.play_sound(Sound.MONSTER_SNARL.value)
 
         self._state = new_state
 
@@ -421,6 +448,8 @@ class Player(arcade.Sprite):
                 angle=math.radians(self.direction),
             )
 
+            arcade.play_sound(Sound.KNIFE_SLICE.value)
+
             if success:
                 self.react(Reaction.ANGRY)
             else:
@@ -452,6 +481,10 @@ class Player(arcade.Sprite):
     @property
     def hp(self):
         return self._hp
+
+    @property
+    def is_walking(self):
+        return True in [self.left_pressed, self.up_pressed, self.right_pressed, self.down_pressed]
 
     @hp.setter
     def hp(self, new_hp):
@@ -520,6 +553,9 @@ class Player(arcade.Sprite):
         """
         Track the state of the control keys
         """
+
+        previous_direction = self._direction
+
         if key == self.key_left:
             self.left_pressed = True
             # Turns the sprite to the left side.
@@ -611,6 +647,11 @@ class Player(arcade.Sprite):
         """
         Set Sprite's speed based on key status
         """
+
+        if self.is_walking and random.randint(1, 20) == 1:
+            s = random.choice([s for s in Sound if s.name.startswith("FOOTSTEP_")])
+            arcade.play_sound(s.value)
+
         # Assume no keys are held
         self.change_x = 0
         self.change_y = 0
