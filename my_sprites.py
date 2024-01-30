@@ -34,6 +34,8 @@ class Sound(Enum):
     KNIFE_SLICE = arcade.load_sound("data/audio/rpg/knifeSlice.ogg")
     MONSTER_GRUNT = arcade.load_sound("data/audio/rpg/monster_grunt.wav")
     MONSTER_SNARL = arcade.load_sound("data/audio/rpg/monster_snarl.wav")
+    CREAK = arcade.load_sound("data/audio/rpg/creak1.ogg")
+    OPENING_SOUND = arcade.load_sound("data/audio/rpg/opening_sound.wav")
 
     # Footstep sounds.
     FOOTSTEP_00 = arcade.load_sound("data/audio/rpg/footstep00.ogg")
@@ -575,9 +577,6 @@ class Player(arcade.Sprite):
         elif key == self.key_atttack:
             self.atttack_pressed = True
             self.attack()
-
-        if previous_direction in [self]:
-            arcade.play_sound(Sound.FOOTSTEP_00.value)
 
     def on_key_release(self, key, modifiers):
         """
