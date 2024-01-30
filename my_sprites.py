@@ -53,6 +53,123 @@ class Sound(Enum):
     FOOTSTEP_09 = arcade.load_sound("data/audio/rpg/footstep09.ogg")
 
 
+@unique
+class EntityType(IntEnum):
+    """
+    Player types that map to numbers in filename suffixes
+    """
+    WIZARD = 7 * 12 + 0
+    MAN_01 = 7 * 12 + 1
+    BLACKSMITH = 7 * 12 + 2
+    VIKING = 7 * 12 + 3
+    MAN_02 = 7 * 12 + 4
+    KNIGHT_CLOSED_HELMET = 8 * 12 + 0
+    KNIGHT_OPEN_HELMET = 8 * 12 + 1
+    KNIGHT_NO_HELMET = 8 * 12 + 2
+    WOMAN_YOUNGER = 8 * 12 + 3
+    WOMAN_OLDER = 8 * 12 + 4
+
+
+class Entity(arcade.Sprite):
+    """
+    parent class for both enemies and players. Features include attacks, hp and more.
+    """
+
+    def __init__(self,
+                 position: tuple[float, float],
+                 graphics_type: EntityType,
+                 max_hp: int,
+                 speed: int,
+                 window: arcade.Window,
+                 equipped_weapon=None,
+                 scale=1.0,
+                 ):
+
+        # graphics
+        # Load the image twice, with one flipped, so we have left/right facing textures
+        self.textures = arcade.load_texture_pair(f"images/tiny_dungeon/Tiles/tile_{graphics_type:0=4}.png")
+        self.texture = self.textures[0]
+
+        self._max_hp = max_hp
+        self._cur_hp = max_hp
+        self.speed = speed
+        self.window = window
+        self._equipped_weapon = equipped_weapon
+
+        self._emotes = arcade.SpriteList()
+
+        # amount of seconds before the sprite can update
+        self.pause_timer = 0
+
+    @property
+    def max_hp(self):
+        return self._max_hp
+
+    @property
+    def cur_hp(self):
+        return self.cur_hp
+
+    @cur_hp.setter
+    def cur_hp(self, new_hp):
+        self.cur_hp = max(0, min(new_hp, self.max_hp))
+
+    @property
+    def emotes(self):
+        return self._emotes
+
+    @property
+    def equipped_weapon(self):
+        return self._equipped_weapon
+
+    @equipped_weapon.setter
+    def equipped_weapon(self, new_weapon):
+        assert type(new_weapon) == Weapon or new_weapon is None, f"expected type WeaponType, or None, got {type(Weapon)}"
+        self._equipped_weapon = new_weapon
+
+    def react(self, reaction):
+        """
+        Add an Emote
+        """
+        self._emotes.append(
+            Emote(
+                reaction=reaction,
+                position=self.position,
+                scale=self.scale
+            )
+        )
+
+    def attack(self, angle: float):
+        """
+        Perform an attack using the equiped weapon
+        """
+        if self.equipped_weapon is not None and self.equipped_weapon.is_idle:
+
+            # FIXME: Remove the weapon if it has no attacks left
+
+            success = self.equipped_weapon.attack(
+                position=self.position,
+                angle=angle,
+            )
+
+            arcade.play_sound(Sound.KNIFE_SLICE.value)
+
+            if success:
+                self.react(Reaction.ANGRY)
+            else:
+                self.react(Reaction.SAD)
+
+            return True
+
+        else:
+            return False
+
+    def update(self):
+
+        if self.pause_timer > 0:
+            self.pause_timer -= 1/60  # default value for delta time
+            return
+
+
 class Enemy(arcade.Sprite):
     """
     parent class for all enemies in the game. Features include pathfinding, hp management and movement
@@ -169,6 +286,8 @@ class Enemy(arcade.Sprite):
         assert type(weapon) == Weapon or weapon is None, f"expected type WeaponType, or None, got {type(Weapon)}"
         self._equipped = weapon
 
+
+
     def go_to_position(self, target_pos: tuple[int, int]):
         """
         calculates a path to the target pos. Sets the sprite's path to this path.
@@ -218,18 +337,6 @@ class Enemy(arcade.Sprite):
                 # testing shows that we need to reverse the direction...
                 self.change_x = -math.sin(angle_to_dest) * this_move_length
                 self.change_y = -math.cos(angle_to_dest) * this_move_length
-
-    def react(self, reaction):
-        """
-        Add an Emote
-        """
-        self._emotes.append(
-            Emote(
-                reaction=reaction,
-                position=self.position,
-                scale=self.scale
-            )
-        )
 
     def update(self):
 
@@ -317,22 +424,6 @@ class Enemy(arcade.Sprite):
             if draw_attack_hitboxes:
                 self.equipped.draw_hit_box()
         self.draw()
-
-@unique
-class PlayerType(IntEnum):
-    """
-    Player types that map to numbers in filename suffixes
-    """
-    WIZARD = 7 * 12 + 0
-    MAN_01 = 7 * 12 + 1
-    BLACKSMITH = 7 * 12 + 2
-    VIKING = 7 * 12 + 3
-    MAN_02 = 7 * 12 + 4
-    KNIGHT_CLOSED_HELMET = 8 * 12 + 0
-    KNIGHT_OPEN_HELMET = 8 * 12 + 1
-    KNIGHT_NO_HELMET = 8 * 12 + 2
-    WOMAN_YOUNGER = 8 * 12 + 3
-    WOMAN_OLDER = 8 * 12 + 4
 
 
 class Player(arcade.Sprite):
