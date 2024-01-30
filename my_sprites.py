@@ -449,6 +449,7 @@ class Player(arcade.Sprite):
             )
 
             arcade.play_sound(Sound.KNIFE_SLICE.value)
+            print(self.equiped.type)
 
             if success:
                 self.react(Reaction.ANGRY)
