@@ -272,6 +272,11 @@ class GameView(arcade.View):
         for p in self.player_sprite_list:
             p.update()
 
+        for p in self.player_sprite_list:
+            for sprite in self.tilemap.sprite_lists["pressure-plates"]:
+                if arcade.check_for_collision(p, sprite):
+                    print("hi")
+
         # Update the physics engine for each player
         # Return all sprites involved in collissions
         for pe in self.physics_engines:
