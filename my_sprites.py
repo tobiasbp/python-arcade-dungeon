@@ -90,13 +90,24 @@ class Entity(arcade.Sprite):
         self.textures = arcade.load_texture_pair(f"images/tiny_dungeon/Tiles/tile_{graphics_type:0=4}.png")
         self.texture = self.textures[0]
 
+        # hp
         self._max_hp = max_hp
         self._cur_hp = max_hp
+        self.healthbar = HealthBar(max_health=max_hp)
+
         self.speed = speed
         self.window = window
         self._equipped_weapon = equipped_weapon
+        # angle used for the dir the sprite is facing. for the enemy this will usually be the angle to the target
+        self.facing_dir = 0
 
         self._emotes = arcade.SpriteList()
+
+        super().__init__(scale=scale,
+                         center_x=position[0],
+                         center_y=position[1])
+
+        self.texture = self.textures[0]
 
         # amount of seconds before the sprite can update
         self.pause_timer = 0
@@ -123,7 +134,7 @@ class Entity(arcade.Sprite):
 
     @equipped_weapon.setter
     def equipped_weapon(self, new_weapon):
-        assert type(new_weapon) == Weapon or new_weapon is None, f"expected type WeaponType, or None, got {type(Weapon)}"
+        assert type(new_weapon) == Weapon or new_weapon is None, f"expected type WeaponType, or None, got {type(new_weapon)}"
         self._equipped_weapon = new_weapon
 
     def react(self, reaction):
@@ -163,11 +174,46 @@ class Entity(arcade.Sprite):
         else:
             return False
 
+    def draw_sprites(self, draw_hitbox: bool=False, draw_attack_hitboxes: bool=False, draw_pixelated: bool=True):
+        """
+        draw related sprites (emotes and attacks)
+        """
+
+        self.emotes.draw(pixelated=draw_pixelated)
+        self.healthbar.draw()
+
+        if draw_hitbox:
+            self.draw_hit_box(arcade.color.NEON_GREEN, line_thickness=2)
+
+        if self.equipped_weapon is not None:
+            if draw_attack_hitboxes:
+                self.equipped_weapon.draw_hit_box(arcade.color.NEON_GREEN, line_thickness=2)
+            if not self.equipped_weapon.is_idle:
+                self.equipped_weapon.draw()
+
     def update(self):
 
         if self.pause_timer > 0:
             self.pause_timer -= 1/60  # default value for delta time
             return
+
+        if self.equipped_weapon is not None:
+            self.equipped_weapon.update()
+
+            # move the equipped weapon to our position
+            self.equipped_weapon.center_x = self.center_x + (
+                    math.sin(math.radians(self.facing_dir)) * Weapon.data[self.equipped_weapon.type]["range"])
+            self.equipped_weapon.center_y = self.center_y + (
+                            math.cos(math.radians(self.facing_dir)) * Weapon.data[self.equipped_weapon.type]["range"])
+
+            if self.equipped_weapon.attacks_left <= 0:
+                self.equipped_weapon = None
+
+        # update the healthbar
+        self.healthbar.health = self.cur_hp
+        self.healthbar.position = self.position
+
+        self._emotes.update()
 
 
 class Enemy(arcade.Sprite):
@@ -335,17 +381,14 @@ class Enemy(arcade.Sprite):
 
             else:
                 # testing shows that we need to reverse the direction...
-                self.change_x = -math.sin(angle_to_dest) * this_move_length
-                self.change_y = -math.cos(angle_to_dest) * this_move_length
+                self.center_x += -math.sin(angle_to_dest) * this_move_length
+                self.center_y += -math.cos(angle_to_dest) * this_move_length
 
     def update(self):
 
         if self.pause_timer > 0:
             self.pause_timer -= 1/60
             return 0
-        # update position
-        self.center_x += self.change_x
-        self.center_y += self.change_y
 
         self.calculate_path_timer -= 1/60
 
@@ -360,10 +403,6 @@ class Enemy(arcade.Sprite):
                     self.cur_target = None
                     self.state = EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS
 
-                    # if we are stuck in a wall move backwards (if we are stuck we cannot find a path)
-                    self.change_x = -self.change_x
-                    self.change_y = -self.change_y
-
             # to prevent the sprite from calculating LOS every frame (very taxing)
             self.calculate_path_timer = random.random() / 2
 
@@ -373,8 +412,8 @@ class Enemy(arcade.Sprite):
 
             angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
 
-            self.change_x = math.sin(angle_to_target) * self.speed
-            self.change_y = math.cos(angle_to_target) * self.speed
+            self.center_x += math.sin(angle_to_target) * self.speed
+            self.center_y += math.cos(angle_to_target) * self.speed
 
             if self.equipped is not None:
                 self.equipped.attack(position=self.position, angle=angle_to_target)
@@ -426,18 +465,13 @@ class Enemy(arcade.Sprite):
         self.draw()
 
 
-class Player(arcade.Sprite):
+class Player(Entity):
     """
     A player
     """
 
     def __init__(
             self,
-            center_x=0,
-            center_y=0,
-            speed=2,
-            scale=1,
-            type:Optional[PlayerType]=None,
             key_up=arcade.key.UP,
             key_down=arcade.key.DOWN,
             key_left=arcade.key.LEFT,
@@ -446,45 +480,13 @@ class Player(arcade.Sprite):
             joystick=None,
             jitter_amount:int=10, # How much to rotate when walking
             jitter_likelihood:float=0.5, # How likely is jittering?
-            max_hp:int=10
         ):
         """
         Setup new Player object
         """
 
-        # Pass arguments to class arcade.Sprite
-        super().__init__(
-            center_x=center_x,
-            center_y=center_y,
-            scale=scale,
-        )
-
-        self.speed = speed
-
-        # We need this to scale the Emotes
-        self.scale = scale
-
-        # Pick a random type if none is selected
-        if type is None:
-            type = random.choice(list(PlayerType))
-
-        # Use the integer value of PlayerType and pad with zeros to get a 4 digit value.
-        # Load the image twice, with one flipped, so we have left/right facing textures
-        self.textures = arcade.load_texture_pair(
-            f"images/tiny_dungeon/Tiles/tile_{type:0=4}.png"
-            )
-
-        # Set current texture
-        self.texture = self.textures[0]
-
         # The direction the Player is facing
-        self._direction = Direction.RIGHT
-
-        self._type = type
-
-        # hp
-        self._max_hp = max_hp
-        self._hp = max_hp
+        self.facing_dir = Direction.RIGHT
 
         self.key_left = key_left
         self.key_right = key_right
@@ -515,160 +517,36 @@ class Player(arcade.Sprite):
         self.jitter_amount = jitter_amount
         self.jitter_likelihood = jitter_likelihood
 
-        # The weapons carried by the player
-        self._weapons = {}
-
-        # No weapon currently in use
-        self._equiped = None
-
-        # Add the default weapon
-        self.add_weapon(WeaponType.SWORD_SHORT)
-
-        # Player's emotes will be stored here
-        self._emotes = arcade.SpriteList()
-
-        # Player's variables about hp
-        self._max_hp = max_hp
-        self._hp = max_hp
-        self.health_bar = HealthBar(max_health=max_hp)
-
-
-    def attack(self):
-        """
-        Perform an attack using the equiped weapon
-        """
-        if self.equiped is not None and self.equiped.is_idle:
-
-            # FIXME: Remove the weapon if it has no attacks left
-
-            success = self.equiped.attack(
-                position=self.position,
-                angle=math.radians(self.direction),
-            )
-
-            arcade.play_sound(Sound.KNIFE_SLICE.value)
-
-            if success:
-                self.react(Reaction.ANGRY)
-            else:
-                self.react(Reaction.SAD)
-
-            return True
-
-        else:
-            return False
-
-
-    def react(self, reaction):
-        """
-        Add an Emote
-        """
-        # FIXME: Add a limit on number of emotes allowed
-        self._emotes.append(
-            Emote(
-                reaction=reaction,
-                position=self.position,
-                scale=self.scale
-            )
-        )
-
-    @property
-    def max_hp(self):
-        return self._max_hp
-
-    @property
-    def hp(self):
-        return self._hp
+        self.health_bar = HealthBar(max_health=self.max_hp)
 
     @property
     def is_walking(self):
         return True in [self.left_pressed, self.up_pressed, self.right_pressed, self.down_pressed]
-
-    @hp.setter
-    def hp(self, new_hp):
-        self._hp = max(0, min(new_hp, self.max_hp))  # hp should be greater than 0 and not greater than max hp
-
-
-    @property
-    def weapons(self):
-        """
-        A list of weapon types carried by the player
-        """
-        return self._weapons.keys()
-
-    @property
-    def max_hp(self):
-        return self._max_hp
-
-    @property
-    def emotes(self):
-        return self._emotes
-
-    @property
-    def type(self):
-        return self._type
-
-    @property
-    def equiped(self):
-        return self._equiped
-
-    @equiped.setter
-    def equiped(self, weapon):
-        assert type(weapon) == Weapon or weapon is None, f"expected type Weapon or NoneType, got {type(weapon)}"
-        self._equiped = weapon
-
-    @property
-    def direction(self):
-        return self._direction
-
-    def add_weapon(self, type):
-        """
-        Add a weapon to the player's weapons.
-        """
-
-        # If we already have the weapon type,
-        # it will be replaced by the new weapon.
-        self._weapons[type] = Weapon(type)
-
-        # If no weapon is in use, start using the one that was picked up
-        if self.equiped is None:
-            self.equip(type)
-
-    def equip(self, type):
-        """
-        The player will start using this weapon type if available.
-        This should probably be all type of objects
-        Return value reports success.
-        """
-        if type in self._weapons.keys():
-            self._equiped = self._weapons[type]
-            return True
-
-        # Could not equip the weapon type
-        return False
 
     def on_key_press(self, key, modifiers):
         """
         Track the state of the control keys
         """
 
-        previous_direction = self._direction
-
         if key == self.key_left:
             self.left_pressed = True
             # Turns the sprite to the left side.
             self.texture = self.textures[1]
-
-        if key == self.key_right:
+            self.facing_dir = Direction.LEFT
+            return
+        elif key == self.key_right:
             self.right_pressed = True
             # Turns the sprite to the Right side
             self.texture = self.textures[0]
-
-        if key == self.key_up:
+            self.facing_dir = Direction.RIGHT
+            return
+        elif key == self.key_up:
             self.up_pressed = True
-        if key == self.key_down:
+            self.facing_dir = Direction.UP
+        elif key == self.key_down:
             self.down_pressed = True
-        if key == self.key_atttack:
+            self.facing_dir = Direction.DOWN
+        elif key == self.key_atttack:
             self.atttack_pressed = True
             self.attack()
 
@@ -764,20 +642,6 @@ class Player(arcade.Sprite):
     def on_joyhat_motion(self, joystick, hat_x, hat_y):
         print("Note: This game is not compatible with Joyhats")
 
-    def draw_sprites(self, pixelated, draw_attack_hitboxes: bool=False):
-        """
-        Draw sprites handles by the Player
-        """
-        self.emotes.draw(pixelated=pixelated)
-
-        self.health_bar.draw()
-        if self.equiped is not None:
-            if draw_attack_hitboxes:
-                self.equiped.draw_hit_box()
-            # Only draw active weapons
-            if not self.equiped.is_idle:
-                self.equiped.draw(pixelated=pixelated)
-
     def update(self):
         """
         Set Sprite's speed based on key status
@@ -790,9 +654,6 @@ class Player(arcade.Sprite):
         # Assume no keys are held
         self.change_x = 0
         self.change_y = 0
-
-        if self.equiped is not None:
-            self.equiped.update()
 
         # Update speed based on held keys
 
@@ -807,23 +668,6 @@ class Player(arcade.Sprite):
             self.angle = random.randint(-self.jitter_amount, self.jitter_amount)
         else:
             self.angle = 0
-
-        # Move equipped weapon to our position
-        if self.equiped is not None:
-            self.equiped.center_x = self.center_x + (math.sin(math.radians(self.direction)) * Weapon.data[self.equiped.type]["range"])
-            self.equiped.center_y = self.center_y + (math.cos(math.radians(self.direction)) * Weapon.data[self.equiped.type]["range"])
-
-        # check weapon durability
-        if self.equiped is not None:
-            if self.equiped.attacks_left <= 0:
-                self.equiped = None
-
-        # Note: We don't change the position of the sprite here, since that is done by the physics engine
-        # Update the health-bar
-        self.health_bar.health = self._hp
-        self.health_bar.position = self.position
-
-        self._emotes.update()
 
 
 @unique
