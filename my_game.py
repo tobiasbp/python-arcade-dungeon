@@ -270,7 +270,7 @@ class GameView(arcade.View):
         Movement and game logic
         """
         for p in self.player_sprite_list:
-            if arcade.check_for_collision_with_lists(p.equiped, self.tilemap.sprite_lists["enemies"]):
+            if arcade.check_for_collision_with_list(p.equiped, self.tilemap.sprite_lists["enemies"]):
                 print("ENEMY HIT!")
             p.update()
 
