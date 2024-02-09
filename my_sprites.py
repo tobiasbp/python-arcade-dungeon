@@ -89,7 +89,7 @@ class Entity(arcade.Sprite):
 
         # hp
         self._max_hp = max_hp
-        self._cur_hp = max_hp
+        self._hp = max_hp
         self.healthbar = HealthBar(max_health=max_hp)
 
         self.speed = speed
@@ -114,12 +114,12 @@ class Entity(arcade.Sprite):
         return self._max_hp
 
     @property
-    def cur_hp(self):
-        return self.cur_hp
+    def hp(self):
+        return self._hp
 
-    @cur_hp.setter
-    def cur_hp(self, new_hp):
-        self.cur_hp = max(0, min(new_hp, self.max_hp))
+    @hp.setter
+    def hp(self, new_hp):
+        self._hp = max(0, min(new_hp, self.max_hp))
 
     @property
     def emotes(self):
@@ -207,13 +207,17 @@ class Entity(arcade.Sprite):
                 self.equipped_weapon = None
 
         # update the healthbar
-        self.healthbar.health = self.cur_hp
+        self.healthbar.health = self._hp
         self.healthbar.position = self.position
+
+        # death
+        if self.hp:
+            self.kill()
 
         self._emotes.update()
 
 
-class Enemy(arcade.Sprite):
+class Enemy(Entity):
     """
     parent class for all enemies in the game. Features include pathfinding, hp management and movement
 
@@ -228,40 +232,16 @@ class Enemy(arcade.Sprite):
 
     def __init__(
             self,
-            position: tuple[float, float],
             impassables: arcade.SpriteList,
-            window: arcade.Window,
             grid_size: int,
             potential_targets_list: arcade.SpriteList,
-            equipped_weapon = None,
-            filename: str = "images/tiny_dungeon/Tiles/tile_0087.png",
             state: EnemyState=EnemyState.ROAMING,
-            max_hp: int = 10,
-            speed: int = 1,
-            roaming_dist: float = 200,
-            scale: float = 1.0):
+            roaming_dist: float = 200):
 
-        super().__init__(
-            filename=filename,
-            scale=scale,
-            center_x=position[0],
-            center_y=position[1]
-        )
-
-        # hp
-        self._max_hp = max_hp
-        self._hp = max_hp
-
-        self.window = window
-        self.speed = speed
         self.potential_targets_list = potential_targets_list  # list of sprites to chase when spotted
         self.cur_target = None
         self.roaming_dist = roaming_dist
         self._state = state
-        if equipped_weapon is not None:
-            self._equipped = equipped_weapon
-        else:
-            self._equipped = None
 
         # pathfinding
         self.path = []
@@ -269,7 +249,7 @@ class Enemy(arcade.Sprite):
         # how frequently the sprite can calculate a new path, in seconds. it's for performance
         self.calculate_path_timer = random.random()
 
-        # pauses all updates for this number of seconds. hold still for the first frames of the game - to prevent enemies from calculating paths simultaneously
+        # prevent enemies from loading simultaneously
         self.pause_timer = random.random()
 
         # create our own map of barriers
@@ -278,25 +258,10 @@ class Enemy(arcade.Sprite):
             blocking_sprites=impassables,
             grid_size=grid_size,
             left=0,
-            right=window.width,
+            right=self.window.width,
             bottom=0,
-            top=window.height
+            top=self.window.height
         )
-
-        # Enemies emotes will be stored here
-        self._emotes = arcade.SpriteList()
-
-    @property
-    def max_hp(self):
-        return self._max_hp
-
-    @property
-    def hp(self):
-        return self._max_hp
-
-    @hp.setter
-    def hp(self, new_hp):
-        self._hp = max(0, min(new_hp, self.max_hp))
 
     @property
     def state(self):
@@ -315,21 +280,6 @@ class Enemy(arcade.Sprite):
                 arcade.play_sound(Sound.MONSTER_SNARL.value)
 
         self._state = new_state
-
-    @property
-    def emotes(self):
-        return self._emotes
-
-    @property
-    def equipped(self):
-        return self._equipped
-
-    @equipped.setter
-    def equipped(self, weapon):
-        assert type(weapon) == Weapon or weapon is None, f"expected type WeaponType, or None, got {type(Weapon)}"
-        self._equipped = weapon
-
-
 
     def go_to_position(self, target_pos: tuple[int, int]):
         """
@@ -383,10 +333,6 @@ class Enemy(arcade.Sprite):
 
     def update(self):
 
-        if self.pause_timer > 0:
-            self.pause_timer -= 1/60
-            return 0
-
         self.calculate_path_timer -= 1/60
 
         if self.calculate_path_timer <= 0:
@@ -408,14 +354,10 @@ class Enemy(arcade.Sprite):
             self.path = []
 
             angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
+            self.facing_dir = angle_to_target
 
             self.center_x += math.sin(angle_to_target) * self.speed
             self.center_y += math.cos(angle_to_target) * self.speed
-
-            if self.equipped is not None:
-                self.equipped.attack(position=self.position, angle=angle_to_target)
-                self.equipped.center_x += math.sin(angle_to_target) * self.speed
-                self.equipped.center_y += math.cos(angle_to_target) * self.speed
 
         # searching state
         elif self.state == EnemyState.SEARCHING:
@@ -443,26 +385,6 @@ class Enemy(arcade.Sprite):
                     if arcade.get_distance(self.center_x, self.center_y, next_pos[0], next_pos[1]) > self.roaming_dist:
                         self.go_to_position(next_pos)
                         break
-
-        # remove the sprite if hp is 0 or less
-        if self.hp <= 0:
-            self.kill()
-
-        # update weapon
-        if self.equipped is not None:
-            self.equipped.update()
-            # check weapon durability
-            if self.equipped.attacks_left <= 0:
-                self.equipped = None
-
-        self._emotes.update()
-
-    def on_draw(self, draw_attack_hitboxes: bool=False):
-        if self.equipped is not None:
-            self.equipped.draw()
-            if draw_attack_hitboxes:
-                self.equipped.draw_hit_box()
-        self.draw()
 
 
 class Player(Entity):
