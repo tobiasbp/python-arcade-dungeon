@@ -13,7 +13,7 @@ import random
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
-from my_sprites import Player, Enemy, Reaction, Weapon, WeaponType
+from my_sprites import Player, Enemy, Reaction, Weapon, WeaponType, EntityType
 
 # Set the scaling of all sprites in the game
 SCALING = 1
@@ -133,8 +133,11 @@ class GameView(arcade.View):
         for i in range(NUM_OF_PLAYERS):
             # Creates Player object
             p = Player(
-                center_x=self.tilemap.sprite_lists["players"][i].center_x,
-                center_y=self.tilemap.sprite_lists["players"][i].center_y,
+                position=(self.tilemap.sprite_lists["players"][0].center_x + random.randint(1,8) * TILE_SIZE * SCALING, self.tilemap.sprite_lists["players"][0].center_y),
+                max_hp=20,  # FIXME: add some kind of config for the player to avoid magic numbers
+                speed=3,
+                window=self.window,
+                equipped_weapon=Weapon(type=WeaponType.SWORD_SHORT),
                 scale=SCALING,
                 key_up=PLAYER_KEYS[i]["up"],
                 key_down=PLAYER_KEYS[i]["down"],
@@ -153,9 +156,12 @@ class GameView(arcade.View):
             # Create the enemy
             e = Enemy(
                 position=enemy_position,
+                max_hp=5,
+                speed=2,
+                window=self.window,
+                graphics_type=EntityType.VIKING,
                 impassables=self.tilemap.sprite_lists["impassable"],
                 grid_size=int(self.tilemap.tile_width),
-                window=self.window,
                 potential_targets_list=self.player_sprite_list,
                 equipped_weapon=Weapon(type=WeaponType.SWORD_SHORT),
                 scale=SCALING

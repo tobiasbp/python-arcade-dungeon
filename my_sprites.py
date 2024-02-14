@@ -69,6 +69,209 @@ class EntityType(IntEnum):
     WOMAN_YOUNGER = 8 * 12 + 3
     WOMAN_OLDER = 8 * 12 + 4
 
+class WeaponType(IntEnum):
+    """
+    Weapon types that map to weapon graphics
+    The values are calculated from image position in sprite sheet
+    """
+    SWORD_SHORT = 9*11+4
+    SWORD_LONG = 9*11+5
+    SWORD_FALCHION = 9*11+6
+    SWORD_DOUBLE_SILVER = 9*11+7
+    SWORD_DOUBLE_BRONZE = 9*11+8
+    HAMMER = 9*12+6
+    AXE_DOUBLE = 9*12+7
+    AXE_SINGLE = 9*12+8
+    STAFF_PURPLE = 9*13+6
+    STAFF_GREEN = 9*13+7
+    SPEAR = 9*13+8
+
+class Weapon(arcade.Sprite):
+    """
+    A weapon of a given type.
+    Used with players and enemies when they attack.
+    """
+
+    # A list of weapon textures from a sprite sheet
+    textures: List[arcade.texture.Texture] = arcade.load_spritesheet(
+        file_name = "data/rooms/dungeon/tilemap.png",
+        sprite_width=16,
+        sprite_height=16,
+        columns=12,
+        count=12*11,
+        margin=1)
+
+    # range: How far from the user of the weapon will it attack
+    # hitbox: the points to use as the sprites hitbox
+    # strength: How much damage will the weapon inflict?
+    # rate: How often can the weapon be used (seconds)
+    # max_usage: How many times can the weapon be used?
+
+    data = {
+        WeaponType.AXE_DOUBLE: {
+            # Remember to use scale with this when attacking
+            "range": 25,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
+            "strength": 40,
+            "rate": 4.5,
+            "max_usage": math.inf
+        },
+        WeaponType.AXE_SINGLE: {
+            # Remember to use scale with this when attacking
+            "range": 20,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
+            "strength": 25,
+            "rate": 3,
+            "max_usage": math.inf
+        },
+        WeaponType.HAMMER: {
+            # Remember to use scale with this when attacking
+            "range": 15,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
+            "strength": 30,
+            "rate": 2.5,
+            "max_usage": 30
+        },
+        WeaponType.SPEAR: {
+            # Remember to use scale with this when attacking
+            "range": 40,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
+            "strength": 20,
+            "rate": 1,
+            "max_usage": math.inf
+        },
+        WeaponType.STAFF_GREEN: {
+            # Need a setting for distance weapons!
+            "range": 15,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
+            "strength": 15,
+            "rate": 1,
+            "max_usage": math.inf
+        },
+        WeaponType.STAFF_PURPLE: {
+            "range": 15,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
+            "strength": 10,
+            "rate": 1,
+            "max_usage": math.inf
+        },
+        WeaponType.SWORD_DOUBLE_BRONZE: {
+            # Remember to use scale with this when attacking
+            "range": 30,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
+            "strength": 15,
+            "rate": 1,
+            "max_usage": 15
+        },
+        WeaponType.SWORD_DOUBLE_SILVER: {
+            # Remember to use scale with this when attacking
+            "range": 20,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
+            "strength": 25,
+            "rate": 3.2,
+            "max_usage": math.inf
+        },
+        WeaponType.SWORD_FALCHION: {
+            # Remember to use scale with this when attacking
+            "range": 35,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
+            "strength": 15,
+            "rate": 3,
+            "max_usage": math.inf
+        },
+        WeaponType.SWORD_LONG: {
+            # Remember to use scale with this when attacking
+            "range": 30,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
+            "strength": 10,
+            "rate": 1.2,
+            "max_usage": math.inf
+        },
+        WeaponType.SWORD_SHORT: {
+            # Remember to use scale with this when attacking
+            "range": 15,
+            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
+            "strength": 7,
+            "rate": 0.8,
+            "max_usage": 10
+        }
+    }
+
+    def __init__(self,type: WeaponType,position: tuple[int, int]=(0,0),scale:int=1):
+
+        super().__init__(
+            center_x = position[0],
+            center_y = position[1],
+            scale = scale,
+            texture = Weapon.textures[type],
+            hit_box_algorithm=None
+        )
+
+        self._type = type
+        self._attacks_left:int = Weapon.data[type]["max_usage"]
+
+        # Time in seconds left until weapon can be used again
+        self._time_to_idle = 0.0
+
+    @property
+    def is_idle(self):
+        """
+        If the weapon is idle, it can be used for an attack.
+        """
+        return self._time_to_idle <= 0.0
+
+    @property
+    def type(self):
+        return self._type
+
+    @property
+    def range(self):
+        return Weapon.data[self.type]["range"]
+
+    @property
+    def strength(self):
+        return Weapon.data[self.type]["strength"]
+
+    @property
+    def rate(self):
+        return Weapon.data[self._type]["rate"]
+
+    @property
+    def attacks_left(self):
+        return self._attacks_left
+
+    def attack(self, position: tuple[int,int], angle):
+        """
+        Weapon attacks at position
+        """
+
+        # FIXME: Make resizable hitboxes work for all angles
+
+        self.hit_box = Weapon.data[self.type]["hit_box"]
+        if self.is_idle:
+            if self.attacks_left <= 0:
+                self.kill()
+                return False
+
+            self._attacks_left -= 1
+            self.position = position
+            self._time_to_idle = self.rate
+
+            distance = Weapon.data[self.type]["range"]
+
+            self.center_x = position[0] + (math.sin(angle) * distance)
+            self.center_y = position[1] + (math.cos(angle) * distance)
+
+            self._time_to_idle = Weapon.data[self.type]["rate"]
+            return True
+
+    def update(self):
+        if not self.is_idle:
+            # FIXME: Just to illustrate an attack
+            self.angle += 4
+
+            # Time passes
+            self._time_to_idle -= 1/60  # we don't want to use on_update, so we just use the default delta time
 
 class Entity(arcade.Sprite):
     """
@@ -77,15 +280,19 @@ class Entity(arcade.Sprite):
 
     def __init__(self,
                  position: tuple[float, float],
-                 graphics_type: EntityType,
                  max_hp: int,
                  speed: int,
                  window: arcade.Window,
-                 equipped_weapon=None,
-                 scale=1.0,
+                 graphics_type: EntityType=None,
+                 equipped_weapon: Weapon=None,
+                 scale=1.0
                  ):
 
         # graphics
+        # set a random texture type if no type was passed
+        if not graphics_type:
+            graphics_type = random.choice([e.value for e in EntityType])
+
         # Load the image twice, with one flipped, so we have left/right facing textures
         self.textures = arcade.load_texture_pair(f"images/tiny_dungeon/Tiles/tile_{graphics_type:0=4}.png")
         self.texture = self.textures[0]
@@ -235,11 +442,26 @@ class Enemy(Entity):
 
     def __init__(
             self,
+            position: tuple[float, float],
+            max_hp: int,
+            speed: int,
+            window: arcade.Window,
             impassables: arcade.SpriteList,
             grid_size: int,
             potential_targets_list: arcade.SpriteList,
             state: EnemyState=EnemyState.ROAMING,
-            roaming_dist: float = 200):
+            roaming_dist: float = 200,
+            graphics_type: EntityType=None,
+            equipped_weapon: Weapon=None,
+            scale: float=1.0):
+
+        super().__init__(position=position,
+                         graphics_type=graphics_type,
+                         max_hp=max_hp,
+                         speed=speed,
+                         window=window,
+                         equipped_weapon=equipped_weapon,
+                         scale=scale)
 
         self.potential_targets_list = potential_targets_list  # list of sprites to chase when spotted
         self.cur_target = None
@@ -394,6 +616,13 @@ class Player(Entity):
 
     def __init__(
             self,
+            position: tuple[float, float],
+            max_hp: int,
+            speed: int,
+            window: arcade.Window,
+            graphics_type: EntityType=None,
+            equipped_weapon: Weapon=None,
+            scale=1.0,
             key_up=arcade.key.UP,
             key_down=arcade.key.DOWN,
             key_left=arcade.key.LEFT,
@@ -406,6 +635,14 @@ class Player(Entity):
         """
         Setup new Player object
         """
+
+        super().__init__(position=position,
+                         graphics_type=graphics_type,
+                         max_hp=max_hp,
+                         speed=speed,
+                         window=window,
+                         equipped_weapon=equipped_weapon,
+                         scale=scale)
 
         # The direction the Player is facing
         self.facing_dir = Direction.RIGHT
@@ -663,213 +900,6 @@ class Emote(arcade.Sprite):
 
         if self.time_left <= 0:
             self.kill()
-
-@unique
-class WeaponType(IntEnum):
-    """
-    Weapon types that map to weapon graphics
-    The values are calculated from image position in sprite sheet
-    """
-    SWORD_SHORT = 9*11+4
-    SWORD_LONG = 9*11+5
-    SWORD_FALCHION = 9*11+6
-    SWORD_DOUBLE_SILVER = 9*11+7
-    SWORD_DOUBLE_BRONZE = 9*11+8
-    HAMMER = 9*12+6
-    AXE_DOUBLE = 9*12+7
-    AXE_SINGLE = 9*12+8
-    STAFF_PURPLE = 9*13+6
-    STAFF_GREEN = 9*13+7
-    SPEAR = 9*13+8
-
-
-class Weapon(arcade.Sprite):
-    """
-    A weapon of a given type.
-    Used with players and enemies when they attack.
-    """
-
-    # A list of weapon textures from a sprite sheet
-    textures: List[arcade.texture.Texture] = arcade.load_spritesheet(
-        file_name = "data/rooms/dungeon/tilemap.png",
-        sprite_width=16,
-        sprite_height=16,
-        columns=12,
-        count=12*11,
-        margin=1)
-
-    # range: How far from the user of the weapon will it attack
-    # hitbox: the points to use as the sprites hitbox
-    # strength: How much damage will the weapon inflict?
-    # rate: How often can the weapon be used (seconds)
-    # max_usage: How many times can the weapon be used?
-
-    data = {
-        WeaponType.AXE_DOUBLE: {
-            # Remember to use scale with this when attacking
-            "range": 25,
-            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
-            "strength": 40,
-            "rate": 4.5,
-            "max_usage": math.inf
-        },
-        WeaponType.AXE_SINGLE: {
-            # Remember to use scale with this when attacking
-            "range": 20,
-            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
-            "strength": 25,
-            "rate": 3,
-            "max_usage": math.inf
-        },
-        WeaponType.HAMMER: {
-            # Remember to use scale with this when attacking
-            "range": 15,
-            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
-            "strength": 30,
-            "rate": 2.5,
-            "max_usage": 30
-        },
-        WeaponType.SPEAR: {
-            # Remember to use scale with this when attacking
-            "range": 40,
-            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
-            "strength": 20,
-            "rate": 1,
-            "max_usage": math.inf
-        },
-        WeaponType.STAFF_GREEN: {
-            # Need a setting for distance weapons!
-            "range": 15,
-            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
-            "strength": 15,
-            "rate": 1,
-            "max_usage": math.inf
-        },
-        WeaponType.STAFF_PURPLE: {
-            "range": 15,
-            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
-            "strength": 10,
-            "rate": 1,
-            "max_usage": math.inf
-        },
-        WeaponType.SWORD_DOUBLE_BRONZE: {
-            # Remember to use scale with this when attacking
-            "range": 30,
-            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
-            "strength": 15,
-            "rate": 1,
-            "max_usage": 15
-        },
-        WeaponType.SWORD_DOUBLE_SILVER: {
-            # Remember to use scale with this when attacking
-            "range": 20,
-            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
-            "strength": 25,
-            "rate": 3.2,
-            "max_usage": math.inf
-        },
-        WeaponType.SWORD_FALCHION: {
-            # Remember to use scale with this when attacking
-            "range": 35,
-            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
-            "strength": 15,
-            "rate": 3,
-            "max_usage": math.inf
-        },
-        WeaponType.SWORD_LONG: {
-            # Remember to use scale with this when attacking
-            "range": 30,
-            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
-            "strength": 10,
-            "rate": 1.2,
-            "max_usage": math.inf
-        },
-        WeaponType.SWORD_SHORT: {
-            # Remember to use scale with this when attacking
-            "range": 15,
-            "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
-            "strength": 7,
-            "rate": 0.8,
-            "max_usage": 10
-        }
-    }
-
-    def __init__(self,type: WeaponType,position: tuple[int, int]=(0,0),scale:int=1):
-
-        super().__init__(
-            center_x = position[0],
-            center_y = position[1],
-            scale = scale,
-            texture = Weapon.textures[type],
-            hit_box_algorithm=None
-        )
-
-        self._type = type
-        self._attacks_left:int = Weapon.data[type]["max_usage"]
-
-        # Time in seconds left until weapon can be used again
-        self._time_to_idle = 0.0
-
-    @property
-    def is_idle(self):
-        """
-        If the weapon is idle, it can be used for an attack.
-        """
-        return self._time_to_idle <= 0.0
-
-    @property
-    def type(self):
-        return self._type
-
-    @property
-    def range(self):
-        return Weapon.data[self.type]["range"]
-
-    @property
-    def strength(self):
-        return Weapon.data[self.type]["strength"]
-
-    @property
-    def rate(self):
-        return Weapon.data[self._type]["rate"]
-
-    @property
-    def attacks_left(self):
-        return self._attacks_left
-
-    def attack(self, position: tuple[int,int], angle):
-        """
-        Weapon attacks at position
-        """
-
-        # FIXME: Make resizable hitboxes work for all angles
-
-        self.hit_box = Weapon.data[self.type]["hit_box"]
-        if self.is_idle:
-            if self.attacks_left <= 0:
-                self.kill()
-                return False
-
-            self._attacks_left -= 1
-            self.position = position
-            self._time_to_idle = self.rate
-
-            distance = Weapon.data[self.type]["range"]
-
-            self.center_x = position[0] + (math.sin(angle) * distance)
-            self.center_y = position[1] + (math.cos(angle) * distance)
-
-            self._time_to_idle = Weapon.data[self.type]["rate"]
-            return True
-
-    def update(self):
-        if not self.is_idle:
-            # FIXME: Just to illustrate an attack
-            self.angle += 4
-
-            # Time passes
-            self._time_to_idle -= 1/60  # we don't want to use on_update, so we just use the default delta time
-
 
 class HealthBar(arcade.Sprite):
 
