@@ -275,7 +275,17 @@ class GameView(arcade.View):
         """
         Movement and game logic
         """
+
+        # Collisions code - Checks for all players and enemies' weapons. Checks for the collision.
         for p in self.player_sprite_list:
+            for e in self.tilemap.sprite_lists["enemies"]:
+                if e.equipped is not None:
+                    if arcade.check_for_collision(p, e.equipped):
+                        # Damages as much as the enemies' weapon strength.
+                            p.hp -= e.equipped.strength
+
+
+            # Updates the player_sprite_list.
             p.update()
 
         # Update the physics engine for each player
