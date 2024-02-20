@@ -275,10 +275,11 @@ class GameView(arcade.View):
             # Then checks after all enemies.
             for e in self.tilemap.sprite_lists["enemies"]:
                 # Then checks if the players are colliding with the enemies' weapons.
-                if arcade.check_for_collision(p, e.equipped):
-                    # Damages as much as the enemies' weapon strength.
-                    p.hp -= e.equipped.strength
-                    # print(e.equipped.strength, " - ENEMY HIT! - ", p.hp)
+                if e.equipped is not None:
+                    if arcade.check_for_collision(p, e.equipped):
+                        # Damages as much as the enemies' weapon strength.
+                            p.hp -= e.equipped.strength
+
 
             # Updates the player_sprite_list.
             p.update()
