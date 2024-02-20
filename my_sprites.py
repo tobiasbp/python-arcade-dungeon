@@ -314,8 +314,6 @@ class Entity(arcade.Sprite):
                          center_x=position[0],
                          center_y=position[1])
 
-        self.texture = self.textures[0]
-
         # amount of seconds before the sprite can update
         self.pause_timer = 0
 
@@ -381,12 +379,12 @@ class Entity(arcade.Sprite):
         else:
             return False
 
-    def draw_sprites(self, draw_hitbox: bool=False, draw_attack_hitboxes: bool=False, draw_pixelated: bool=True):
+    def draw_sprites(self, draw_hitbox: bool=False, draw_attack_hitboxes: bool=False, pixelated: bool=True):
         """
         draw related sprites (emotes and attacks)
         """
 
-        self.emotes.draw(pixelated=draw_pixelated)
+        self.emotes.draw(pixelated=pixelated)
         self.healthbar.draw()
 
         if draw_hitbox:
