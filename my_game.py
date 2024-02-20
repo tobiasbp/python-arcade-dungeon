@@ -46,6 +46,9 @@ PLAYER_SPEED = 5
 PLAYER_SHOT_SPEED = 300
 PLAYER_SIGHT_RANGE = SCREEN_WIDTH/4 # How far can the player see?
 
+# Amount of players
+NUM_OF_PLAYERS = 2
+
 FIRE_KEY = arcade.key.SPACE
 
 # The keys to control player 1 & 2
@@ -126,11 +129,11 @@ class GameView(arcade.View):
 
         self.player_sprite_list = []
 
-        for i in range(2):
+        for i in range(NUM_OF_PLAYERS):
             # Creates Player object
             p = Player(
-                center_x=self.tilemap.sprite_lists["players"][0].center_x + random.randint(1,8) * TILE_SIZE * SCALING,
-                center_y=self.tilemap.sprite_lists["players"][0].center_y,
+                center_x=self.tilemap.sprite_lists["players"][i].center_x,
+                center_y=self.tilemap.sprite_lists["players"][i].center_y,
                 scale=SCALING,
                 key_up=PLAYER_KEYS[i]["up"],
                 key_down=PLAYER_KEYS[i]["down"],
@@ -140,6 +143,9 @@ class GameView(arcade.View):
             )
             # Create Player spritelist
             self.player_sprite_list.append(p)
+
+        # Assert that all players have a potential spawnpoint
+        assert len(self.tilemap.sprite_lists["players"]) >= len(self.player_sprite_list), "Too many players for tilemap"
 
         # Change all tiles in the 'enemies' layer to Enemies
         for enemy_index, enemy_position in enumerate([ s.position for s in self.tilemap.sprite_lists["enemies"]]):
