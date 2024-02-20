@@ -482,12 +482,12 @@ class Player(arcade.Sprite):
             self.left_pressed = True
             # Turns the sprite to the left side.
             self.texture = self.textures[1]
-            return
+
         if key == self.key_right:
             self.right_pressed = True
             # Turns the sprite to the Right side
             self.texture = self.textures[0]
-            return
+
         if key == self.key_up:
             self.up_pressed = True
         if key == self.key_down:
@@ -495,6 +495,24 @@ class Player(arcade.Sprite):
         if key == self.key_atttack:
             self.atttack_pressed = True
             self.attack()
+
+        if self.left_pressed and not self.right_pressed:
+            self._direction = Direction.LEFT
+        if self.right_pressed and not self.left_pressed:
+            self._direction = Direction.RIGHT
+        if self.up_pressed and not self.down_pressed:
+            self._direction = Direction.UP
+        if self.down_pressed and not self.up_pressed:
+            self._direction = Direction.DOWN
+
+        if self.up_pressed and self.right_pressed:
+            self._direction = Direction.UP_RIGHT
+        if self.right_pressed and self.down_pressed:
+            self._direction = Direction.RIGHT_DOWN
+        if self.down_pressed and self.left_pressed:
+            self._direction = Direction.DOWN_LEFT
+        if self.left_pressed and self.up_pressed:
+            self._direction = Direction.LEFT_UP
 
     def on_key_release(self, key, modifiers):
         """
@@ -510,6 +528,24 @@ class Player(arcade.Sprite):
             self.down_pressed = False
         if key == self.key_atttack:
             self.atttack_pressed = False
+
+        if self.left_pressed and not self.right_pressed:
+            self._direction = Direction.LEFT
+        if self.right_pressed and not self.left_pressed:
+            self._direction = Direction.RIGHT
+        if self.up_pressed and not self.down_pressed:
+            self._direction = Direction.UP
+        if self.down_pressed and not self.up_pressed:
+            self._direction = Direction.DOWN
+
+        if self.up_pressed and self.right_pressed:
+            self._direction = Direction.UP_RIGHT
+        if self.right_pressed and self.down_pressed:
+            self._direction = Direction.RIGHT_DOWN
+        if self.down_pressed and self.left_pressed:
+            self._direction = Direction.DOWN_LEFT
+        if self.left_pressed and self.up_pressed:
+            self._direction = Direction.LEFT_UP
 
     def draw_sprites(self, pixelated, draw_attack_hitboxes: bool=False):
         """
@@ -537,24 +573,6 @@ class Player(arcade.Sprite):
             self.equiped.update()
 
         # Update speed based on held keys
-
-        if self.up_pressed and self.right_pressed:
-            self._direction = Direction.UP_RIGHT
-        elif self.right_pressed and self.down_pressed:
-            self._direction = Direction.RIGHT_DOWN
-        elif self.down_pressed and self.left_pressed:
-            self._direction = Direction.DOWN_LEFT
-        elif self.left_pressed and self.up_pressed:
-            self._direction = Direction.LEFT_UP
-
-        elif self.left_pressed and not self.right_pressed:
-            self._direction = Direction.LEFT
-        elif self.right_pressed and not self.left_pressed:
-            self._direction = Direction.RIGHT
-        elif self.up_pressed and not self.down_pressed:
-            self._direction = Direction.UP
-        elif self.down_pressed and not self.up_pressed:
-            self._direction = Direction.DOWN
 
         if self.up_pressed or self.right_pressed or self.down_pressed or self.left_pressed:
             self.change_x = math.sin(math.radians(self._direction))
