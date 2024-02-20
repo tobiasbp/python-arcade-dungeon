@@ -581,25 +581,26 @@ class Player(arcade.Sprite):
             self.atttack_pressed = True
             self.attack()
 
-        # horizontal and vertical movement
-        if self.left_pressed and not self.right_pressed:
-            self._direction = Direction.LEFT
-        if self.right_pressed and not self.left_pressed:
-            self._direction = Direction.RIGHT
-        if self.up_pressed and not self.down_pressed:
-            self._direction = Direction.UP
-        if self.down_pressed and not self.up_pressed:
-            self._direction = Direction.DOWN
-
         # diagonal movement
         if self.up_pressed and self.right_pressed:
             self._direction = Direction.UP_RIGHT
-        if self.right_pressed and self.down_pressed:
+        elif self.right_pressed and self.down_pressed:
             self._direction = Direction.RIGHT_DOWN
-        if self.down_pressed and self.left_pressed:
+        elif self.down_pressed and self.left_pressed:
             self._direction = Direction.DOWN_LEFT
-        if self.left_pressed and self.up_pressed:
+        elif self.left_pressed and self.up_pressed:
             self._direction = Direction.LEFT_UP
+
+        # horizontal and vertical movement
+        elif self.left_pressed and not self.right_pressed:
+            self._direction = Direction.LEFT
+        elif self.right_pressed and not self.left_pressed:
+            self._direction = Direction.RIGHT
+        elif self.up_pressed and not self.down_pressed:
+            self._direction = Direction.UP
+        elif self.down_pressed and not self.up_pressed:
+            self._direction = Direction.DOWN
+
 
     def on_key_release(self, key, modifiers):
         """
@@ -616,25 +617,25 @@ class Player(arcade.Sprite):
         if key == self.key_atttack:
             self.atttack_pressed = False
 
-        # horizontal and vertical movement
-        if self.left_pressed and not self.right_pressed:
-            self._direction = Direction.LEFT
-        if self.right_pressed and not self.left_pressed:
-            self._direction = Direction.RIGHT
-        if self.up_pressed and not self.down_pressed:
-            self._direction = Direction.UP
-        if self.down_pressed and not self.up_pressed:
-            self._direction = Direction.DOWN
-
         # diagonal movement
         if self.up_pressed and self.right_pressed:
             self._direction = Direction.UP_RIGHT
-        if self.right_pressed and self.down_pressed:
+        elif self.right_pressed and self.down_pressed:
             self._direction = Direction.RIGHT_DOWN
-        if self.down_pressed and self.left_pressed:
+        elif self.down_pressed and self.left_pressed:
             self._direction = Direction.DOWN_LEFT
-        if self.left_pressed and self.up_pressed:
+        elif self.left_pressed and self.up_pressed:
             self._direction = Direction.LEFT_UP
+
+        # horizontal and vertical movement
+        elif self.left_pressed and not self.right_pressed:
+            self._direction = Direction.LEFT
+        elif self.right_pressed and not self.left_pressed:
+            self._direction = Direction.RIGHT
+        elif self.up_pressed and not self.down_pressed:
+            self._direction = Direction.UP
+        elif self.down_pressed and not self.up_pressed:
+            self._direction = Direction.DOWN
 
     def on_joybutton_press(self, joystick, button_no):
         # Any button press is an attack
