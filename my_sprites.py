@@ -581,6 +581,7 @@ class Player(arcade.Sprite):
             self.atttack_pressed = True
             self.attack()
 
+        # horizontal and vertical movement
         if self.left_pressed and not self.right_pressed:
             self._direction = Direction.LEFT
         if self.right_pressed and not self.left_pressed:
@@ -590,6 +591,7 @@ class Player(arcade.Sprite):
         if self.down_pressed and not self.up_pressed:
             self._direction = Direction.DOWN
 
+        # diagonal movement
         if self.up_pressed and self.right_pressed:
             self._direction = Direction.UP_RIGHT
         if self.right_pressed and self.down_pressed:
@@ -612,8 +614,9 @@ class Player(arcade.Sprite):
         if key == self.key_down:
             self.down_pressed = False
         if key == self.key_atttack:
-            self.atttack_pressed = False         
-            
+            self.atttack_pressed = False
+
+        # horizontal and vertical movement
         if self.left_pressed and not self.right_pressed:
             self._direction = Direction.LEFT
         if self.right_pressed and not self.left_pressed:
@@ -623,6 +626,7 @@ class Player(arcade.Sprite):
         if self.down_pressed and not self.up_pressed:
             self._direction = Direction.DOWN
 
+        # diagonal movement
         if self.up_pressed and self.right_pressed:
             self._direction = Direction.UP_RIGHT
         if self.right_pressed and self.down_pressed:
