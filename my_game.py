@@ -69,7 +69,7 @@ MAP_LAYER_CONFIG = {
     "pressure-plates": {"line_of_sight": True, "draw": True, "passable": True},
     "players": {"line_of_sight": False, "draw": True, "passable": True},
     "enemies": {"line_of_sight": False, "draw": True, "passable": True},
-    "exits": {"line_of_sight": False, "draw": True, "passable": True}
+    "exits": {"line_of_sight": False, "draw": False, "passable": True}
 }
 
 
