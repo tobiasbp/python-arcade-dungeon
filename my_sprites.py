@@ -516,7 +516,7 @@ class Player(arcade.Sprite):
 
     @property
     def equipped(self):
-        return self._equiped
+        return self._equipped
 
     @equipped.setter
     def equipped(self, weapon):
@@ -537,7 +537,7 @@ class Player(arcade.Sprite):
         self._weapons[type] = Weapon(type)
 
         # If no weapon is in use, start using the one that was picked up
-        if self.equiped is None:
+        if self.equipped is None:
             self.equip(type)
 
     def equip(self, type):
@@ -578,7 +578,7 @@ class Player(arcade.Sprite):
         elif key == self.key_down:
             self.down_pressed = True
             self._direction = Direction.DOWN
-        elif key == self.key_atttack:
+        elif key == self.key_attack:
             self.attack_pressed = True
             self.attack()
 
@@ -640,12 +640,12 @@ class Player(arcade.Sprite):
         self.emotes.draw(pixelated=pixelated)
 
         self.health_bar.draw()
-        if self.equiped is not None:
+        if self.equipped is not None:
             if draw_attack_hitboxes:
-                self.equiped.draw_hit_box()
+                self.equipped.draw_hit_box()
             # Only draw active weapons
-            if not self.equiped.is_idle:
-                self.equiped.draw(pixelated=pixelated)
+            if not self.equipped.is_idle:
+                self.equipped.draw(pixelated=pixelated)
 
     def update(self):
         """
@@ -660,8 +660,8 @@ class Player(arcade.Sprite):
         self.change_x = 0
         self.change_y = 0
 
-        if self.equiped is not None:
-            self.equiped.update()
+        if self.equipped is not None:
+            self.equipped.update()
 
         # Update speed based on held keys
         if self.left_pressed and not self.right_pressed:
@@ -681,11 +681,11 @@ class Player(arcade.Sprite):
 
         # Move equipped weapon to our position
         if self.equipped is not None:
-            self.equipped.center_x = self.center_x + (math.sin(math.radians(self.direction)) * Weapon.data[self.equiped.type]["range"])
-            self.equipped.center_y = self.center_y + (math.cos(math.radians(self.direction)) * Weapon.data[self.equiped.type]["range"])
+            self.equipped.center_x = self.center_x + (math.sin(math.radians(self.direction)) * Weapon.data[self.equipped.type]["range"])
+            self.equipped.center_y = self.center_y + (math.cos(math.radians(self.direction)) * Weapon.data[self.equipped.type]["range"])
 
         # check weapon durability
-        if self.equippped is not None:
+        if self.equipped is not None:
             if self.equipped.attacks_left <= 0:
                 self.equipped = None
 
