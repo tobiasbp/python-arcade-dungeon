@@ -431,7 +431,7 @@ class Enemy(Entity):
     :param position: tuple containing the x and y coordinate to create the sprite at.
     :param max_hp: the max hp for the enemy. Also determines starting hp.
     :param speed: the movement speed for the sprite in px/update.
-    :param roaming_dist: the distance to travel, before changing dir, while in roaming state.
+    :param roaming_dist: the distance to travel, before changing dir, while in RANDOM_WALK state.
     :param scale: the size multiplier for the graphics/hitbox of the sprite.
     """
 
@@ -444,7 +444,7 @@ class Enemy(Entity):
             impassables: arcade.SpriteList,
             grid_size: int,
             potential_targets_list: arcade.SpriteList,
-            state: EnemyState=EnemyState.ROAMING,
+            state: EnemyState=EnemyState.RANDOM_WALK,
             roaming_dist: float = 200,
             graphics_type: EntityType=None,
             equipped_weapon: Weapon=None,
@@ -557,13 +557,13 @@ class Enemy(Entity):
         for t in self.potential_targets_list:  # FIXME: Make the enemy go for the closest player (multiplayer scenario only)
             if arcade.has_line_of_sight(t.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
                 self.cur_target = t
-                self.state = EnemyState.CHASING
+                self.state = EnemyState.CHASING_PLAYER
             elif self.cur_target is not None:
                 self.go_to_position(self.cur_target.position)
                 self.cur_target = None
-                self.state = EnemyState.SEARCHING
+                self.state = EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS
 
-        # chasing state
+        # CHASING_PLAYER state
         if self.state == EnemyState.CHASING_PLAYER:
             self.path = []
 
@@ -573,15 +573,15 @@ class Enemy(Entity):
             self.change_x = math.sin(angle_to_target) * self.speed
             self.change_y = math.cos(angle_to_target) * self.speed
 
-        # searching state
+        # GOING_TO_LAST_KNOWN_PLAYER_POS state
         elif self.state == EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS:
-            # if we are currently moving to the last known point of the player, move along that path, else hop to roaming state
+            # if we are currently moving to the last known point of the player, move along that path, else hop to RANDOM_WALK state
             if self.path:
                 self.move_along_path()
             else:
                 self.state = EnemyState.RANDOM_WALK
 
-        # roaming state
+        # RANDOM_WALK state
         elif self.state == EnemyState.RANDOM_WALK:
             # if we have a path, follow it, otherwise calculate a path to a random position
             if self.path:
