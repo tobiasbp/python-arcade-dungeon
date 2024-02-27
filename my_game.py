@@ -68,7 +68,8 @@ MAP_LAYER_CONFIG = {
     "objects-impassable": {"line_of_sight": True, "draw": True, "passable": False},
     "pressure-plates": {"line_of_sight": True, "draw": True, "passable": True},
     "players": {"line_of_sight": False, "draw": True, "passable": True},
-    "enemies": {"line_of_sight": False, "draw": True, "passable": True}
+    "enemies": {"line_of_sight": False, "draw": True, "passable": True},
+    "exits": {"line_of_sight": False, "draw": False, "passable": True},
 }
 
 
@@ -284,6 +285,10 @@ class GameView(arcade.View):
                         # Damages as much as the enemies' weapon strength.
                             p.hp -= e.equipped.strength
 
+            # Checks after collision with the exit layer.
+            for e in self.tilemap.sprite_lists["exits"]:
+                if arcade.check_for_collision(p, e):
+                    print("A player is on an EXIT!")
 
             # Updates the player_sprite_list.
             p.update()
