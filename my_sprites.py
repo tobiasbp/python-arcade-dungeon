@@ -9,11 +9,14 @@ class Direction(IntEnum):
     """
     Directions for players/enemies
     """
-    LEFT = 270
-    RIGHT = 90
     UP = 0
+    UP_RIGHT = 45
+    RIGHT = 90
+    RIGHT_DOWN = 135
     DOWN = 180
-
+    DOWN_LEFT = 225
+    LEFT = 270
+    LEFT_UP = 315
 @unique
 class EnemyState(Enum):
     """
@@ -564,23 +567,40 @@ class Player(arcade.Sprite):
             self.left_pressed = True
             # Turns the sprite to the left side.
             self.texture = self.textures[1]
-            self._direction = Direction.LEFT
-            return
-        elif key == self.key_right:
+
+        if key == self.key_right:
             self.right_pressed = True
             # Turns the sprite to the Right side
             self.texture = self.textures[0]
-            self._direction = Direction.RIGHT
-            return
-        elif key == self.key_up:
+
+        if key == self.key_up:
             self.up_pressed = True
-            self._direction = Direction.UP
-        elif key == self.key_down:
+        if key == self.key_down:
             self.down_pressed = True
-            self._direction = Direction.DOWN
-        elif key == self.key_attack:
+        if key == self.key_attack:
             self.attack_pressed = True
             self.attack()
+
+        # diagonal movement
+        if self.up_pressed and self.right_pressed:
+            self._direction = Direction.UP_RIGHT
+        elif self.right_pressed and self.down_pressed:
+            self._direction = Direction.RIGHT_DOWN
+        elif self.down_pressed and self.left_pressed:
+            self._direction = Direction.DOWN_LEFT
+        elif self.left_pressed and self.up_pressed:
+            self._direction = Direction.LEFT_UP
+
+        # horizontal and vertical movement
+        elif self.left_pressed and not self.right_pressed:
+            self._direction = Direction.LEFT
+        elif self.right_pressed and not self.left_pressed:
+            self._direction = Direction.RIGHT
+        elif self.up_pressed and not self.down_pressed:
+            self._direction = Direction.UP
+        elif self.down_pressed and not self.up_pressed:
+            self._direction = Direction.DOWN
+
 
     def on_key_release(self, key, modifiers):
         """
@@ -588,14 +608,34 @@ class Player(arcade.Sprite):
         """
         if key == self.key_left:
             self.left_pressed = False
-        elif key == self.key_right:
+        if key == self.key_right:
             self.right_pressed = False
-        elif key == self.key_up:
+        if key == self.key_up:
             self.up_pressed = False
-        elif key == self.key_down:
+        if key == self.key_down:
             self.down_pressed = False
         elif key == self.key_attack:
             self.attack_pressed = False
+
+        # diagonal movement
+        if self.up_pressed and self.right_pressed:
+            self._direction = Direction.UP_RIGHT
+        elif self.right_pressed and self.down_pressed:
+            self._direction = Direction.RIGHT_DOWN
+        elif self.down_pressed and self.left_pressed:
+            self._direction = Direction.DOWN_LEFT
+        elif self.left_pressed and self.up_pressed:
+            self._direction = Direction.LEFT_UP
+
+        # horizontal and vertical movement
+        elif self.left_pressed and not self.right_pressed:
+            self._direction = Direction.LEFT
+        elif self.right_pressed and not self.left_pressed:
+            self._direction = Direction.RIGHT
+        elif self.up_pressed and not self.down_pressed:
+            self._direction = Direction.UP
+        elif self.down_pressed and not self.up_pressed:
+            self._direction = Direction.DOWN
 
     def on_joybutton_press(self, joystick, button_no):
         # Any button press is an attack
@@ -664,14 +704,12 @@ class Player(arcade.Sprite):
             self.equipped.update()
 
         # Update speed based on held keys
-        if self.left_pressed and not self.right_pressed:
-            self.change_x = -1 * self.speed
-        elif self.right_pressed and not self.left_pressed:
-            self.change_x = self.speed
-        elif self.up_pressed and not self.down_pressed:
-            self.change_y = self.speed
-        elif self.down_pressed and not self.up_pressed:
-            self.change_y = -1 * self.speed
+
+        if self.up_pressed or self.right_pressed or self.down_pressed or self.left_pressed:
+            self.change_x = math.sin(math.radians(self._direction))
+            self.change_y = math.cos(math.radians(self._direction))
+            self.change_x *= self.speed
+            self.change_y *= self.speed
 
         # Rotate the sprite a bit when it's moving
         if (self.change_x != 0 or self.change_y != 0) and random.random() <= self.jitter_likelihood:
