@@ -396,14 +396,14 @@ class Player(arcade.Sprite):
         self.key_right = key_right
         self.key_up = key_up
         self.key_down = key_down
-        self.key_atttack = key_attack
+        self.key_attack = key_attack
 
         # Track state of controls (could also be a joystick in the future)
         self.left_pressed = False
         self.right_pressed = False
         self.up_pressed = False
         self.down_pressed = False
-        self.atttack_pressed = False
+        self.attack_pressed = False
 
         # Configure Joystick
         if joystick is not None:
@@ -425,7 +425,7 @@ class Player(arcade.Sprite):
         self._weapons = {}
 
         # No weapon currently in use
-        self._equiped = None
+        self._equipped = None
 
         # Add the default weapon
         self.add_weapon(WeaponType.SWORD_SHORT)
@@ -441,13 +441,13 @@ class Player(arcade.Sprite):
 
     def attack(self):
         """
-        Perform an attack using the equiped weapon
+        Perform an attack using the equipped weapon
         """
-        if self.equiped is not None and self.equiped.is_idle:
+        if self.equipped is not None and self.equipped.is_idle:
 
             # FIXME: Remove the weapon if it has no attacks left
 
-            success = self.equiped.attack(
+            success = self.equipped.attack(
                 position=self.position,
                 angle=math.radians(self.direction),
             )
@@ -515,13 +515,13 @@ class Player(arcade.Sprite):
         return self._type
 
     @property
-    def equiped(self):
+    def equipped(self):
         return self._equiped
 
-    @equiped.setter
-    def equiped(self, weapon):
+    @equipped.setter
+    def equipped(self, weapon):
         assert type(weapon) == Weapon or weapon is None, f"expected type Weapon or NoneType, got {type(weapon)}"
-        self._equiped = weapon
+        self._equipped = weapon
 
     @property
     def direction(self):
@@ -547,7 +547,7 @@ class Player(arcade.Sprite):
         Return value reports success.
         """
         if type in self._weapons.keys():
-            self._equiped = self._weapons[type]
+            self._equipped = self._weapons[type]
             return True
 
         # Could not equip the weapon type
@@ -579,7 +579,7 @@ class Player(arcade.Sprite):
             self.down_pressed = True
             self._direction = Direction.DOWN
         elif key == self.key_atttack:
-            self.atttack_pressed = True
+            self.attack_pressed = True
             self.attack()
 
     def on_key_release(self, key, modifiers):
@@ -594,15 +594,15 @@ class Player(arcade.Sprite):
             self.up_pressed = False
         elif key == self.key_down:
             self.down_pressed = False
-        elif key == self.key_atttack:
-            self.atttack_pressed = False
+        elif key == self.key_attack:
+            self.attack_pressed = False
 
     def on_joybutton_press(self, joystick, button_no):
         # Any button press is an attack
-        self.on_key_press(self.key_atttack, [])
+        self.on_key_press(self.key_attack, [])
 
     def on_joybutton_release(self, joystick, button_no):
-        self.on_key_release(self.key_atttack, [])
+        self.on_key_release(self.key_attack, [])
 
     def on_joyaxis_motion(self, joystick, axis, value):
         # Round value to an integer to correct imprecise values (negative X value is interpreted as -0.007827878233005237)
@@ -680,14 +680,14 @@ class Player(arcade.Sprite):
             self.angle = 0
 
         # Move equipped weapon to our position
-        if self.equiped is not None:
-            self.equiped.center_x = self.center_x + (math.sin(math.radians(self.direction)) * Weapon.data[self.equiped.type]["range"])
-            self.equiped.center_y = self.center_y + (math.cos(math.radians(self.direction)) * Weapon.data[self.equiped.type]["range"])
+        if self.equipped is not None:
+            self.equipped.center_x = self.center_x + (math.sin(math.radians(self.direction)) * Weapon.data[self.equiped.type]["range"])
+            self.equipped.center_y = self.center_y + (math.cos(math.radians(self.direction)) * Weapon.data[self.equiped.type]["range"])
 
         # check weapon durability
-        if self.equiped is not None:
-            if self.equiped.attacks_left <= 0:
-                self.equiped = None
+        if self.equippped is not None:
+            if self.equipped.attacks_left <= 0:
+                self.equipped = None
 
         # Note: We don't change the position of the sprite here, since that is done by the physics engine
         # Update the health-bar
@@ -760,7 +760,7 @@ class Emote(arcade.Sprite):
             lifetime:float = 5.0,
             enable_fade=True):
 
-        # The emote will disapear after this many seconds
+        # The emote will disappear after this many seconds
         self.lifetime = lifetime
         self.time_left = lifetime
 
