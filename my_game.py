@@ -93,13 +93,13 @@ class GameView(arcade.View):
 
         # Make sure the map we load is as expected
         assert self.tilemap.tile_width == TILE_SIZE, f"Width of tiles in map is {self.tilemap.tile_width}, it should be {TILE_SIZE}."
-        assert self.tilemap.tile_height == TILE_SIZE, f"Heigh of tiles in map is {self.tilemap.tile_height}, it should be {TILE_SIZE}."
+        assert self.tilemap.tile_height == TILE_SIZE, f"Height of tiles in map is {self.tilemap.tile_height}, it should be {TILE_SIZE}."
         assert self.tilemap.width == MAP_WIDTH_TILES, f"Width of map is {self.tilemap.width}, it should be {MAP_WIDTH_TILES}."
         assert self.tilemap.height == MAP_HEIGHT_TILES, f"Height of map is {self.tilemap.width}, it should be {MAP_HEIGHT_TILES}."
         for layer_name in MAP_LAYER_CONFIG.keys():
             assert layer_name in self.tilemap.sprite_lists.keys(), f"Layer name '{layer_name}' not in tilemap."
 
-        # Ensure that no tile on the background layer collides with the impassibles layer
+        # Ensure that no tile on the background layer collides with the impassables layer
         # We want to be able to spawn enemies on the backgrounds layer, so we must ensure
         # that the spawn point is not impassable
         for background_tile in self.tilemap.sprite_lists["background"]:
@@ -171,7 +171,7 @@ class GameView(arcade.View):
 
 
         # We need a physics engine for each player since
-        # the one we ar eusing can anly handle a single player
+        # the one we are using can only handle a single player
         self.physics_engines = []
 
         # Create a physics engine for each player.
@@ -249,7 +249,7 @@ class GameView(arcade.View):
         arcade.draw_text(
             f"SCORE: {self.player_score}",  # Text to show
             10,  # X position
-            SCREEN_HEIGHT - 20,  # Y positon
+            SCREEN_HEIGHT - 20,  # Y position
             arcade.color.WHITE,  # Color of text
             font_size=TILE_SIZE,
             font_name=MAIN_FONT_NAME,
@@ -289,7 +289,7 @@ class GameView(arcade.View):
             p.update()
 
         # Update the physics engine for each player
-        # Return all sprites involved in collissions
+        # Return all sprites involved in collisions
         for pe in self.physics_engines:
             colliding_sprites = pe.update()
 
