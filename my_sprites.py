@@ -270,6 +270,7 @@ class Weapon(arcade.Sprite):
             # Time passes
             self._time_to_idle -= 1/60  # we don't want to use on_update, so we just use the default delta time
 
+
 class Entity(arcade.Sprite):
     """
     parent class for both enemies and players. Features include attacks, hp and more.
@@ -307,7 +308,7 @@ class Entity(arcade.Sprite):
         self.window = window
         self._equipped_weapon = equipped_weapon
         # angle used for the dir the sprite is facing. for the enemy this will usually be the angle to the target
-        self.facing_dir = 0
+        self._direction = 0
 
         self._emotes = arcade.SpriteList()
 
@@ -326,10 +327,6 @@ class Entity(arcade.Sprite):
     @hp.setter
     def hp(self, new_hp):
         self._hp = max(0, min(new_hp, self.max_hp))
-
-    @property
-    def emotes(self):
-        return self._emotes
 
     @property
     def equipped_weapon(self):
@@ -382,7 +379,7 @@ class Entity(arcade.Sprite):
         draw related sprites (emotes and attacks)
         """
 
-        self.emotes.draw(pixelated=pixelated)
+        self._emotes.draw(pixelated=pixelated)
         self.healthbar.draw()
 
         if draw_hitbox:
@@ -405,9 +402,9 @@ class Entity(arcade.Sprite):
 
             # move the equipped weapon to our position
             self.equipped_weapon.center_x = self.center_x + (
-                    math.sin(math.radians(self.facing_dir)) * Weapon.data[self.equipped_weapon.type]["range"])
+                    math.sin(math.radians(self._direction)) * Weapon.data[self.equipped_weapon.type]["range"])
             self.equipped_weapon.center_y = self.center_y + (
-                            math.cos(math.radians(self.facing_dir)) * Weapon.data[self.equipped_weapon.type]["range"])
+                            math.cos(math.radians(self._direction)) * Weapon.data[self.equipped_weapon.type]["range"])
 
             if self.equipped_weapon.attacks_left <= 0:
                 self.equipped_weapon = None
@@ -417,9 +414,8 @@ class Entity(arcade.Sprite):
         self.healthbar.position = self.position
 
         # death
-        if self.hp:
+        if self.hp <= 0:
             self.kill()
-
         self._emotes.update()
 
 
@@ -554,6 +550,8 @@ class Enemy(Entity):
 
     def update(self):
 
+        super().update()
+
         self.calculate_path_timer -= 1/60
 
         if self.calculate_path_timer <= 0:
@@ -575,7 +573,7 @@ class Enemy(Entity):
             self.path = []
 
             angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
-            self.facing_dir = angle_to_target
+            self._direction = angle_to_target
 
             self.center_x += math.sin(angle_to_target) * self.speed
             self.center_y += math.cos(angle_to_target) * self.speed
@@ -644,7 +642,7 @@ class Player(Entity):
                          scale=scale)
 
         # The direction the Player is facing
-        self.facing_dir = Direction.RIGHT
+        self._direction = Direction.RIGHT
 
         self.key_left = key_left
         self.key_right = key_right
@@ -690,23 +688,23 @@ class Player(Entity):
             self.left_pressed = True
             # Turns the sprite to the left side.
             self.texture = self.textures[1]
-            self.facing_dir = Direction.LEFT
+            self._direction = Direction.LEFT
             return
         elif key == self.key_right:
             self.right_pressed = True
             # Turns the sprite to the Right side
             self.texture = self.textures[0]
-            self.facing_dir = Direction.RIGHT
+            self._direction = Direction.RIGHT
             return
         elif key == self.key_up:
             self.up_pressed = True
-            self.facing_dir = Direction.UP
+            self._direction = Direction.UP
         elif key == self.key_down:
             self.down_pressed = True
-            self.facing_dir = Direction.DOWN
+            self._direction = Direction.DOWN
         elif key == self.key_atttack:
             self.atttack_pressed = True
-            self.attack()
+            self.attack(self._direction)
 
     def on_key_release(self, key, modifiers):
         """
@@ -763,6 +761,8 @@ class Player(Entity):
         """
         Set Sprite's speed based on key status
         """
+
+        super().update()
 
         if self.is_walking and random.randint(1, 20) == 1:
             s = random.choice([s for s in Sound if s.name.startswith("FOOTSTEP_")])
