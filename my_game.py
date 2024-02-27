@@ -46,6 +46,9 @@ PLAYER_SPEED = 5
 PLAYER_SHOT_SPEED = 300
 PLAYER_SIGHT_RANGE = SCREEN_WIDTH/4 # How far can the player see?
 
+# Amount of players
+NUM_OF_PLAYERS = 2
+
 FIRE_KEY = arcade.key.SPACE
 
 # The keys to control player 1 & 2
@@ -126,14 +129,11 @@ class GameView(arcade.View):
 
         self.player_sprite_list = []
 
-        for i in range(1):
+        for i in range(NUM_OF_PLAYERS):
             # Creates Player object
             p = Player(
-                position=(self.tilemap.sprite_lists["players"][0].center_x + random.randint(1,8) * TILE_SIZE * SCALING, self.tilemap.sprite_lists["players"][0].center_y),
-                max_hp=20,  # FIXME: add some kind of config for the player to avoid magic numbers
-                speed=3,
-                window=self.window,
-                equipped_weapon=Weapon(type=WeaponType.SWORD_SHORT),
+                center_x=self.tilemap.sprite_lists["players"][i].center_x,
+                center_y=self.tilemap.sprite_lists["players"][i].center_y,
                 scale=SCALING,
                 key_up=PLAYER_KEYS[i]["up"],
                 key_down=PLAYER_KEYS[i]["down"],
@@ -143,6 +143,9 @@ class GameView(arcade.View):
             )
             # Create Player spritelist
             self.player_sprite_list.append(p)
+
+        # Assert that all players have a potential spawnpoint
+        assert len(self.tilemap.sprite_lists["players"]) >= len(self.player_sprite_list), "Too many players for tilemap"
 
         # Change all tiles in the 'enemies' layer to Enemies
         for enemy_index, enemy_position in enumerate([ s.position for s in self.tilemap.sprite_lists["enemies"]]):
@@ -272,7 +275,17 @@ class GameView(arcade.View):
         """
         Movement and game logic
         """
+
+        # Collisions code - Checks for all players and enemies' weapons. Checks for the collision.
         for p in self.player_sprite_list:
+            for e in self.tilemap.sprite_lists["enemies"]:
+                if e.equipped is not None:
+                    if arcade.check_for_collision(p, e.equipped):
+                        # Damages as much as the enemies' weapon strength.
+                            p.hp -= e.equipped.strength
+
+
+            # Updates the player_sprite_list.
             p.update()
 
         # Update the physics engine for each player

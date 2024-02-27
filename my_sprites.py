@@ -9,20 +9,23 @@ class Direction(IntEnum):
     """
     Directions for players/enemies
     """
-    LEFT = 270
-    RIGHT = 90
     UP = 0
+    UP_RIGHT = 45
+    RIGHT = 90
+    RIGHT_DOWN = 135
     DOWN = 180
-
+    DOWN_LEFT = 225
+    LEFT = 270
+    LEFT_UP = 315
 @unique
 class EnemyState(Enum):
     """
     All possible states for enemies
     """
 
-    ROAMING = auto()
-    SEARCHING = auto()
-    CHASING = auto()
+    RANDOM_WALK = auto()
+    GOING_TO_LAST_KNOWN_PLAYER_POS = auto()
+    CHASING_PLAYER = auto()
 
 
 @unique
@@ -487,10 +490,10 @@ class Enemy(Entity):
         assert type(new_state) == EnemyState, "state should be an EnemyState"
         # Checks if the _state is the same as the new_state.
         if self._state is not new_state:
-            if new_state == EnemyState.CHASING:
+            if new_state == EnemyState.CHASING_PLAYER:
                 self.react(Reaction.EXCLAMATION_RED)
+            elif new_state == EnemyState.RANDOM_WALK:
                 arcade.play_sound(Sound.MONSTER_GRUNT.value)
-            elif new_state == EnemyState.ROAMING:
                 self.react(Reaction.HEART_BROKEN)
                 arcade.play_sound(Sound.MONSTER_SNARL.value)
 
@@ -543,13 +546,12 @@ class Enemy(Entity):
 
             else:
                 # testing shows that we need to reverse the direction...
-                self.center_x += -math.sin(angle_to_dest) * this_move_length
-                self.center_y += -math.cos(angle_to_dest) * this_move_length
+                self.change_x = -math.sin(angle_to_dest) * this_move_length
+                self.change_y = -math.cos(angle_to_dest) * this_move_length
 
     def update(self):
 
         super().update()
-
 
         # state control
         for t in self.potential_targets_list:  # FIXME: Make the enemy go for the closest player (multiplayer scenario only)
@@ -562,35 +564,32 @@ class Enemy(Entity):
                 self.state = EnemyState.SEARCHING
 
         # chasing state
-        if self.state == EnemyState.CHASING:
+        if self.state == EnemyState.CHASING_PLAYER:
             self.path = []
 
             angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
             self._direction = angle_to_target
 
-            self.center_x += math.sin(angle_to_target) * self.speed
-            self.center_y += math.cos(angle_to_target) * self.speed
+            self.change_x = math.sin(angle_to_target) * self.speed
+            self.change_y = math.cos(angle_to_target) * self.speed
 
         # searching state
-        elif self.state == EnemyState.SEARCHING:
+        elif self.state == EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS:
             # if we are currently moving to the last known point of the player, move along that path, else hop to roaming state
             if self.path:
                 self.move_along_path()
             else:
-                self.state = EnemyState.ROAMING
+                self.state = EnemyState.RANDOM_WALK
 
         # roaming state
-        elif self.state == EnemyState.ROAMING:
+        elif self.state == EnemyState.RANDOM_WALK:
             # if we have a path, follow it, otherwise calculate a path to a random position
             if self.path:
                 self.move_along_path()
             else:
 
-                # reset movement vectors, so we stop when a path is finished
-                self.change_x = 0
-                self.change_y = 0
-
                 while True:
+
                     next_pos = (random.randrange(0, self.window.width), random.randrange(0, self.window.height))
 
                     # if position is too close, find a new one
@@ -681,23 +680,40 @@ class Player(Entity):
             self.left_pressed = True
             # Turns the sprite to the left side.
             self.texture = self.textures[1]
-            self._direction = Direction.LEFT
-            return
-        elif key == self.key_right:
+
+        if key == self.key_right:
             self.right_pressed = True
             # Turns the sprite to the Right side
             self.texture = self.textures[0]
-            self._direction = Direction.RIGHT
-            return
-        elif key == self.key_up:
+
+        if key == self.key_up:
             self.up_pressed = True
-            self._direction = Direction.UP
-        elif key == self.key_down:
+        if key == self.key_down:
             self.down_pressed = True
-            self._direction = Direction.DOWN
-        elif key == self.key_atttack:
+        if key == self.key_atttack:
             self.atttack_pressed = True
             self.attack(self._direction)
+
+        # diagonal movement
+        if self.up_pressed and self.right_pressed:
+            self._direction = Direction.UP_RIGHT
+        elif self.right_pressed and self.down_pressed:
+            self._direction = Direction.RIGHT_DOWN
+        elif self.down_pressed and self.left_pressed:
+            self._direction = Direction.DOWN_LEFT
+        elif self.left_pressed and self.up_pressed:
+            self._direction = Direction.LEFT_UP
+
+        # horizontal and vertical movement
+        elif self.left_pressed and not self.right_pressed:
+            self._direction = Direction.LEFT
+        elif self.right_pressed and not self.left_pressed:
+            self._direction = Direction.RIGHT
+        elif self.up_pressed and not self.down_pressed:
+            self._direction = Direction.UP
+        elif self.down_pressed and not self.up_pressed:
+            self._direction = Direction.DOWN
+
 
     def on_key_release(self, key, modifiers):
         """
@@ -705,14 +721,34 @@ class Player(Entity):
         """
         if key == self.key_left:
             self.left_pressed = False
-        elif key == self.key_right:
+        if key == self.key_right:
             self.right_pressed = False
-        elif key == self.key_up:
+        if key == self.key_up:
             self.up_pressed = False
-        elif key == self.key_down:
+        if key == self.key_down:
             self.down_pressed = False
-        elif key == self.key_atttack:
+        if key == self.key_atttack:
             self.atttack_pressed = False
+
+        # diagonal movement
+        if self.up_pressed and self.right_pressed:
+            self._direction = Direction.UP_RIGHT
+        elif self.right_pressed and self.down_pressed:
+            self._direction = Direction.RIGHT_DOWN
+        elif self.down_pressed and self.left_pressed:
+            self._direction = Direction.DOWN_LEFT
+        elif self.left_pressed and self.up_pressed:
+            self._direction = Direction.LEFT_UP
+
+        # horizontal and vertical movement
+        elif self.left_pressed and not self.right_pressed:
+            self._direction = Direction.LEFT
+        elif self.right_pressed and not self.left_pressed:
+            self._direction = Direction.RIGHT
+        elif self.up_pressed and not self.down_pressed:
+            self._direction = Direction.UP
+        elif self.down_pressed and not self.up_pressed:
+            self._direction = Direction.DOWN
 
     def on_joybutton_press(self, joystick, button_no):
         # Any button press is an attack
@@ -766,14 +802,12 @@ class Player(Entity):
         self.change_y = 0
 
         # Update speed based on held keys
-        if self.left_pressed and not self.right_pressed:
-            self.change_x = -1 * self.speed
-        elif self.right_pressed and not self.left_pressed:
-            self.change_x = self.speed
-        elif self.up_pressed and not self.down_pressed:
-            self.change_y = self.speed
-        elif self.down_pressed and not self.up_pressed:
-            self.change_y = -1 * self.speed
+
+        if self.up_pressed or self.right_pressed or self.down_pressed or self.left_pressed:
+            self.change_x = math.sin(math.radians(self._direction))
+            self.change_y = math.cos(math.radians(self._direction))
+            self.change_x *= self.speed
+            self.change_y *= self.speed
 
         # Rotate the sprite a bit when it's moving
         if (self.change_x != 0 or self.change_y != 0) and random.random() <= self.jitter_likelihood:
