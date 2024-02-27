@@ -132,8 +132,10 @@ class GameView(arcade.View):
         for i in range(NUM_OF_PLAYERS):
             # Creates Player object
             p = Player(
-                center_x=self.tilemap.sprite_lists["players"][i].center_x,
-                center_y=self.tilemap.sprite_lists["players"][i].center_y,
+                position=(self.tilemap.sprite_lists["players"][i].center_x,self.tilemap.sprite_lists["players"][i].center_y),
+                max_hp=20,
+                speed=4,
+                window=self.window,
                 scale=SCALING,
                 key_up=PLAYER_KEYS[i]["up"],
                 key_down=PLAYER_KEYS[i]["down"],
@@ -279,10 +281,10 @@ class GameView(arcade.View):
         # Collisions code - Checks for all players and enemies' weapons. Checks for the collision.
         for p in self.player_sprite_list:
             for e in self.tilemap.sprite_lists["enemies"]:
-                if e.equipped is not None:
-                    if arcade.check_for_collision(p, e.equipped):
+                if e.equipped_weapon is not None:
+                    if arcade.check_for_collision(p, e.equipped_weapon):
                         # Damages as much as the enemies' weapon strength.
-                            p.hp -= e.equipped.strength
+                            p.hp -= e.equipped_weapon.strength
 
 
             # Updates the player_sprite_list.
