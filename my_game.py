@@ -284,7 +284,9 @@ class GameView(arcade.View):
                     if arcade.check_for_collision(p, e.equipped):
                         # Damages as much as the enemies' weapon strength.
                             p.hp -= e.equipped.strength
-
+            for e in self.tilemap.sprite_lists["exits"]:
+                if arcade.check_for_collision(p, e):
+                    print("A player is on and EXIT!")
 
             # Updates the player_sprite_list.
             p.update()
@@ -296,11 +298,6 @@ class GameView(arcade.View):
 
         # Update the enemies
         self.tilemap.sprite_lists["enemies"].update()
-
-        for p in self.player_sprite_list:
-            for e in self.tilemap.sprite_lists["exits"]:
-                if arcade.check_for_collision(p, e):
-                    print("A player is on and EXIT!")
 
     def game_over(self):
         """
