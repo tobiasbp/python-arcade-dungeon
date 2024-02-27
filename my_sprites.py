@@ -288,6 +288,10 @@ class Entity(arcade.Sprite):
                  scale=1.0
                  ):
 
+        super().__init__(scale=scale,
+                         center_x=position[0],
+                         center_y=position[1])
+
         # graphics
         # set a random texture type if no type was passed
         if not graphics_type:
@@ -310,9 +314,6 @@ class Entity(arcade.Sprite):
 
         self._emotes = arcade.SpriteList()
 
-        super().__init__(scale=scale,
-                         center_x=position[0],
-                         center_y=position[1])
 
         # amount of seconds before the sprite can update
         self.pause_timer = 0
