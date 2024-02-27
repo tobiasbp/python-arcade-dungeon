@@ -284,6 +284,8 @@ class GameView(arcade.View):
                     if arcade.check_for_collision(p, e.equipped):
                         # Damages as much as the enemies' weapon strength.
                             p.hp -= e.equipped.strength
+
+            # Checks after collision with the exit layer.
             for e in self.tilemap.sprite_lists["exits"]:
                 if arcade.check_for_collision(p, e):
                     print("A player is on and EXIT!")
