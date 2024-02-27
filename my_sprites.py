@@ -17,6 +17,7 @@ class Direction(IntEnum):
     DOWN_LEFT = 225
     LEFT = 270
     LEFT_UP = 315
+
 @unique
 class EnemyState(Enum):
     """
@@ -466,8 +467,6 @@ class Enemy(Entity):
         # pathfinding
         self.path = []
         self.cur_path_position = 0  # which point on the path we are heading for.
-        # how frequently the sprite can calculate a new path, in seconds. it's for performance
-        self.calculate_path_timer = random.random()
 
         # prevent enemies from loading simultaneously
         self.pause_timer = random.random()
@@ -555,21 +554,16 @@ class Enemy(Entity):
 
         super().update()
 
-        self.calculate_path_timer -= 1/60
 
-        if self.calculate_path_timer <= 0:
-            # state control
-            for t in self.potential_targets_list:  # FIXME: Make the enemy go for the closest player (multiplayer scenario only)
-                if arcade.has_line_of_sight(t.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
-                    self.cur_target = t
-                    self.state = EnemyState.CHASING_PLAYER
-                elif self.cur_target is not None:
-                    self.go_to_position(self.cur_target.position)
-                    self.cur_target = None
-                    self.state = EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS
-
-            # to prevent the sprite from calculating LOS every frame (very taxing)
-            self.calculate_path_timer = random.random() / 2
+        # state control
+        for t in self.potential_targets_list:  # FIXME: Make the enemy go for the closest player (multiplayer scenario only)
+            if arcade.has_line_of_sight(t.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
+                self.cur_target = t
+                self.state = EnemyState.CHASING_PLAYER
+            elif self.cur_target is not None:
+                self.go_to_position(self.cur_target.position)
+                self.cur_target = None
+                self.state = EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS
 
         # chasing state
         if self.state == EnemyState.CHASING_PLAYER:
