@@ -288,7 +288,7 @@ class GameView(arcade.View):
             # Checks after collision with the exit layer.
             for e in self.tilemap.sprite_lists["exits"]:
                 if arcade.check_for_collision(p, e):
-                    print("A player is on and EXIT!")
+                    print("A player is on an EXIT!")
 
             # Updates the player_sprite_list.
             p.update()
