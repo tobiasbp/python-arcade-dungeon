@@ -69,7 +69,7 @@ MAP_LAYER_CONFIG = {
     "pressure-plates": {"line_of_sight": True, "draw": True, "passable": True},
     "players": {"line_of_sight": False, "draw": True, "passable": True},
     "enemies": {"line_of_sight": False, "draw": True, "passable": True},
-    "exits": {"line_of_sight": False, "draw": False, "passable": True}
+    "exits": {"line_of_sight": False, "draw": False, "passable": True},
 }
 
 
@@ -296,6 +296,11 @@ class GameView(arcade.View):
 
         # Update the enemies
         self.tilemap.sprite_lists["enemies"].update()
+
+        for p in self.player_sprite_list:
+            for e in self.tilemap.sprite_lists["exits"]:
+                if arcade.check_for_collision(p, e):
+                    print("A player is on and EXIT!")
 
     def game_over(self):
         """
