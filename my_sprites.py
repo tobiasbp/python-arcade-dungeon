@@ -546,8 +546,8 @@ class Enemy(Entity):
 
             else:
                 # testing shows that we need to reverse the direction...
-                self.change_x = -math.sin(angle_to_dest) * this_move_length
-                self.change_y = -math.cos(angle_to_dest) * this_move_length
+                self.center_x += -math.sin(angle_to_dest) * this_move_length
+                self.center_y += -math.cos(angle_to_dest) * this_move_length
 
     def update(self):
 
@@ -570,8 +570,8 @@ class Enemy(Entity):
             angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
             self._direction = angle_to_target
 
-            self.change_x = math.sin(angle_to_target) * self.speed
-            self.change_y = math.cos(angle_to_target) * self.speed
+            self.center_x += math.sin(angle_to_target) * self.speed
+            self.center_y += math.cos(angle_to_target) * self.speed
 
         # GOING_TO_LAST_KNOWN_PLAYER_POS state
         elif self.state == EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS:
