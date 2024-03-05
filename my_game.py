@@ -134,7 +134,7 @@ class GameView(arcade.View):
             p = Player(
                 position=(self.tilemap.sprite_lists["players"][i].center_x,self.tilemap.sprite_lists["players"][i].center_y),
                 max_hp=20,
-                speed=4,
+                speed=2,
                 window=self.window,
                 scale=SCALING,
                 key_up=PLAYER_KEYS[i]["up"],
@@ -155,7 +155,7 @@ class GameView(arcade.View):
             e = Enemy(
                 position=enemy_position,
                 max_hp=5,
-                speed=2,
+                speed=1,
                 window=self.window,
                 graphics_type=EntityType.VIKING,
                 impassables=self.tilemap.sprite_lists["impassable"],
