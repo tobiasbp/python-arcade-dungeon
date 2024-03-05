@@ -831,20 +831,21 @@ class Emote(arcade.Sprite):
 class WeaponType(IntEnum):
     """
     Weapon types that map to weapon graphics
-    The values are calculated from image position in sprite sheet
+    The values are calculated from image position in sprite sheet, but note
+    that these are off by one compared to the tilemap due to zero-indexing
     """
-    SWORD_SHORT = 9*11+4
-    SWORD_LONG = 9*11+5
-    SWORD_FALCHION = 9*11+6
-    SWORD_DOUBLE_SILVER = 9*11+7
-    SWORD_DOUBLE_BRONZE = 9*11+8
-    HAMMER = 9*12+6
-    AXE_DOUBLE = 9*12+7
-    AXE_SINGLE = 9*12+8
-    STAFF_PURPLE = 9*13+6
-    STAFF_GREEN = 9*13+7
-    SPEAR = 9*13+8
 
+    SWORD_SHORT = 8*12+7 # 103
+    SWORD_LONG = 8*12+8 # 104
+    SWORD_FALCHION = 8*12+9 # 105
+    SWORD_DOUBLE_SILVER = 8*12+10 # 106
+    SWORD_DOUBLE_BRONZE = 8*12+11 # 107
+    HAMMER = 9*12+9 # 117
+    AXE_DOUBLE = 9*12+10 # 118
+    AXE_SINGLE = 9*12+11 # 119
+    STAFF_PURPLE = 10*12+9 # 129
+    STAFF_GREEN = 10*12+10 # 130
+    SPEAR = 10*12+11 # 131
 
 class Weapon(arcade.Sprite):
     """

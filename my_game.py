@@ -67,6 +67,7 @@ MAP_LAYER_CONFIG = {
     "objects-passable": {"line_of_sight": True, "draw": True, "passable": True},
     "objects-impassable": {"line_of_sight": True, "draw": True, "passable": False},
     "pressure-plates": {"line_of_sight": True, "draw": True, "passable": True},
+    "items": {"line_of_sight": False, "draw": True, "passable": True},
     "players": {"line_of_sight": False, "draw": True, "passable": True},
     "enemies": {"line_of_sight": False, "draw": True, "passable": True},
     "exits": {"line_of_sight": False, "draw": False, "passable": True},
@@ -157,7 +158,7 @@ class GameView(arcade.View):
                 grid_size=int(self.tilemap.tile_width),
                 window=self.window,
                 potential_targets_list=self.player_sprite_list,
-                equipped_weapon=Weapon(type=WeaponType.SWORD_SHORT),
+                equipped_weapon=Weapon(type=WeaponType.HAMMER), #here
                 scale=SCALING
             )
 
