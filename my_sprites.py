@@ -306,7 +306,7 @@ class Entity(arcade.Sprite):
         # hp
         self._max_hp = max_hp
         self._hp = max_hp
-        self.healthbar = HealthBar(max_health=max_hp)
+        self._healthbar = HealthBar(max_health=max_hp)
 
         self.speed = speed
         self.window = window
@@ -335,6 +335,10 @@ class Entity(arcade.Sprite):
     @property
     def equipped_weapon(self):
         return self._equipped_weapon
+
+    @property
+    def healthbar(self):
+        return self._healthbar
 
     @equipped_weapon.setter
     def equipped_weapon(self, new_weapon):
