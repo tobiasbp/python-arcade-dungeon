@@ -306,7 +306,7 @@ class Entity(arcade.Sprite):
         # hp
         self._max_hp = max_hp
         self._hp = max_hp
-        self._healthbar = HealthBar(max_health=max_hp)
+        self._health_bar = HealthBar(max_health=max_hp)
 
         self.speed = speed
         self.window = window
@@ -337,8 +337,8 @@ class Entity(arcade.Sprite):
         return self._equipped_weapon
 
     @property
-    def healthbar(self):
-        return self._healthbar
+    def health_bar(self):
+        return self._health_bar
 
     @equipped_weapon.setter
     def equipped_weapon(self, new_weapon):
@@ -388,7 +388,7 @@ class Entity(arcade.Sprite):
         """
 
         self._emotes.draw(pixelated=pixelated)
-        self.healthbar.draw()
+        self.health_bar.draw()
 
         if draw_hitbox:
             self.draw_hit_box(arcade.color.NEON_GREEN, line_thickness=2)
@@ -417,9 +417,9 @@ class Entity(arcade.Sprite):
             if self.equipped_weapon.attacks_left <= 0:
                 self.equipped_weapon = None
 
-        # update the healthbar
-        self.healthbar.health = self._hp
-        self.healthbar.position = self.position
+        # update the health bar
+        self.health_bar.health = self._hp
+        self.health_bar.position = self.position
 
         # death
         if self.hp <= 0:
