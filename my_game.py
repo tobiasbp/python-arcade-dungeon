@@ -289,6 +289,8 @@ class GameView(arcade.View):
             for e in self.tilemap.sprite_lists["exits"]:
                 if arcade.check_for_collision(p, e):
                     print("A player is on an EXIT!")
+                    between_scenes_view = BetweenScenes(self.player_score)
+                    self.window.show_view(between_scenes_view)
 
             # Updates the player_sprite_list.
             p.update()
@@ -532,6 +534,73 @@ class GameOverView(arcade.View):
         self.window.show_view(intro_view)
 
 
+class BetweenScenes(arcade.View):
+    """
+    View to show when the game is over
+    """
+
+    def __init__(self, score, window=None):
+        """
+        Create a Game Over-view. Pass the final score to display.
+        """
+        self.score = score
+
+        super().__init__(window)
+
+    def setup_old(self, score: int):
+        """
+        Call this from the game so we can show the score.
+        """
+        self.score = score
+
+    def on_show_view(self):
+        """
+        This is run once when we switch to this view
+        """
+        # Set the background color
+        arcade.set_background_color(arcade.csscolor.BLACK)
+
+    def on_draw(self):
+        """
+        Draw this view
+        """
+
+        self.clear()
+
+        # Congratulations message!
+        arcade.draw_text(
+            "You beat the level!",
+            self.window.width / 2,
+            250,
+            arcade.color.TROLLEY_GREY,
+            font_size=35,
+            font_name=MAIN_FONT_NAME,
+            anchor_x="center",
+            bold=True
+        )
+
+        # Instructions message
+        arcade.draw_text(
+            "Press SPACE to continue your adventure..",
+            self.window.width / 2,
+            200,
+            arcade.color.TROLLEY_GREY,
+            font_size=15,
+            font_name=MAIN_FONT_NAME,
+            anchor_x="center",
+            bold=True
+        )
+
+    def on_key_press(self, key: int, modifiers: int):
+        """
+        Return to intro screen when any key is pressed.
+        """
+
+        if key == arcade.key.SPACE:
+            game_view = GameView()
+            self.window.show_view(game_view)
+
+
 def main():
     """
     Main method
@@ -545,7 +614,6 @@ def main():
     window.show_view(start_view)
 
     arcade.run()
-
 
 if __name__ == "__main__":
     main()
