@@ -419,7 +419,9 @@ class Entity(arcade.Sprite):
 
         # death
         if self.hp <= 0:
-            self.kill()
+            # FIXME: WHAT DO WE DO WHEN WE DIE?
+            pass
+
         self._emotes.update()
 
 
