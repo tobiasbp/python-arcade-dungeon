@@ -406,9 +406,9 @@ class Entity(arcade.Sprite):
 
             # move the equipped weapon to our position
             self.equipped_weapon.center_x = self.center_x + (
-                    math.sin(math.radians(self._direction)) * Weapon.data[self.equipped_weapon.type]["range"])
+                    math.sin(self._direction) * Weapon.data[self.equipped_weapon.type]["range"])
             self.equipped_weapon.center_y = self.center_y + (
-                            math.cos(math.radians(self._direction)) * Weapon.data[self.equipped_weapon.type]["range"])
+                            math.cos(self._direction) * Weapon.data[self.equipped_weapon.type]["range"])
 
             if self.equipped_weapon.attacks_left <= 0:
                 self.equipped_weapon = None
@@ -574,6 +574,8 @@ class Enemy(Entity):
 
             self.center_x += math.sin(angle_to_target) * self.speed
             self.center_y += math.cos(angle_to_target) * self.speed
+
+            self.attack(self._direction)
 
         # GOING_TO_LAST_KNOWN_PLAYER_POS state
         elif self.state == EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS:
