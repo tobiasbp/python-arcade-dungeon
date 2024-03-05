@@ -47,7 +47,7 @@ PLAYER_SHOT_SPEED = 300
 PLAYER_SIGHT_RANGE = SCREEN_WIDTH/4 # How far can the player see?
 
 # Amount of players
-NUM_OF_PLAYERS = 2
+NUM_OF_PLAYERS = 1
 
 FIRE_KEY = arcade.key.SPACE
 
