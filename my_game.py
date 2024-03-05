@@ -67,7 +67,7 @@ MAP_LAYER_CONFIG = {
     "objects-passable": {"line_of_sight": True, "draw": True, "passable": True},
     "objects-impassable": {"line_of_sight": True, "draw": True, "passable": False},
     "pressure-plates": {"line_of_sight": True, "draw": True, "passable": True},
-    "items": {"line_of_sight": False, "draw": True, "passable": True},
+    "weapons": {"line_of_sight": False, "draw": True, "passable": True},
     "players": {"line_of_sight": False, "draw": True, "passable": True},
     "enemies": {"line_of_sight": False, "draw": True, "passable": True},
     "exits": {"line_of_sight": False, "draw": False, "passable": True},
