@@ -312,7 +312,7 @@ class Entity(arcade.Sprite):
         self.window = window
         self._equipped_weapon = equipped_weapon
         # angle used for the dir the sprite is facing. for the enemy this will usually be the angle to the target
-        self._direction = 0
+        self._direction = 0  # direction facing. Should be in degrees
 
         self._emotes = arcade.SpriteList()
 
@@ -408,9 +408,9 @@ class Entity(arcade.Sprite):
 
             # move the equipped weapon to our position
             self.equipped_weapon.center_x = self.center_x + (
-                    math.sin(self._direction) * Weapon.data[self.equipped_weapon.type]["range"])
+                    math.sin(math.radians(self._direction)) * Weapon.data[self.equipped_weapon.type]["range"])
             self.equipped_weapon.center_y = self.center_y + (
-                            math.cos(self._direction) * Weapon.data[self.equipped_weapon.type]["range"])
+                            math.cos(math.radians(self._direction)) * Weapon.data[self.equipped_weapon.type]["range"])
 
             if self.equipped_weapon.attacks_left <= 0:
                 self.equipped_weapon = None
@@ -573,11 +573,11 @@ class Enemy(Entity):
         if self.state == EnemyState.CHASING_PLAYER:
             self.path = []
 
-            angle_to_target = arcade.get_angle_radians(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
+            angle_to_target = arcade.get_angle_degrees(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
             self._direction = angle_to_target
 
-            self.center_x += math.sin(angle_to_target) * self.speed
-            self.center_y += math.cos(angle_to_target) * self.speed
+            self.center_x += math.sin(math.radians(angle_to_target)) * self.speed
+            self.center_y += math.cos(math.radians(angle_to_target)) * self.speed
 
             self.attack(self._direction)
 
