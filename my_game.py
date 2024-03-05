@@ -136,6 +136,7 @@ class GameView(arcade.View):
                 max_hp=20,
                 speed=2,
                 window=self.window,
+                equipped_weapon=Weapon(type=WeaponType.SWORD_SHORT),
                 scale=SCALING,
                 key_up=PLAYER_KEYS[i]["up"],
                 key_down=PLAYER_KEYS[i]["down"],
