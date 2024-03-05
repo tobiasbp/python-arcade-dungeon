@@ -315,7 +315,6 @@ class Entity(arcade.Sprite):
 
         self._emotes = arcade.SpriteList()
 
-
         # amount of seconds before the sprite can update
         self.pause_timer = 0
 
@@ -387,7 +386,6 @@ class Entity(arcade.Sprite):
         """
 
         self._emotes.draw(pixelated=pixelated)
-        self.health_bar.draw()
 
         if draw_hitbox:
             self.draw_hit_box(arcade.color.NEON_GREEN, line_thickness=2)
@@ -672,8 +670,6 @@ class Player(Entity):
         # Save settings for animating the sprite when walking
         self.jitter_amount = jitter_amount
         self.jitter_likelihood = jitter_likelihood
-
-        self.health_bar = HealthBar(max_health=self.max_hp)
 
     @property
     def is_walking(self):

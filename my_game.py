@@ -267,6 +267,12 @@ class GameView(arcade.View):
             s.draw(pixelated=DRAW_PIXELATED)
             s.draw_sprites(draw_attack_hitboxes=DEBUG_MODE, pixelated=DRAW_PIXELATED)
 
+        for e in self.tilemap.sprite_lists["enemies"]:
+            e.health_bar.draw()
+
+        for p in self.player_sprite_list:
+            p.health_bar.draw()
+
     def on_update(self, delta_time: float = 1/60):
         """
         Movement and game logic
