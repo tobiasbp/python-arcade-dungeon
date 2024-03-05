@@ -165,12 +165,6 @@ class GameView(arcade.View):
                 scale=SCALING
             )
 
-            # Go to position of random passable tile
-            # FIXME: Often, no path will be found. Why is that??
-            # e.go_to_position(random.choice(self.tilemap.sprite_lists["background"]).position)
-            # Go to the player's position
-            e.go_to_position(self.player_sprite_list[0].position)
-
             # Replace the spawn point with the new enemy
             self.tilemap.sprite_lists["enemies"][enemy_index] = e
 
