@@ -77,16 +77,15 @@ class GameView(arcade.View):
     """
     The view with the game itself
     """
-
-    def on_show_view(self):
-        """
-        This is run once when we switch to this view
-        """
-
+    
+    def __init__(self, level):
+        
+        super(GameView, self).__init__()
+        
         # Create a TileMap with walls, objects etc.
         # Spatial hashing is good for calculating collisions for static sprites (like the ones in this map)
         self.tilemap = arcade.tilemap.TileMap(
-            map_file="data/rooms/dungeon/room_0.tmx",
+            map_file=f"data/rooms/dungeon/room_{level}.tmx",
             use_spatial_hash=True,
             scaling=SCALING,
             offset=Vec2(0,0)
@@ -113,6 +112,11 @@ class GameView(arcade.View):
                 for s in self.tilemap.sprite_lists[layer_name]:
                     # Tiles are unseen by default
                     s.seen = False
+
+    def on_show_view(self):
+        """
+        This is run once when we switch to this view
+        """
 
         # Set up the player info
         # FIXME: Move this into the Player class
@@ -418,7 +422,7 @@ class IntroView(arcade.View):
         Starts the game.
         """
         self.opening_sound.stop(self.opening_sound_player)
-        game_view = GameView()
+        game_view = GameView(0)
         self.window.show_view(game_view)
 
 
@@ -597,7 +601,7 @@ class BetweenScenes(arcade.View):
         """
 
         if key == arcade.key.SPACE:
-            game_view = GameView()
+            game_view = GameView(1)
             self.window.show_view(game_view)
 
 
