@@ -130,6 +130,7 @@ class GameView(arcade.View):
 
         self.player_sprite_list = []
 
+        # replace all sprites on layer "players" with actual player objects
         for i in range(NUM_OF_PLAYERS):
             # Creates Player object
             p = Player(
