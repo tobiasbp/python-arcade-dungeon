@@ -310,6 +310,8 @@ class Entity(arcade.Sprite):
 
         self.speed = speed
         self.window = window
+
+        self.weapons = {}
         self._equipped_weapon = equipped_weapon
         # angle used for the dir the sprite is facing. for the enemy this will usually be the angle to the target
         self._direction = 0  # direction facing. Should be in degrees
@@ -339,11 +341,6 @@ class Entity(arcade.Sprite):
     def health_bar(self):
         return self._health_bar
 
-    @equipped_weapon.setter
-    def equipped_weapon(self, new_weapon):
-        assert type(new_weapon) == Weapon or new_weapon is None, f"expected type WeaponType, or None, got {type(new_weapon)}"
-        self._equipped_weapon = new_weapon
-
     def react(self, reaction):
         """
         Add an Emote
@@ -355,6 +352,15 @@ class Entity(arcade.Sprite):
                 scale=self.scale
             )
         )
+
+    def equip(self, type):
+        """
+        move a weapon from inventory to held slot
+        """
+
+        assert type in self.weapons.keys(), "Requested weapon type is not in inventory"
+        self._equipped_weapon = Weapon(type, self.position)
+        self.weapons.pop(type)
 
     def attack(self, angle: float):
         """
