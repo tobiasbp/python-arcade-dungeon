@@ -66,7 +66,7 @@ MAP_LAYER_CONFIG = {
     "impassable": {"line_of_sight": False, "draw": True, "passable": False},
     "objects-passable": {"line_of_sight": True, "draw": True, "passable": True},
     "objects-impassable": {"line_of_sight": True, "draw": True, "passable": False},
-    "pressure-plates": {"line_of_sight": True, "draw": False, "passable": True},
+    "pressure-plates": {"line_of_sight": True, "draw": True, "passable": True},
     "weapons": {"line_of_sight": True, "draw": True, "passable": True},
     "players": {"line_of_sight": False, "draw": True, "passable": True},
     "enemies": {"line_of_sight": False, "draw": True, "passable": True},
@@ -158,7 +158,7 @@ class GameView(arcade.View):
                 grid_size=int(self.tilemap.tile_width),
                 window=self.window,
                 potential_targets_list=self.player_sprite_list,
-                equipped_weapon=Weapon(type=WeaponType.HAMMER), #here
+                equipped_weapon=Weapon(type=WeaponType.SWORD_SHORT),
                 scale=SCALING
             )
 
@@ -291,14 +291,15 @@ class GameView(arcade.View):
                 if arcade.check_for_collision(p, e):
                     print("A player is on an EXIT!")
 
+            # Pick up weapons from tilemap if the players are standing on any
             for w in self.tilemap.sprite_lists["weapons"]:
                 if arcade.check_for_collision(p, w):
                     try:
                         p.add_weapon(WeaponType(w.properties["tile_id"]))
-                    except ValueError:
-                        print("Invalid WeaponType")
+                    except ValueError as e:
+                        print(e)
+                    # Remove weapon from tilemap
                     w.kill()
-                    print(p.weapons)
 
             # Updates the player_sprite_list.
             p.update()
