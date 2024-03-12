@@ -298,7 +298,7 @@ class GameView(arcade.View):
                         p.add_weapon(WeaponType(w.properties["tile_id"]))
                     except ValueError as e:
                         print(e)
-                    # Remove weapon from tilemap
+                    # Remove weapon from tilemap, as the player has picked it up
                     w.kill()
 
             # Updates the player_sprite_list.
