@@ -291,6 +291,15 @@ class GameView(arcade.View):
                 if arcade.check_for_collision(p, e):
                     print("A player is on an EXIT!")
 
+            for w in self.tilemap.sprite_lists["weapons"]:
+                if arcade.check_for_collision(p, w):
+                    try:
+                        p.add_weapon(WeaponType(w.properties["tile_id"]))
+                    except ValueError:
+                        print("Invalid WeaponType")
+                    w.kill()
+                    print(p.weapons)
+
             # Updates the player_sprite_list.
             p.update()
 
