@@ -47,7 +47,7 @@ PLAYER_SHOT_SPEED = 300
 PLAYER_SIGHT_RANGE = SCREEN_WIDTH/4 # How far can the player see?
 
 # Amount of players
-NUM_OF_PLAYERS = 2
+NUM_OF_PLAYERS = 1
 
 FIRE_KEY = arcade.key.SPACE
 
@@ -132,7 +132,7 @@ class GameView(arcade.View):
         for i in range(NUM_OF_PLAYERS):
             # Creates Player object
             p = Player(
-                position=(self.tilemap.sprite_lists["players"][i].center_x,self.tilemap.sprite_lists["players"][i].center_y),
+                position=(self.tilemap.sprite_lists["players"][i].position),
                 max_hp=20,
                 speed=2,
                 window=self.window,
