@@ -70,7 +70,6 @@ class EntityType(IntEnum):
     WOMAN_YOUNGER = 8 * 12 + 3
     WOMAN_OLDER = 8 * 12 + 4
 
-=======
 @unique
 class WeaponType(IntEnum):
     """
@@ -361,6 +360,13 @@ class Entity(arcade.Sprite):
             )
         )
 
+    def add_weapon(self, weapon):
+        """
+        add a weapon to inventory
+        """
+
+        self._weapons.update({weapon: weapon.properties["tile_id"]})
+
     def equip(self, type):
         """
         move a weapon from inventory to held slot
@@ -427,7 +433,7 @@ class Entity(arcade.Sprite):
                             math.cos(math.radians(self._direction)) * Weapon.data[self.equipped_weapon.type]["range"])
 
             if self.equipped_weapon.attacks_left <= 0:
-                self.equipped_weapon = None
+                self._equipped_weapon = None
 
         # update the health bar
         self.health_bar.health = self._hp

@@ -47,7 +47,7 @@ PLAYER_SHOT_SPEED = 300
 PLAYER_SIGHT_RANGE = SCREEN_WIDTH/4 # How far can the player see?
 
 # Amount of players
-NUM_OF_PLAYERS = 2
+NUM_OF_PLAYERS = 1
 
 FIRE_KEY = arcade.key.SPACE
 
@@ -299,7 +299,7 @@ class GameView(arcade.View):
             for w in self.tilemap.sprite_lists["weapons"]:
                 if arcade.check_for_collision(p, w):
                     try:
-                        p.add_weapon(WeaponType(w.properties["tile_id"]))
+                        p.add_weapon(w)
                     except ValueError as e:
                         print(e)
                     # Remove weapon from tilemap, as the player has picked it up
