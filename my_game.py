@@ -298,11 +298,11 @@ class GameView(arcade.View):
             # Pick up weapons from tilemap if the players are standing on any
             for w in self.tilemap.sprite_lists["weapons"]:
                 if arcade.check_for_collision(p, w):
-                    try:
-                        # ID of tile is the same as a WeaponType
-                        p.add_weapon(Weapon(w.properties["tile_id"]))
-                    except ValueError as e:
-                        print(e)
+                    # create a weapon type based on the tile id. If the tile is not a weapon, raise an error
+                    assert w.properties["tile_id"] in WeaponType, "tile id does not match a valid weapon type"
+                    new_weapon_type = WeaponType(w.properties["tile_id"])
+                    p.add_weapon(Weapon(new_weapon_type))
+
                     # Remove weapon from tilemap, as the player has picked it up
                     w.kill()
 
