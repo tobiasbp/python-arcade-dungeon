@@ -299,7 +299,8 @@ class GameView(arcade.View):
             for w in self.tilemap.sprite_lists["weapons"]:
                 if arcade.check_for_collision(p, w):
                     try:
-                        p.add_weapon(w)
+                        # ID of tile is the same as a WeaponType
+                        p.add_weapon(Weapon(w.properties["tile_id"]))
                     except ValueError as e:
                         print(e)
                     # Remove weapon from tilemap, as the player has picked it up

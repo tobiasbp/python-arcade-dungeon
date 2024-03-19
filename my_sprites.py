@@ -360,21 +360,22 @@ class Entity(arcade.Sprite):
             )
         )
 
-    def add_weapon(self, weapon):
+    def add_weapon(self, weapon: Weapon):
         """
         add a weapon to inventory
         """
 
-        self._weapons.update({weapon: weapon.properties["tile_id"]})
+        self._weapons.update({weapon.type: weapon})
+        self.equip(weapon)
 
-    def equip(self, type):
+    def equip(self, weapon: Weapon):
         """
         move a weapon from inventory to held slot
         """
 
-        assert type in self._weapons.keys(), "Requested weapon type is not in inventory"
-        self._equipped_weapon = Weapon(type, self.position)
-        self._weapons.pop(type)
+        assert weapon in self._weapons.values(), "Requested weapon type is not in inventory"
+        self._equipped_weapon = weapon
+        self._weapons.pop(weapon.type)
 
     def attack(self, angle: float):
         """
