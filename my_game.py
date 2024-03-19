@@ -295,7 +295,7 @@ class GameView(arcade.View):
             for e in self.tilemap.sprite_lists["exits"]:
                 if arcade.check_for_collision(p, e):
                     print("A player is on an EXIT!")
-                    between_scenes_view = BetweenScenes(self.player_score, self.level_stage)
+                    between_scenes_view = LevelFinishView(self.player_score, self.level_stage)
                     self.window.show_view(between_scenes_view)
 
             # Updates the player_sprite_list.
@@ -540,7 +540,7 @@ class GameOverView(arcade.View):
         self.window.show_view(intro_view)
 
 
-class BetweenScenes(arcade.View):
+class LevelFinishView(arcade.View):
     """
     View to show when the game is over
     """
