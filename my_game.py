@@ -299,7 +299,6 @@ class GameView(arcade.View):
             for w in self.tilemap.sprite_lists["weapons"]:
                 if arcade.check_for_collision(p, w):
                     # create a weapon type based on the tile id. If the tile is not a weapon, raise an error
-                    assert w.properties["tile_id"] in (t.value for t in WeaponType), "tile id does not match a valid weapon type"
                     new_weapon_type = WeaponType(w.properties["tile_id"])
                     p.add_weapon(Weapon(new_weapon_type))
 
