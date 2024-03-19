@@ -81,6 +81,8 @@ class GameView(arcade.View):
     def __init__(self, level):
         
         super(GameView, self).__init__()
+
+        self.level_stage = level
         
         # Create a TileMap with walls, objects etc.
         # Spatial hashing is good for calculating collisions for static sprites (like the ones in this map)
@@ -293,7 +295,7 @@ class GameView(arcade.View):
             for e in self.tilemap.sprite_lists["exits"]:
                 if arcade.check_for_collision(p, e):
                     print("A player is on an EXIT!")
-                    between_scenes_view = BetweenScenes(self.player_score)
+                    between_scenes_view = BetweenScenes(self.player_score, self.level_stage)
                     self.window.show_view(between_scenes_view)
 
             # Updates the player_sprite_list.
@@ -543,11 +545,13 @@ class BetweenScenes(arcade.View):
     View to show when the game is over
     """
 
-    def __init__(self, score, window=None):
+    def __init__(self, score, level, window=None):
         """
         Create a Game Over-view. Pass the final score to display.
         """
         self.score = score
+        self.level = level
+        self.max_level = 1
 
         super().__init__(window)
 
@@ -600,9 +604,16 @@ class BetweenScenes(arcade.View):
         Return to intro screen when any key is pressed.
         """
 
+        # Remember to add onto the self.max_level everytime a person
+        # adds a new level/stage.
+
         if key == arcade.key.SPACE:
-            game_view = GameView(1)
-            self.window.show_view(game_view)
+            if self.level+1 > self.max_level:
+                game_view = GameView(level=0)
+                self.window.show_view(game_view)
+            else:
+                game_view = GameView(level=self.level+1)
+                self.window.show_view(game_view)
 
 
 def main():
