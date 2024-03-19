@@ -82,12 +82,12 @@ class GameView(arcade.View):
         
         super(GameView, self).__init__()
 
-        self.level_stage = level
+        self.level = level
         
         # Create a TileMap with walls, objects etc.
         # Spatial hashing is good for calculating collisions for static sprites (like the ones in this map)
         self.tilemap = arcade.tilemap.TileMap(
-            map_file=f"data/rooms/dungeon/room_{level}.tmx",
+            map_file=f"data/rooms/dungeon/room_{self.level}.tmx",
             use_spatial_hash=True,
             scaling=SCALING,
             offset=Vec2(0,0)
@@ -295,8 +295,8 @@ class GameView(arcade.View):
             for e in self.tilemap.sprite_lists["exits"]:
                 if arcade.check_for_collision(p, e):
                     print("A player is on an EXIT!")
-                    between_scenes_view = LevelFinishView(self.player_score, self.level_stage)
-                    self.window.show_view(between_scenes_view)
+                    view = LevelFinishView(self.level)
+                    self.window.show_view(view)
 
             # Updates the player_sprite_list.
             p.update()
@@ -545,11 +545,10 @@ class LevelFinishView(arcade.View):
     View to show when the game is over
     """
 
-    def __init__(self, score, level, window=None):
+    def __init__(self, level, window=None):
         """
         Create a Game Over-view. Pass the final score to display.
         """
-        self.score = score
         self.level = level
         self.max_level = 1
 
@@ -559,7 +558,7 @@ class LevelFinishView(arcade.View):
         """
         Call this from the game so we can show the score.
         """
-        self.score = score
+        pass
 
     def on_show_view(self):
         """
