@@ -342,6 +342,9 @@ class Entity(arcade.Sprite):
 
     @property
     def health_bar(self):
+        """
+        property that allows the health bar to be drawn from outside
+        """
         return self._health_bar
 
     @property
@@ -365,7 +368,8 @@ class Entity(arcade.Sprite):
         add a weapon to inventory
         """
 
-        self._weapons.update({weapon.type: weapon})
+        # you can only have one of each weapon type in inventory
+        self._weapons[weapon.type] = weapon
         self.equip(weapon)
 
     def equip(self, weapon: Weapon):
