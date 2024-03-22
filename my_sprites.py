@@ -519,6 +519,7 @@ class Enemy(Entity):
     def state(self, new_state: EnemyState):
         assert type(new_state) == EnemyState, "state should be an EnemyState"
         # Checks if the _state is the same as the new_state.
+        print(self._state, new_state)
         if self._state is not new_state:
             if new_state == EnemyState.CHASING_PLAYER:
                 self.react(Reaction.EXCLAMATION_RED)
@@ -583,16 +584,20 @@ class Enemy(Entity):
 
         super().update()
 
-
         # state control
         for t in self.potential_targets_list:  # FIXME: Make the enemy go for the closest player (multiplayer scenario only)
             if arcade.has_line_of_sight(t.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
                 self.cur_target = t
                 self.state = EnemyState.CHASING_PLAYER
+            # wait to check for GOING_TO_LAST_KNOWN_PLAYER_POS state until the end of the loop
+            elif self.potential_targets_list.index(t) == len(self.potential_targets_list) - 1:
+                continue
             elif self.cur_target is not None:
                 self.go_to_position(self.cur_target.position)
                 self.cur_target = None
                 self.state = EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS
+
+        print(self.state)
 
         # CHASING_PLAYER state
         if self.state == EnemyState.CHASING_PLAYER:
