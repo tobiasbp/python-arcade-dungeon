@@ -83,11 +83,23 @@ class GameView(arcade.View):
         super(GameView, self).__init__()
 
         self.level = level
-        
+
+        # A format string where you can change the variable in the {}.
+        map_name = "data/rooms/dungeon/room_{}.tmx"
+
+        # Checks if the next level exists.
+        try:
+            f = open(map_name.format(self.level))
+        except FileNotFoundError:
+            print("Level Cannot Be Loaded, returning to level 0. 🤖")
+            self.level = 0
+        else:
+            pass
+
         # Create a TileMap with walls, objects etc.
         # Spatial hashing is good for calculating collisions for static sprites (like the ones in this map)
         self.tilemap = arcade.tilemap.TileMap(
-            map_file=f"data/rooms/dungeon/room_{self.level}.tmx",
+            map_file=map_name.format(self.level),
             use_spatial_hash=True,
             scaling=SCALING,
             offset=Vec2(0,0)
@@ -607,10 +619,8 @@ class LevelFinishView(arcade.View):
         # adds a new level/stage.
 
         if key == arcade.key.SPACE:
-            # Loops the level back to zero.
+            # Turns to the next level.
             next_level = self.level + 1
-            if next_level > self.max_level:
-                next_level = 0
 
             game_view = GameView(level=next_level)
             self.window.show_view(game_view)
