@@ -584,7 +584,7 @@ class Enemy(Entity):
         get a visible sprite from potential targets, if available
         """
 
-        if self.cur_target is not None:
+        if self.cur_target:
             dist_to_closest = arcade.get_distance_between_sprites(self, self.cur_target)
 
             # when we lose LOS to our target, initiate the going_to_last_known_player_pos state
