@@ -586,16 +586,21 @@ class Enemy(Entity):
         """
 
         if self.cur_target is not None:
+            dist_to_closest = arcade.get_distance_between_sprites(self, self.cur_target)
+
+            # when we lose LOS to our target, initiate the going_to_last_known_player_pos state
             if not arcade.has_line_of_sight(self.cur_target.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
                 self.go_to_position(self.cur_target.position)
                 self.cur_target = None
                 self.state = EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS
-
         else:
-            for t in self.potential_targets_list:  # FIXME: Make the enemy go for the closest player (multiplayer scenario only)
-                if arcade.has_line_of_sight(t.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
+            dist_to_closest = 99999
+
+        for t in self.potential_targets_list:
+            if arcade.has_line_of_sight(t.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
+                if arcade.get_distance_between_sprites(t, self) < dist_to_closest:
                     self.cur_target = t
-                    self.state = EnemyState.CHASING_PLAYER
+                self.state = EnemyState.CHASING_PLAYER
 
     def update(self):
 
