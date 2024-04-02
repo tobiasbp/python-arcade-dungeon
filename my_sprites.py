@@ -519,7 +519,6 @@ class Enemy(Entity):
     def state(self, new_state: EnemyState):
         assert type(new_state) == EnemyState, "state should be an EnemyState"
         # Checks if the _state is the same as the new_state.
-        print(self._state, new_state)
         if self._state is not new_state:
             if new_state == EnemyState.CHASING_PLAYER:
                 self.react(Reaction.EXCLAMATION_RED)
