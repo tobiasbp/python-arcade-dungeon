@@ -607,12 +607,13 @@ class LevelFinishView(arcade.View):
         # adds a new level/stage.
 
         if key == arcade.key.SPACE:
-            if self.level+1 > self.max_level:
-                game_view = GameView(level=0)
-                self.window.show_view(game_view)
-            else:
-                game_view = GameView(level=self.level+1)
-                self.window.show_view(game_view)
+            # Loops the level back to zero.
+            next_level = self.level + 1
+            if next_level > self.max_level:
+                next_level = 0
+
+            game_view = GameView(level=next_level)
+            self.window.show_view(game_view)
 
 
 def main():
