@@ -580,24 +580,28 @@ class Enemy(Entity):
                 self.center_x += -math.sin(angle_to_dest) * this_move_length
                 self.center_y += -math.cos(angle_to_dest) * this_move_length
 
-    def update(self):
+    def set_target(self):
+        """
+        get a visible sprite from potential targets, if available
+        """
 
-        super().update()
-
-        # state control
-        for t in self.potential_targets_list:  # FIXME: Make the enemy go for the closest player (multiplayer scenario only)
-            if arcade.has_line_of_sight(t.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
-                self.cur_target = t
-                self.state = EnemyState.CHASING_PLAYER
-            # wait to check for GOING_TO_LAST_KNOWN_PLAYER_POS state until the end of the loop
-            elif self.potential_targets_list.index(t) == len(self.potential_targets_list) - 1:
-                continue
-            elif self.cur_target is not None:
+        if self.cur_target is not None:
+            if not arcade.has_line_of_sight(self.cur_target.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
                 self.go_to_position(self.cur_target.position)
                 self.cur_target = None
                 self.state = EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS
 
-        print(self.state)
+        else:
+            for t in self.potential_targets_list:  # FIXME: Make the enemy go for the closest player (multiplayer scenario only)
+                if arcade.has_line_of_sight(t.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
+                    self.cur_target = t
+                    self.state = EnemyState.CHASING_PLAYER
+
+    def update(self):
+
+        super().update()
+
+        self.set_target()
 
         # CHASING_PLAYER state
         if self.state == EnemyState.CHASING_PLAYER:
