@@ -319,6 +319,9 @@ class Entity(arcade.Sprite):
         # angle used for the dir the sprite is facing. for the enemy this will usually be the angle to the target
         self._direction = 0  # direction facing. Should be in degrees
 
+        # point which actually hits target during attack
+        self.attack_point = None
+
         self._emotes = arcade.SpriteList()
 
         # amount of seconds before the sprite can update
@@ -386,6 +389,8 @@ class Entity(arcade.Sprite):
         Perform an attack using the equiped weapon
         """
         if self.equipped_weapon is not None and self.equipped_weapon.is_idle:
+
+            self.attack_point = self.position
 
             # FIXME: Remove the weapon if it has no attacks left
 
