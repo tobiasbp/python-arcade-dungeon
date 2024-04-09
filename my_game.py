@@ -286,12 +286,11 @@ class GameView(arcade.View):
         for p in self.player_sprite_list:
             for e in self.tilemap.sprite_lists["enemies"]:
                 if e.equipped_weapon is not None:
-                    if e.attack_point != None:
-                        if p.collides_with_point(e.attack_point):
-                            # Damages as much as the enemies' weapon strength.
-                            p.hp -= e.equipped_weapon.strength
-                            e.attack_point = None
-                            print("player was hit by enemy")
+                    if e.equipped_weapon.attack_point is not None and p.collides_with_point(e.equipped_weapon.attack_point):
+                        # Damages as much as the enemies' weapon strength.
+                        p.hp -= e.equipped_weapon.strength
+                        e.equipped_weapon.attack_point = None
+                        print("player was hit by enemy")
 
             # Checks after collision with the exit layer.
             for e in self.tilemap.sprite_lists["exits"]:
