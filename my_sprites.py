@@ -579,9 +579,10 @@ class Enemy(Entity):
                 self.center_x += -math.sin(angle_to_dest) * this_move_length
                 self.center_y += -math.cos(angle_to_dest) * this_move_length
 
-    def get_target(self, possible_targets: arcade.SpriteList):
+    def get_target(self, possible_targets: arcade.SpriteList) -> Optional[Entity]:
         """
         get a visible sprite from potential targets, if available
+        FIXME: typehint should state that we need a player object, but player is defined below this class. Probably dont move the classes
         """
 
         if self.cur_target:
