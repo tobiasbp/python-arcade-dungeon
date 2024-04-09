@@ -579,7 +579,7 @@ class Enemy(Entity):
                 self.center_x += -math.sin(angle_to_dest) * this_move_length
                 self.center_y += -math.cos(angle_to_dest) * this_move_length
 
-    def set_target(self):
+    def get_target(self):
         """
         get a visible sprite from potential targets, if available
         """
@@ -587,27 +587,31 @@ class Enemy(Entity):
         if self.cur_target:
             # to check if another target is closer (used later)
             dist_to_closest = arcade.get_distance_between_sprites(self, self.cur_target)
+            new_target = self.cur_target
 
             # when we lose LOS to our target, initiate the going_to_last_known_player_pos state
             if not arcade.has_line_of_sight(self.cur_target.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
                 self.go_to_position(self.cur_target.position)
                 self.state = EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS
-                self.cur_target = None
                 dist_to_closest = math.inf
+                new_target = None
         else:
+            new_target = None
             dist_to_closest = math.inf
 
         for t in self.potential_targets_list:
             if arcade.has_line_of_sight(t.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
-                if arcade.get_distance_between_sprites(t, self) < dist_to_closest:
-                    self.cur_target = t
                 self.state = EnemyState.CHASING_PLAYER
+                if arcade.get_distance_between_sprites(t, self) < dist_to_closest:
+                    new_target = t
+
+        return new_target
 
     def update(self):
 
         super().update()
 
-        self.set_target()
+        self.cur_target = self.get_target()
 
         # CHASING_PLAYER state
         if self.state == EnemyState.CHASING_PLAYER:
