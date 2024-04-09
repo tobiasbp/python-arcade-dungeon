@@ -579,7 +579,7 @@ class Enemy(Entity):
                 self.center_x += -math.sin(angle_to_dest) * this_move_length
                 self.center_y += -math.cos(angle_to_dest) * this_move_length
 
-    def get_target(self):
+    def get_target(self, possible_targets: arcade.SpriteList):
         """
         get a visible sprite from potential targets, if available
         """
@@ -599,7 +599,7 @@ class Enemy(Entity):
             new_target = None
             dist_to_closest = math.inf
 
-        for t in self.potential_targets_list:
+        for t in possible_targets:
             if arcade.has_line_of_sight(t.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
                 self.state = EnemyState.CHASING_PLAYER
                 if arcade.get_distance_between_sprites(t, self) < dist_to_closest:
@@ -611,7 +611,7 @@ class Enemy(Entity):
 
         super().update()
 
-        self.cur_target = self.get_target()
+        self.cur_target = self.get_target(self.potential_targets_list)
 
         # CHASING_PLAYER state
         if self.state == EnemyState.CHASING_PLAYER:
