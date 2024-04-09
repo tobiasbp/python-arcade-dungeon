@@ -579,76 +579,79 @@ class Enemy(Entity):
                 self.center_x += -math.sin(angle_to_dest) * this_move_length
                 self.center_y += -math.cos(angle_to_dest) * this_move_length
 
-    def get_target(self, possible_targets: arcade.SpriteList) -> Optional[Entity]:
-        """
-        get a visible sprite from potential targets, if available
-        FIXME: typehint should state that we need a player object, but player is defined below this class. Probably dont move the classes
-        """
+    #FIXME: typehint should state that we need a player object, but player is defined below this class. Probably dont move the classes
+    def get_closest_visible_sprite(self, sprites: arcade.SpriteList, max_dist=math.inf) -> Optional[Entity]:
 
-        if self.cur_target:
-            # to check if another target is closer (used later)
-            dist_to_closest = arcade.get_distance_between_sprites(self, self.cur_target)
-            new_target = self.cur_target
+        dist_to_closest_sprite = math.inf
+        closest_sprite = None
 
-            # when we lose LOS to our target, initiate the going_to_last_known_player_pos state
-            if not arcade.has_line_of_sight(self.cur_target.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
-                self.go_to_position(self.cur_target.position)
-                self.state = EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS
-                dist_to_closest = math.inf
-                new_target = None
-        else:
-            new_target = None
-            dist_to_closest = math.inf
+        for s in sprites:
+            if arcade.has_line_of_sight(s.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
+                dist_to_sprite = arcade.get_distance_between_sprites(s, self)
+                if dist_to_sprite <= max_dist and dist_to_sprite < dist_to_closest_sprite:
+                    dist_to_closest_sprite = dist_to_sprite
+                    closest_sprite = s
 
-        for t in possible_targets:
-            if arcade.has_line_of_sight(t.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
-                self.state = EnemyState.CHASING_PLAYER
-                if arcade.get_distance_between_sprites(t, self) < dist_to_closest:
-                    new_target = t
-
-        return new_target
+        return closest_sprite
 
     def update(self):
 
         super().update()
 
-        self.cur_target = self.get_target(self.potential_targets_list)
+        # State machine
+        match self.state:
+            case EnemyState.CHASING_PLAYER:
+                # move directly towards the target sprite
 
-        # CHASING_PLAYER state
-        if self.state == EnemyState.CHASING_PLAYER:
-            self.path = []
+                self.path = []
 
-            angle_to_target = arcade.get_angle_degrees(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
-            self._direction = angle_to_target
+                angle_to_target = arcade.get_angle_degrees(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
+                self._direction = angle_to_target
 
-            self.center_x += math.sin(math.radians(angle_to_target)) * self.speed
-            self.center_y += math.cos(math.radians(angle_to_target)) * self.speed
+                self.center_x += math.sin(math.radians(angle_to_target)) * self.speed
+                self.center_y += math.cos(math.radians(angle_to_target)) * self.speed
 
-            self.attack(self._direction)
+                self.attack(self._direction)
 
-        # GOING_TO_LAST_KNOWN_PLAYER_POS state
-        elif self.state == EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS:
+                if not arcade.has_line_of_sight(self.cur_target.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
+                    self.go_to_position(self.cur_target.position)
+                    self.state = EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS
+                    self.cur_target = None
+
+            case EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS:
             # if we are currently moving to the last known point of the player, move along that path, else hop to RANDOM_WALK state
-            if self.path:
-                self.move_along_path()
-            else:
-                self.state = EnemyState.RANDOM_WALK
 
-        # RANDOM_WALK state
-        elif self.state == EnemyState.RANDOM_WALK:
-            # if we have a path, follow it, otherwise calculate a path to a random position
-            if self.path:
-                self.move_along_path()
-            else:
+                if self.path:
+                    self.move_along_path()
+                else:
+                    self.state = EnemyState.RANDOM_WALK
 
-                while True:
+                if self.cur_target:
+                    self.state = EnemyState.CHASING_PLAYER
 
-                    next_pos = (random.randrange(0, self.window.width), random.randrange(0, self.window.height))
+            case EnemyState.RANDOM_WALK:
+                # if we have a path, follow it, otherwise calculate a path to a random position
 
-                    # if position is too close, find a new one
-                    if arcade.get_distance(self.center_x, self.center_y, next_pos[0], next_pos[1]) > self.roaming_dist:
-                        self.go_to_position(next_pos)
-                        break
+                if self.path:
+                    self.move_along_path()
+                else:
+
+                    while True:
+
+                        next_pos = (random.randrange(0, self.window.width), random.randrange(0, self.window.height))
+
+                        # if position is too close, find a new one
+                        if arcade.get_distance(self.center_x, self.center_y, next_pos[0], next_pos[1]) > self.roaming_dist:
+                            self.go_to_position(next_pos)
+                            break
+
+                if self.cur_target:
+                    self.state = EnemyState.CHASING_PLAYER
+
+            case _:
+                raise ValueError("Enemy has an unknown state")
+
+        self.cur_target = self.get_closest_visible_sprite(self.potential_targets_list)
 
 
 class Player(Entity):
