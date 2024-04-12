@@ -47,7 +47,7 @@ PLAYER_SHOT_SPEED = 300
 PLAYER_SIGHT_RANGE = SCREEN_WIDTH/4 # How far can the player see?
 
 # Amount of players
-NUM_OF_PLAYERS = 1
+NUM_OF_PLAYERS = 2
 
 FIRE_KEY = arcade.key.SPACE
 
@@ -289,7 +289,6 @@ class GameView(arcade.View):
                     if e.equipped_weapon.attack_point is not None and p.collides_with_point(e.equipped_weapon.attack_point):
                         # Damages as much as the enemies' weapon strength.
                         e.equipped_weapon.attack_successful(p)
-                        print("player was hit by enemy")
 
             # Checks after collision with the exit layer.
             for e in self.tilemap.sprite_lists["exits"]:
