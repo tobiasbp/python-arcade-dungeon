@@ -287,7 +287,6 @@ class GameView(arcade.View):
             for e in self.tilemap.sprite_lists["enemies"]:
                 if e.equipped_weapon is not None:
                     if e.equipped_weapon.attack_point is not None and p.collides_with_point(e.equipped_weapon.attack_point):
-                        # Damages as much as the enemies' weapon strength.
                         e.equipped_weapon.attack_successful(p)
 
             # Checks after collision with the exit layer.
@@ -307,6 +306,12 @@ class GameView(arcade.View):
 
             # Updates the player_sprite_list.
             p.update()
+
+        for e in self.tilemap.sprite_lists["enemies"]:
+            for p in self.player_sprite_list:
+                if p.equipped_weapon is not None:
+                    if p.equipped_weapon.attack_point is not None and e.collides_with_point(p.equipped_weapon.attack_point):
+                        p.equipped_weapon.attack_successful(p)
 
         # Update the physics engine for each player
         # Return all sprites involved in collissions
