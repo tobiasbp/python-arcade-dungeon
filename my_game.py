@@ -78,16 +78,29 @@ class GameView(arcade.View):
     """
     The view with the game itself
     """
+    
+    def __init__(self, level):
+        
+        super(GameView, self).__init__()
 
-    def on_show_view(self):
-        """
-        This is run once when we switch to this view
-        """
+        self.level = level
+
+        # A format string where you can change the variable in the {}.
+        map_path_template = "data/rooms/dungeon/room_{}.tmx"
+
+        # Checks if the next level exists.
+        try:
+            open(map_path_template.format(self.level))
+        except FileNotFoundError:
+            print("Level Cannot Be Loaded, returning to level 0. 🤖")
+            self.level = 0
+        else:
+            pass
 
         # Create a TileMap with walls, objects etc.
         # Spatial hashing is good for calculating collisions for static sprites (like the ones in this map)
         self.tilemap = arcade.tilemap.TileMap(
-            map_file="data/rooms/dungeon/room_0.tmx",
+            map_file=map_path_template.format(self.level),
             use_spatial_hash=True,
             scaling=SCALING,
             offset=Vec2(0,0)
@@ -114,6 +127,11 @@ class GameView(arcade.View):
                 for s in self.tilemap.sprite_lists[layer_name]:
                     # Tiles are unseen by default
                     s.seen = False
+
+    def on_show_view(self):
+        """
+        This is run once when we switch to this view
+        """
 
         # Set up the player info
         # FIXME: Move this into the Player class
@@ -294,6 +312,8 @@ class GameView(arcade.View):
             for e in self.tilemap.sprite_lists["exits"]:
                 if arcade.check_for_collision(p, e):
                     print("A player is on an EXIT!")
+                    view = LevelFinishView(self.level)
+                    self.window.show_view(view)
 
             # Pick up weapons from tilemap if the players are standing on any
             for w in self.tilemap.sprite_lists["weapons"]:
@@ -431,7 +451,7 @@ class IntroView(arcade.View):
         Starts the game.
         """
         self.opening_sound.stop(self.opening_sound_player)
-        game_view = GameView()
+        game_view = GameView(0)
         self.window.show_view(game_view)
 
 
@@ -547,6 +567,79 @@ class GameOverView(arcade.View):
         self.window.show_view(intro_view)
 
 
+class LevelFinishView(arcade.View):
+    """
+    View to show when the game is over
+    """
+
+    def __init__(self, level, window=None):
+        """
+        Create a Game Over-view. Pass the final score to display.
+        """
+        self.level = level
+
+        super().__init__(window)
+
+    def setup_old(self, score: int):
+        """
+        Call this from the game so we can show the score.
+        """
+        pass
+
+    def on_show_view(self):
+        """
+        This is run once when we switch to this view
+        """
+        # Set the background color
+        arcade.set_background_color(arcade.csscolor.BLACK)
+
+    def on_draw(self):
+        """
+        Draw this view
+        """
+
+        self.clear()
+
+        # Congratulations message!
+        arcade.draw_text(
+            "You beat the level!",
+            self.window.width / 2,
+            250,
+            arcade.color.TROLLEY_GREY,
+            font_size=35,
+            font_name=MAIN_FONT_NAME,
+            anchor_x="center",
+            bold=True
+        )
+
+        # Instructions message
+        arcade.draw_text(
+            "Press SPACE to continue your adventure..",
+            self.window.width / 2,
+            200,
+            arcade.color.TROLLEY_GREY,
+            font_size=15,
+            font_name=MAIN_FONT_NAME,
+            anchor_x="center",
+            bold=True
+        )
+
+    def on_key_press(self, key: int, modifiers: int):
+        """
+        Return to intro screen when any key is pressed.
+        """
+
+        # Remember to add onto the self.max_level everytime a person
+        # adds a new level/stage.
+
+        if key == arcade.key.SPACE:
+            # Turns to the next level.
+            next_level = self.level + 1
+
+            game_view = GameView(level=next_level)
+            self.window.show_view(game_view)
+
+
 def main():
     """
     Main method
@@ -560,7 +653,6 @@ def main():
     window.show_view(start_view)
 
     arcade.run()
-
 
 if __name__ == "__main__":
     main()
