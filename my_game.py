@@ -89,7 +89,7 @@ class GameView(arcade.View):
 
         # Checks if the next level exists.
         try:
-            f = open(map_name.format(self.level))
+            f = open(map_path_template.format(self.level))
         except FileNotFoundError:
             print("Level Cannot Be Loaded, returning to level 0. 🤖")
             self.level = 0
@@ -99,7 +99,7 @@ class GameView(arcade.View):
         # Create a TileMap with walls, objects etc.
         # Spatial hashing is good for calculating collisions for static sprites (like the ones in this map)
         self.tilemap = arcade.tilemap.TileMap(
-            map_file=map_name.format(self.level),
+            map_file=map_path_template.format(self.level),
             use_spatial_hash=True,
             scaling=SCALING,
             offset=Vec2(0,0)
