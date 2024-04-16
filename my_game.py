@@ -282,12 +282,19 @@ class GameView(arcade.View):
         Movement and game logic
         """
 
-        # Collisions code - Checks for all players and enemies' weapons. Checks for the collision.
+        # Check for player collisions
         for p in self.player_sprite_list:
             for e in self.tilemap.sprite_lists["enemies"]:
+                # Check if the enemy's weapon has hit the player
                 if e.equipped_weapon is not None:
                     if e.equipped_weapon.attack_point is not None and p.collides_with_point(e.equipped_weapon.attack_point):
-                        e.equipped_weapon.attack_successful(p)
+                        p.hp -= e.equipped_weapon.strength
+                        e.equipped_weapon.attack_point = None
+                # Check if the player's weapon has hit the enemy
+                if p.equipped_weapon is not None:
+                    if p.equipped_weapon.attack_point is not None and e.collides_with_point(p.equipped_weapon.attack_point):
+                        e.hp -= p.equipped_weapon.strength
+                        p.equipped_weapon.attack_point = None
 
             # Checks after collision with the exit layer.
             for e in self.tilemap.sprite_lists["exits"]:
@@ -306,12 +313,6 @@ class GameView(arcade.View):
 
             # Updates the player_sprite_list.
             p.update()
-
-        for e in self.tilemap.sprite_lists["enemies"]:
-            for p in self.player_sprite_list:
-                if p.equipped_weapon is not None:
-                    if p.equipped_weapon.attack_point is not None and e.collides_with_point(p.equipped_weapon.attack_point):
-                        p.equipped_weapon.attack_successful(p)
 
         # Update the physics engine for each player
         # Return all sprites involved in collissions

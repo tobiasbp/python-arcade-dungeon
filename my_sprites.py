@@ -247,12 +247,6 @@ class Weapon(arcade.Sprite):
     def attacks_left(self):
         return self._attacks_left
 
-    def attack_successful(self, victim):
-        # Can't assert 'victim' as an Entity, because it has not been defined yet
-        # Subtract health points from target and remove attack point
-        victim.hp -= self.strength
-        self.attack_point = None
-
     def attack(self, position: tuple[int,int], angle):
         """
         Weapon attacks at position
