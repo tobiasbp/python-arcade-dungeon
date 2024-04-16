@@ -529,7 +529,7 @@ class Enemy(Entity):
 
         self._state = new_state
 
-    def go_to_position(self, target_pos: tuple[int, int]):
+    def get_path_to_pos(self, target_pos: tuple[int, int]) -> list[tuple[int, int]]:
         """
         calculates a path to the target pos. Sets the sprite's path to this path.
         If an enemy has a path, it will automatically follow it.
@@ -539,13 +539,11 @@ class Enemy(Entity):
         target_pos = (int(target_pos[0]), int(target_pos[1]))
 
         # calculate the path. It will be a list of positions(lists)
-        self.path = arcade.astar_calculate_path(self.position,
-                                                target_pos,
-                                                self.barriers,
-                                                diagonal_movement=True)
-
-        # reset this because we are at the start of a new path
-        self.cur_path_position = 0
+        path = arcade.astar_calculate_path(self.position,
+                                            target_pos,
+                                            self.barriers,
+                                            diagonal_movement=True)
+        return path
 
     def move_along_path(self):
         """
@@ -579,56 +577,82 @@ class Enemy(Entity):
                 self.center_x += -math.sin(angle_to_dest) * this_move_length
                 self.center_y += -math.cos(angle_to_dest) * this_move_length
 
+    #FIXME: typehint should state that we need a player object, but player is defined below this class. Probably dont move the classes
+    def get_closest_visible_sprite(self, sprites: arcade.SpriteList, max_dist=math.inf) -> Optional[Entity]:
+
+        dist_to_closest_sprite = math.inf
+        closest_sprite = None
+
+        for s in sprites:
+            if arcade.has_line_of_sight(s.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
+                dist_to_sprite = arcade.get_distance_between_sprites(s, self)
+                if dist_to_sprite <= max_dist and dist_to_sprite < dist_to_closest_sprite:
+                    dist_to_closest_sprite = dist_to_sprite
+                    closest_sprite = s
+
+        return closest_sprite
+
     def update(self):
 
         super().update()
 
+        # set our target to the closest visible target, if present - don't change target from something to none
+        if self.get_closest_visible_sprite(self.potential_targets_list):
+            self.cur_target = self.get_closest_visible_sprite(self.potential_targets_list)
 
-        # state control
-        for t in self.potential_targets_list:  # FIXME: Make the enemy go for the closest player (multiplayer scenario only)
-            if arcade.has_line_of_sight(t.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
-                self.cur_target = t
-                self.state = EnemyState.CHASING_PLAYER
-            elif self.cur_target is not None:
-                self.go_to_position(self.cur_target.position)
-                self.cur_target = None
-                self.state = EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS
+        # State machine
+        match self.state:
+            case EnemyState.CHASING_PLAYER:
+                # move directly towards the target sprite
 
-        # CHASING_PLAYER state
-        if self.state == EnemyState.CHASING_PLAYER:
-            self.path = []
+                self.path = []
 
-            angle_to_target = arcade.get_angle_degrees(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
-            self._direction = angle_to_target
+                angle_to_target = arcade.get_angle_degrees(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
 
-            self.center_x += math.sin(math.radians(angle_to_target)) * self.speed
-            self.center_y += math.cos(math.radians(angle_to_target)) * self.speed
+                self.center_x += math.sin(math.radians(angle_to_target)) * self.speed
+                self.center_y += math.cos(math.radians(angle_to_target)) * self.speed
 
-            self.attack(self._direction)
+                self.attack(angle_to_target)
 
-        # GOING_TO_LAST_KNOWN_PLAYER_POS state
-        elif self.state == EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS:
-            # if we are currently moving to the last known point of the player, move along that path, else hop to RANDOM_WALK state
-            if self.path:
-                self.move_along_path()
-            else:
-                self.state = EnemyState.RANDOM_WALK
+                # when we lose LOS to our target, move to its last known position
+                if not arcade.has_line_of_sight(self.cur_target.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
+                    self.path = self.get_path_to_pos(self.cur_target.position)
+                    self.cur_path_position = 0
+                    self.cur_target = None
+                    self.state = EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS
 
-        # RANDOM_WALK state
-        elif self.state == EnemyState.RANDOM_WALK:
-            # if we have a path, follow it, otherwise calculate a path to a random position
-            if self.path:
-                self.move_along_path()
-            else:
+            case EnemyState.GOING_TO_LAST_KNOWN_PLAYER_POS:
+                # if we are currently moving to the last known point of the player, move along that path, else hop to RANDOM_WALK state
 
-                while True:
+                if self.cur_target:
+                    self.state = EnemyState.CHASING_PLAYER
+                elif self.path:
+                    self.move_along_path()
+                else:
+                    self.state = EnemyState.RANDOM_WALK
 
-                    next_pos = (random.randrange(0, self.window.width), random.randrange(0, self.window.height))
+            case EnemyState.RANDOM_WALK:
+                # if we have a path, follow it, otherwise calculate a path to a random position
 
-                    # if position is too close, find a new one
-                    if arcade.get_distance(self.center_x, self.center_y, next_pos[0], next_pos[1]) > self.roaming_dist:
-                        self.go_to_position(next_pos)
-                        break
+                if self.cur_target:
+                    self.state = EnemyState.CHASING_PLAYER
+                elif self.path:
+                    self.move_along_path()
+                else:
+
+                    # generate a new position to move to, farther away than our roaming_dist
+                    while True:
+
+                        next_pos = (random.randrange(0, self.window.width), random.randrange(0, self.window.height))
+
+                        # if position is too close, find a new one
+                        if arcade.get_distance(self.center_x, self.center_y, next_pos[0], next_pos[1]) > self.roaming_dist:
+                            self.path = self.get_path_to_pos(next_pos)
+                            self.cur_path_position = 0
+                            break
+
+            case _:
+                raise ValueError("Enemy has an unknown state")
 
 
 class Player(Entity):
