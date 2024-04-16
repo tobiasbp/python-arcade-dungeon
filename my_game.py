@@ -85,7 +85,7 @@ class GameView(arcade.View):
         self.level = level
 
         # A format string where you can change the variable in the {}.
-        map_name = "data/rooms/dungeon/room_{}.tmx"
+        map_path_template = "data/rooms/dungeon/room_{}.tmx"
 
         # Checks if the next level exists.
         try:
