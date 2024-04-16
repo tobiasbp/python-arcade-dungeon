@@ -13,7 +13,7 @@ import random
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
-from my_sprites import Player, Enemy, Reaction, Weapon, WeaponType
+from my_sprites import Player, Enemy, Reaction, Weapon, WeaponType, EntityType
 
 # Set the scaling of all sprites in the game
 SCALING = 1
@@ -46,6 +46,9 @@ PLAYER_SPEED = 5
 PLAYER_SHOT_SPEED = 300
 PLAYER_SIGHT_RANGE = SCREEN_WIDTH/4 # How far can the player see?
 
+# Amount of players
+NUM_OF_PLAYERS = 2
+
 FIRE_KEY = arcade.key.SPACE
 
 # The keys to control player 1 & 2
@@ -64,8 +67,10 @@ MAP_LAYER_CONFIG = {
     "objects-passable": {"line_of_sight": True, "draw": True, "passable": True},
     "objects-impassable": {"line_of_sight": True, "draw": True, "passable": False},
     "pressure-plates": {"line_of_sight": True, "draw": True, "passable": True},
+    "weapons": {"line_of_sight": True, "draw": True, "passable": True},
     "players": {"line_of_sight": False, "draw": True, "passable": True},
-    "enemies": {"line_of_sight": False, "draw": True, "passable": True}
+    "enemies": {"line_of_sight": False, "draw": True, "passable": True},
+    "exits": {"line_of_sight": False, "draw": False, "passable": True},
 }
 
 
@@ -126,11 +131,15 @@ class GameView(arcade.View):
 
         self.player_sprite_list = []
 
-        for i in range(2):
+        # replace all sprites on layer "players" with actual player objects
+        for i in range(NUM_OF_PLAYERS):
             # Creates Player object
             p = Player(
-                center_x=self.tilemap.sprite_lists["players"][0].center_x + random.randint(1,8) * TILE_SIZE * SCALING,
-                center_y=self.tilemap.sprite_lists["players"][0].center_y,
+                position=(self.tilemap.sprite_lists["players"][0].center_x + random.randint(1,8) * TILE_SIZE * SCALING, self.tilemap.sprite_lists["players"][0].center_y),
+                max_hp=20,  # FIXME: add some kind of config for the player to avoid magic numbers
+                speed=3,
+                window=self.window,
+                equipped_weapon=Weapon(type=WeaponType.SWORD_SHORT),
                 scale=SCALING,
                 key_up=PLAYER_KEYS[i]["up"],
                 key_down=PLAYER_KEYS[i]["down"],
@@ -141,24 +150,24 @@ class GameView(arcade.View):
             # Create Player spritelist
             self.player_sprite_list.append(p)
 
+        # Assert that all players have a potential spawnpoint
+        assert len(self.tilemap.sprite_lists["players"]) >= len(self.player_sprite_list), "Too many players for tilemap"
+
         # Change all tiles in the 'enemies' layer to Enemies
         for enemy_index, enemy_position in enumerate([ s.position for s in self.tilemap.sprite_lists["enemies"]]):
             # Create the enemy
             e = Enemy(
                 position=enemy_position,
+                max_hp=5,
+                speed=1,
+                window=self.window,
+                graphics_type=EntityType.VIKING,
                 impassables=self.tilemap.sprite_lists["impassable"],
                 grid_size=int(self.tilemap.tile_width),
-                window=self.window,
                 potential_targets_list=self.player_sprite_list,
                 equipped_weapon=Weapon(type=WeaponType.SWORD_SHORT),
                 scale=SCALING
             )
-
-            # Go to position of random passable tile
-            # FIXME: Often, no path will be found. Why is that??
-            # e.go_to_position(random.choice(self.tilemap.sprite_lists["background"]).position)
-            # Go to the player's position
-            e.go_to_position(self.player_sprite_list[0].position)
 
             # Replace the spawn point with the new enemy
             self.tilemap.sprite_lists["enemies"][enemy_index] = e
@@ -259,17 +268,44 @@ class GameView(arcade.View):
             p.draw_sprites(pixelated=DRAW_PIXELATED)
 
         for s in self.tilemap.sprite_lists["enemies"]:
-            s.on_draw(draw_attack_hitboxes=DEBUG_MODE)
+            s.draw(pixelated=DRAW_PIXELATED)
+            s.draw_sprites(draw_attack_hitboxes=DEBUG_MODE, pixelated=DRAW_PIXELATED)
 
-        # Draw the enemy emotes
         for e in self.tilemap.sprite_lists["enemies"]:
-            e.emotes.draw()
+            e.health_bar.draw()
+
+        for p in self.player_sprite_list:
+            p.health_bar.draw()
 
     def on_update(self, delta_time: float = 1/60):
         """
         Movement and game logic
         """
+
+        # Collisions code - Checks for all players and enemies' weapons. Checks for the collision.
         for p in self.player_sprite_list:
+            for e in self.tilemap.sprite_lists["enemies"]:
+                if e.equipped_weapon is not None:
+                    if arcade.check_for_collision(p, e.equipped_weapon):
+                        # Damages as much as the enemies' weapon strength.
+                            p.hp -= e.equipped_weapon.strength
+
+            # Checks after collision with the exit layer.
+            for e in self.tilemap.sprite_lists["exits"]:
+                if arcade.check_for_collision(p, e):
+                    print("A player is on an EXIT!")
+
+            # Pick up weapons from tilemap if the players are standing on any
+            for w in self.tilemap.sprite_lists["weapons"]:
+                if arcade.check_for_collision(p, w):
+                    # create a weapon type based on the tile id. If the tile is not a weapon, raise an error
+                    new_weapon_type = WeaponType(w.properties["tile_id"])
+                    p.add_weapon(Weapon(new_weapon_type))
+
+                    # Remove weapon from tilemap, as the player has picked it up
+                    w.kill()
+
+            # Updates the player_sprite_list.
             p.update()
 
         # Update the physics engine for each player
