@@ -214,6 +214,9 @@ class Weapon(arcade.Sprite):
         self._type = type
         self._attacks_left:int = Weapon.data[type]["max_usage"]
 
+        # 'Lethal' point which hits target during attack
+        self.attack_point = None
+
         # Time in seconds left until weapon can be used again
         self._time_to_idle = 0.0
 
@@ -259,6 +262,7 @@ class Weapon(arcade.Sprite):
 
             self._attacks_left -= 1
             self.position = position
+            self.attack_point = position
             self._time_to_idle = self.rate
 
             distance = Weapon.data[self.type]["range"]
@@ -386,6 +390,8 @@ class Entity(arcade.Sprite):
         Perform an attack using the equiped weapon
         """
         if self.equipped_weapon is not None and self.equipped_weapon.is_idle:
+
+            self.equipped_weapon.attack
 
             # FIXME: Remove the weapon if it has no attacks left
 
