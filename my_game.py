@@ -562,7 +562,6 @@ class LevelFinishView(arcade.View):
         Create a Game Over-view. Pass the final score to display.
         """
         self.level = level
-        self.max_level = 1
 
         super().__init__(window)
 
