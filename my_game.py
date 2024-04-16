@@ -89,7 +89,7 @@ class GameView(arcade.View):
 
         # Checks if the next level exists.
         try:
-            f = open(map_path_template.format(self.level))
+            open(map_path_template.format(self.level))
         except FileNotFoundError:
             print("Level Cannot Be Loaded, returning to level 0. 🤖")
             self.level = 0
