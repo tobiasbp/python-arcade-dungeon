@@ -621,6 +621,7 @@ class Enemy(Entity):
                     distance_to_target = arcade.get_distance(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
                     if distance_to_target > self.equipped_weapon.range:
 
+                        # FIXME: we should only calculate this once
                         self.center_x += math.sin(math.radians(angle_to_target)) * self.speed
                         self.center_y += math.cos(math.radians(angle_to_target)) * self.speed
 
