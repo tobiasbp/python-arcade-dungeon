@@ -614,10 +614,11 @@ class Enemy(Entity):
                 self.path = []
 
                 angle_to_target = arcade.get_angle_degrees(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
-                distance_to_target = arcade.get_distance(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
 
                 # stop when within weapon range of the player
                 if self.equipped_weapon is not None:
+
+                    distance_to_target = arcade.get_distance(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
                     if distance_to_target > self.equipped_weapon.range:
 
                         self.center_x += math.sin(math.radians(angle_to_target)) * self.speed
