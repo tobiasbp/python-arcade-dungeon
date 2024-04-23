@@ -50,4 +50,7 @@ class Force:
 
     def update(self):
 
-        self._magnitude *= self.magnitude_falloff
+        self._change_x = cos(radians(self._direction)) * self._magnitude
+        self._change_y = sin(radians(self._direction)) * self._magnitude
+
+        self._magnitude *= self._magnitude_falloff
