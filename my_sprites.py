@@ -614,11 +614,22 @@ class Enemy(Entity):
                 self.path = []
 
                 angle_to_target = arcade.get_angle_degrees(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
+                distance_to_target = arcade.get_distance(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
 
-                self.center_x += math.sin(math.radians(angle_to_target)) * self.speed
-                self.center_y += math.cos(math.radians(angle_to_target)) * self.speed
+                # stop when within weapon range of the player
+                if self.equipped_weapon is not None:
+                    if distance_to_target > self.equipped_weapon.range:
 
-                self.attack(angle_to_target)
+                        self.center_x += math.sin(math.radians(angle_to_target)) * self.speed
+                        self.center_y += math.cos(math.radians(angle_to_target)) * self.speed
+
+                    else:
+
+                        self.attack(self._direction)
+
+                else:
+                    self.center_x += math.sin(math.radians(angle_to_target)) * self.speed
+                    self.center_y += math.cos(math.radians(angle_to_target)) * self.speed
 
                 # when we lose LOS to our target, move to its last known position
                 if not arcade.has_line_of_sight(self.cur_target.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
