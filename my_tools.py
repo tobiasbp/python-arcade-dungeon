@@ -13,7 +13,7 @@ class Force:
     :param direction: the direction of the force
     :param magnitude: the magnitude of the force
     :param magnitude_falloff: how quickly the magnitude is lowered. A lower number means a faster falloff. must be less
-    than 1
+    than 1 - otherwise, the force will never stop.
     """
 
     def __init__(self, direction: float, magnitude: float, magnitude_falloff: float):
