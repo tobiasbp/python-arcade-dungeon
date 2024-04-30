@@ -685,6 +685,7 @@ class Player(Entity):
             max_hp: int,
             speed: int,
             window: arcade.Window,
+            physics_engine: arcade.PymunkPhysicsEngine,
             graphics_type: EntityType=None,
             equipped_weapon: Weapon=None,
             scale=1.0,
@@ -740,6 +741,8 @@ class Player(Entity):
         # Save settings for animating the sprite when walking
         self.jitter_amount = jitter_amount
         self.jitter_likelihood = jitter_likelihood
+
+        self._physics_engine = physics_engine
 
     @property
     def is_walking(self):
@@ -884,8 +887,11 @@ class Player(Entity):
         if self.up_pressed or self.right_pressed or self.down_pressed or self.left_pressed:
             self.change_x = math.sin(math.radians(self._direction))
             self.change_y = math.cos(math.radians(self._direction))
+
             self.change_x *= self.speed
             self.change_y *= self.speed
+
+        self._physics_engine.apply_force(self, (self.change_x, self.change_y))
 
         # Rotate the sprite a bit when it's moving
         if (self.change_x != 0 or self.change_y != 0) and random.random() <= self.jitter_likelihood:
