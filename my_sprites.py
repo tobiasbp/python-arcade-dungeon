@@ -742,6 +742,8 @@ class Player(Entity):
         self.jitter_amount = jitter_amount
         self.jitter_likelihood = jitter_likelihood
 
+        self._physics_engine = physics_engine
+
     @property
     def is_walking(self):
         return True in [self.left_pressed, self.up_pressed, self.right_pressed, self.down_pressed]
