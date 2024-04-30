@@ -42,7 +42,7 @@ SCREEN_WIDTH = MAP_WIDTH_TILES * TILE_SIZE * SCALING
 SCREEN_HEIGHT = MAP_HEIGHT_TILES * TILE_SIZE * SCALING + GUI_HEIGHT
 
 # Variables controlling the player
-PLAYER_SPEED = 5
+PLAYER_SPEED = 6000
 PLAYER_SHOT_SPEED = 300
 PLAYER_SIGHT_RANGE = SCREEN_WIDTH/4 # How far can the player see?
 
@@ -128,6 +128,11 @@ class GameView(arcade.View):
                     # Tiles are unseen by default
                     s.seen = False
 
+        self.physics_engine = arcade.PymunkPhysicsEngine(gravity=(0, 0))
+        self.physics_engine.add_sprite_list(self.tilemap.sprite_lists["impassable"],
+                                            collision_type="wall",
+                                            body_type=arcade.PymunkPhysicsEngine.STATIC)
+
     def on_show_view(self):
         """
         This is run once when we switch to this view
@@ -155,8 +160,9 @@ class GameView(arcade.View):
             p = Player(
                 position=(self.tilemap.sprite_lists["players"][0].center_x + random.randint(1,8) * TILE_SIZE * SCALING, self.tilemap.sprite_lists["players"][0].center_y),
                 max_hp=20,  # FIXME: add some kind of config for the player to avoid magic numbers
-                speed=3,
+                speed=PLAYER_SPEED,
                 window=self.window,
+                physics_engine=self.physics_engine,
                 equipped_weapon=Weapon(type=WeaponType.SWORD_SHORT),
                 scale=SCALING,
                 key_up=PLAYER_KEYS[i]["up"],
@@ -190,19 +196,13 @@ class GameView(arcade.View):
             # Replace the spawn point with the new enemy
             self.tilemap.sprite_lists["enemies"][enemy_index] = e
 
-
-        # We need a physics engine for each player since
-        # the one we ar eusing can anly handle a single player
-        self.physics_engines = []
-
         # Create a physics engine for each player.
         # Register player and walls with physics engine
         for p in self.player_sprite_list:
-            pe = arcade.PhysicsEngineSimple(
-                player_sprite=p,
-                walls=self.tilemap.sprite_lists["impassable"]
-            )
-            self.physics_engines.append(pe)
+            self.physics_engine.add_sprite(p,
+                                           collision_type="player",
+                                           damping=0,
+                                           moment=arcade.PymunkPhysicsEngine.MOMENT_INF)
 
         # Get list of joysticks
         joysticks = arcade.get_joysticks()
@@ -334,10 +334,7 @@ class GameView(arcade.View):
             # Updates the player_sprite_list.
             p.update()
 
-        # Update the physics engine for each player
-        # Return all sprites involved in collissions
-        for pe in self.physics_engines:
-            colliding_sprites = pe.update()
+        self.physics_engine.step()
 
         # Update the enemies
         self.tilemap.sprite_lists["enemies"].update()
