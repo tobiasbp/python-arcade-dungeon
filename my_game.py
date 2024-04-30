@@ -339,6 +339,8 @@ class GameView(arcade.View):
             # Updates the player_sprite_list.
             p.update()
 
+        self.physics_engine.step()
+
         # Update the enemies
         self.tilemap.sprite_lists["enemies"].update()
 
