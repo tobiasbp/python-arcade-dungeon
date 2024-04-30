@@ -385,6 +385,8 @@ class IntroView(arcade.View):
         # to reset the viewport back to the start so we can see what we draw.
         arcade.set_viewport(0, self.window.width, 0, self.window.height)
 
+        self.player_amount = 1
+
         button_scaling = 1.6
 
         # Make the title Sprite
@@ -400,22 +402,35 @@ class IntroView(arcade.View):
         self.manager.enable()
 
         # Makes the play button.
-        self.gui_play_button = arcade.gui.UITextureButton(
-            x=150,
+        self.one_player = arcade.gui.UITextureButton(
+            x=50,
             y=125,
             width=100,
             height=100,
-            texture=arcade.load_texture("images/GUI/start_button_unhovered.png"),
-            texture_hovered=arcade.load_texture("images/GUI/start_button_hovered.png"),
-            scale=button_scaling,
+            texture=arcade.load_texture("images/GUI/one_player.png"),
+            texture_hovered=arcade.load_texture("images/GUI/one_player_chosen.png"),
+            scale=button_scaling*2,
+            style=None
+        )
+        # Makes the play button.
+        self.two_player = arcade.gui.UITextureButton(
+            x=350,
+            y=125,
+            width=100,
+            height=100,
+            texture=arcade.load_texture("images/GUI/two_players.png"),
+            texture_hovered=arcade.load_texture("images/GUI/two_player_chosen.png"),
+            scale=button_scaling*2,
             style=None
         )
 
         # Adds the play button to the manager.
-        self.manager.add(self.gui_play_button)
+        self.manager.add(self.one_player)
+        self.manager.add(self.two_player)
 
         # Makes it to when the player presses the play button it starts the game.
-        self.gui_play_button.on_click = self.start_game
+        self.one_player.on_click = self.set_one_player
+        self.two_player.on_click = self.set_two_players
 
     def on_draw(self):
         """
@@ -429,9 +444,20 @@ class IntroView(arcade.View):
 
         # Info how to also start the game.
         arcade.draw_text(
-            "Press Space to start!",
+            "Or press Space to start!",
             self.window.width / 2,
             110,
+            arcade.color.BLACK,
+            font_size=15,
+            font_name=MAIN_FONT_NAME,
+            anchor_x="center",
+            bold=True
+        )
+        # Info how to also start the game.
+        arcade.draw_text(
+            "Press One of the buttons to start!",
+            self.window.width / 2,
+            210,
             arcade.color.BLACK,
             font_size=15,
             font_name=MAIN_FONT_NAME,
@@ -446,11 +472,28 @@ class IntroView(arcade.View):
         if key == arcade.key.SPACE:
             self.start_game()
 
+    def set_one_player(self, event=None):
+        """
+        Sets the normal value of players to one.
+        """
+
+        self.player_amount = 1
+        self.one_player.on_click = self.start_game
+
+    def set_two_players(self, event=None):
+        """
+        Sets the normal value of players to two.
+        """
+
+        self.player_amount = 2
+        self.two_player.on_click = self.start_game
+
     def start_game(self, event=None):
         """
         Starts the game.
         """
         self.opening_sound.stop(self.opening_sound_player)
+        print("The amount of Players are:", self.player_amount)
         game_view = GameView(0)
         self.window.show_view(game_view)
 
