@@ -641,7 +641,7 @@ class Player(Entity):
             position: tuple[float, float],
             max_hp: int,
             speed: int,
-            window: arcade.Window,
+            window: Optional[arcade.Window],
             graphics_type: EntityType=None,
             equipped_weapon: Weapon=None,
             scale=1.0,

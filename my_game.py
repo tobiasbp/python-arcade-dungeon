@@ -74,16 +74,46 @@ MAP_LAYER_CONFIG = {
 }
 
 
+def create_players(number_of_players: int):
+    """
+    Create the players
+    """
+
+    player_sprite_list = arcade.SpriteList()
+
+    # replace all sprites on layer "players" with actual player objects
+    for i in range(number_of_players):
+        # Creates Player object
+        p = Player(
+            position=(0, 0),
+            max_hp=20,  # FIXME: add some kind of config for the player to avoid magic numbers
+            speed=3,
+            window=None,
+            equipped_weapon=Weapon(type=WeaponType.SWORD_SHORT),
+            scale=SCALING,
+            key_up=PLAYER_KEYS[i]["up"],
+            key_down=PLAYER_KEYS[i]["down"],
+            key_left=PLAYER_KEYS[i]["left"],
+            key_right=PLAYER_KEYS[i]["right"],
+            key_attack=PLAYER_KEYS[i]["attack"],
+        )
+        # Create Player spritelist
+        player_sprite_list.append(p)
+
+    return player_sprite_list
+
+
 class GameView(arcade.View):
     """
     The view with the game itself
     """
     
-    def __init__(self, level):
+    def __init__(self, level, player_sprite_list):
         
         super(GameView, self).__init__()
 
         self.level = level
+        self.player_sprite_list = player_sprite_list
 
         # A format string where you can change the variable in the {}.
         map_path_template = "data/rooms/dungeon/room_{}.tmx"
@@ -312,7 +342,7 @@ class GameView(arcade.View):
             for e in self.tilemap.sprite_lists["exits"]:
                 if arcade.check_for_collision(p, e):
                     print("A player is on an EXIT!")
-                    view = LevelFinishView(self.level)
+                    view = LevelFinishView(self.level, self.player_sprite_list)
                     self.window.show_view(view)
 
             # Pick up weapons from tilemap if the players are standing on any
@@ -386,6 +416,9 @@ class IntroView(arcade.View):
         arcade.set_viewport(0, self.window.width, 0, self.window.height)
 
         self.player_amount = 1
+        self.player_sprite_list = arcade.SpriteList()
+
+        self.player_sprite_list = create_players(self.player_amount)
 
         button_scaling = 1.6
 
@@ -492,9 +525,13 @@ class IntroView(arcade.View):
         """
         Starts the game.
         """
+
+        # FIXME: Create the players in a for loop. Add the to the list!
+
+        # Prevent the sound from playing after the game starts
         self.opening_sound.stop(self.opening_sound_player)
         print("The amount of Players are:", self.player_amount)
-        game_view = GameView(0)
+        game_view = GameView(0, player_sprite_list=self.player_sprite_list)
         self.window.show_view(game_view)
 
 
@@ -615,11 +652,12 @@ class LevelFinishView(arcade.View):
     View to show when the game is over
     """
 
-    def __init__(self, level, window=None):
+    def __init__(self, level, player_sprite_list, window=None):
         """
         Create a Game Over-view. Pass the final score to display.
         """
         self.level = level
+        self.player_sprite_list = player_sprite_list
 
         super().__init__(window)
 
@@ -679,7 +717,7 @@ class LevelFinishView(arcade.View):
             # Turns to the next level.
             next_level = self.level + 1
 
-            game_view = GameView(level=next_level)
+            game_view = GameView(level=next_level, player_sprite_list=self.player_sprite_list)
             self.window.show_view(game_view)
 
 
