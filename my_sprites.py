@@ -615,27 +615,22 @@ class Enemy(Entity):
 
                 self.path = []
 
-                angle_to_target = arcade.get_angle_degrees(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
+                # set direction to the angle to the target
+                self._direction = arcade.get_angle_degrees(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
+
+                # FIXME: we should only calculate this once
+                force_x = math.sin(math.radians(self._direction)) * self.speed
+                force_y = math.cos(math.radians(self._direction)) * self.speed
+
+                self.physics_engine.apply_force(self, (force_x, force_y))
 
                 # stop when within weapon range of the player
                 if self.equipped_weapon is not None:
 
                     distance_to_target = arcade.get_distance(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
-                    if distance_to_target > self.equipped_weapon.range:
-
-                        # FIXME: we should only calculate this once
-                        force_x = math.sin(math.radians(angle_to_target)) * self.speed
-                        force_y = math.cos(math.radians(angle_to_target)) * self.speed
-
-                        self.physics_engine.apply_force(self, (force_x, force_y))
-
-                    else:
-
+                    if distance_to_target < self.equipped_weapon.range + self.texture.width:
                         self.attack(self._direction)
 
-                else:
-                    self.center_x += math.sin(math.radians(angle_to_target)) * self.speed
-                    self.center_y += math.cos(math.radians(angle_to_target)) * self.speed
 
                 # when we lose LOS to our target, move to its last known position
                 if not arcade.has_line_of_sight(self.cur_target.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
