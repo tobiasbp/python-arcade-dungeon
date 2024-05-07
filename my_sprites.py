@@ -571,11 +571,8 @@ class Enemy(Entity):
             # calculate distance
             distance_to_dest = arcade.get_distance(dest_pos[0], dest_pos[1], self.center_x, self.center_y)
 
-            # this is so we don't move too far
-            this_move_length = min(self.speed, distance_to_dest)
-
             # if we are there, set the next position to move to
-            if distance_to_dest <= self.speed:
+            if distance_to_dest <= 1:
                 self.cur_path_position += 1
 
                 # if we are finished with this path, stand still
@@ -584,8 +581,9 @@ class Enemy(Entity):
 
             else:
                 # testing shows that we need to reverse the direction...
-                self.center_x += -math.sin(angle_to_dest) * this_move_length
-                self.center_y += -math.cos(angle_to_dest) * this_move_length
+                force_x = -math.sin(angle_to_dest) * self.speed
+                force_y = -math.cos(angle_to_dest) * self.speed
+                self.physics_engine.apply_force(self, (force_x, force_y))
 
     #FIXME: typehint should state that we need a player object, but player is defined below this class. Probably dont move the classes
     def get_closest_visible_sprite(self, sprites: arcade.SpriteList, max_dist=math.inf) -> Optional[Entity]:
@@ -626,8 +624,10 @@ class Enemy(Entity):
                     if distance_to_target > self.equipped_weapon.range:
 
                         # FIXME: we should only calculate this once
-                        self.center_x += math.sin(math.radians(angle_to_target)) * self.speed
-                        self.center_y += math.cos(math.radians(angle_to_target)) * self.speed
+                        force_x = math.sin(math.radians(angle_to_target)) * self.speed
+                        force_y = math.cos(math.radians(angle_to_target)) * self.speed
+
+                        self.physics_engine.apply_force(self, (force_x, force_y))
 
                     else:
 

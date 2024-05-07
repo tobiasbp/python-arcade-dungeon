@@ -183,7 +183,7 @@ class GameView(arcade.View):
             e = Enemy(
                 position=enemy_position,
                 max_hp=5,
-                speed=1,
+                speed=4800,
                 window=self.window,
                 physics_engine=self.physics_engine,
                 graphics_type=EntityType.VIKING,
@@ -194,11 +194,15 @@ class GameView(arcade.View):
                 scale=SCALING
             )
 
+            self.physics_engine.add_sprite(e,
+                                           collision_type="player",
+                                           damping=0,
+                                           moment=arcade.PymunkPhysicsEngine.MOMENT_INF)
+
             # Replace the spawn point with the new enemy
             self.tilemap.sprite_lists["enemies"][enemy_index] = e
 
-        # Create a physics engine for each player.
-        # Register player and walls with physics engine
+        # Register player with physics engine
         for p in self.player_sprite_list:
             self.physics_engine.add_sprite(p,
                                            collision_type="player",
@@ -335,10 +339,10 @@ class GameView(arcade.View):
             # Updates the player_sprite_list.
             p.update()
 
-        self.physics_engine.step()
-
         # Update the enemies
         self.tilemap.sprite_lists["enemies"].update()
+
+        self.physics_engine.step()
 
     def game_over(self):
         """
