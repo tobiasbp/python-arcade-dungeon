@@ -61,7 +61,6 @@ PLAYER_KEYS = [
 # line_of_sight: Should sprites only be drawn if they are visible to a player?
 # draw: Should the sprites on this layer be drawn?. Config layers, like spawn points, should probably not be drawn
 # passable: Can players and enemies can move through sprites on this layer?
-# Players: Are spawn points, that's why it doesn't need to be drawn.
 MAP_LAYER_CONFIG = {
     "background": {"line_of_sight": False, "draw": True, "passable": True},
     "impassable": {"line_of_sight": False, "draw": True, "passable": False},
@@ -356,8 +355,6 @@ class GameView(arcade.View):
 
             # Updates the player_sprite_list.
             p.update()
-
-        self.physics_engine.step()
 
         # Update the enemies
         self.tilemap.sprite_lists["enemies"].update()
