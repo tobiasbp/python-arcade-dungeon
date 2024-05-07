@@ -185,6 +185,7 @@ class GameView(arcade.View):
                 max_hp=5,
                 speed=1,
                 window=self.window,
+                physics_engine=self.physics_engine,
                 graphics_type=EntityType.VIKING,
                 impassables=self.tilemap.sprite_lists["impassable"],
                 grid_size=int(self.tilemap.tile_width),
