@@ -181,13 +181,7 @@ class GameView(arcade.View):
 
         self.player_score = 0
 
-        # self.player_sprite_list = []
-
-        # replace all sprites on layer "players" with actual player objects
-
         for i in range(len(self.player_sprite_list)):
-            # Creates Player object
-
             self.player_sprite_list[i].position = (
                 self.tilemap.sprite_lists["players"][0].center_x + random.randint(1,8) * TILE_SIZE * SCALING,
                 self.tilemap.sprite_lists["players"][0].center_y
