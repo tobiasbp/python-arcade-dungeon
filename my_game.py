@@ -498,7 +498,7 @@ class IntroView(arcade.View):
         """
 
         self.player_amount = 1
-        self.one_player.on_click = self.start_game
+        self.start_game()
 
     def set_two_players(self, event=None):
         """
@@ -506,7 +506,7 @@ class IntroView(arcade.View):
         """
 
         self.player_amount = 2
-        self.two_player.on_click = self.start_game
+        self.start_game()
 
     def start_game(self, event=None):
         """
