@@ -821,6 +821,16 @@ class Player(Entity):
     def on_joyhat_motion(self, joystick, hat_x, hat_y):
         print("Note: This game is not compatible with Joyhats")
 
+    def all_keys_off(self):
+        """
+        Fixes a bug that the player will keep moving up, so we reset akk the buttons to false.
+        """
+
+        self.up_pressed = False
+        self.down_pressed = False
+        self.left_pressed = False
+        self.right_pressed = False
+
     def update(self):
         """
         Set Sprite's speed based on key status

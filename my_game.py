@@ -191,7 +191,6 @@ class GameView(arcade.View):
 
 
         # Assert that all players have a potential spawnpoint
-        print("tilemap len:", len(self.tilemap.sprite_lists["players"]), "Sprite list len:", len(self.player_sprite_list))
         assert len(self.tilemap.sprite_lists["players"]) >= len(self.player_sprite_list), "Too many players for tilemap"
 
         # Change all tiles in the 'enemies' layer to Enemies
@@ -212,7 +211,6 @@ class GameView(arcade.View):
 
             # Replace the spawn point with the new enemy
             self.tilemap.sprite_lists["enemies"][enemy_index] = e
-            print("Enemy equipped weapon:", e.equipped_weapon)
 
 
         # We need a physics engine for each player since
@@ -649,6 +647,10 @@ class LevelFinishView(arcade.View):
         """
         self.level = level
         self.player_sprite_list = player_sprite_list
+
+        # Set all movements to false so there's no auto-moving when the next level starts.
+        for p in player_sprite_list:
+            p.all_keys_off()
 
         super().__init__(window)
 
