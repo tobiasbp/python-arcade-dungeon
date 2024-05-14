@@ -74,16 +74,46 @@ MAP_LAYER_CONFIG = {
 }
 
 
+def create_players(number_of_players: int):
+    """
+    Create the players
+    """
+
+    player_sprite_list = arcade.SpriteList()
+
+    # replace all sprites on layer "players" with actual player objects
+    for i in range(number_of_players):
+        # Creates Player object
+        p = Player(
+            position=(0, 0),
+            max_hp=20,  # FIXME: add some kind of config for the player to avoid magic numbers
+            speed=3,
+            window=None,
+            equipped_weapon=Weapon(type=WeaponType.SWORD_SHORT),
+            scale=SCALING,
+            key_up=PLAYER_KEYS[i]["up"],
+            key_down=PLAYER_KEYS[i]["down"],
+            key_left=PLAYER_KEYS[i]["left"],
+            key_right=PLAYER_KEYS[i]["right"],
+            key_attack=PLAYER_KEYS[i]["attack"],
+        )
+        # Create Player spritelist
+        player_sprite_list.append(p)
+
+    return player_sprite_list
+
+
 class GameView(arcade.View):
     """
     The view with the game itself
     """
     
-    def __init__(self, level):
+    def __init__(self, level, player_sprite_list):
         
         super(GameView, self).__init__()
 
         self.level = level
+        self.player_sprite_list = player_sprite_list
 
         # A format string where you can change the variable in the {}.
         map_path_template = "data/rooms/dungeon/room_{}.tmx"
@@ -147,26 +177,18 @@ class GameView(arcade.View):
 
         self.player_score = 0
 
-        self.player_sprite_list = []
+        # self.player_sprite_list = []
 
         # replace all sprites on layer "players" with actual player objects
-        for i in range(NUM_OF_PLAYERS):
+
+        for i in range(len(self.player_sprite_list)):
             # Creates Player object
-            p = Player(
-                position=(self.tilemap.sprite_lists["players"][0].center_x + random.randint(1,8) * TILE_SIZE * SCALING, self.tilemap.sprite_lists["players"][0].center_y),
-                max_hp=20,  # FIXME: add some kind of config for the player to avoid magic numbers
-                speed=3,
-                window=self.window,
-                equipped_weapon=Weapon(type=WeaponType.SWORD_SHORT),
-                scale=SCALING,
-                key_up=PLAYER_KEYS[i]["up"],
-                key_down=PLAYER_KEYS[i]["down"],
-                key_left=PLAYER_KEYS[i]["left"],
-                key_right=PLAYER_KEYS[i]["right"],
-                key_attack=PLAYER_KEYS[i]["attack"],
+
+            self.player_sprite_list[i].position = (
+                self.tilemap.sprite_lists["players"][0].center_x + random.randint(1,8) * TILE_SIZE * SCALING,
+                self.tilemap.sprite_lists["players"][0].center_y
             )
-            # Create Player spritelist
-            self.player_sprite_list.append(p)
+
 
         # Assert that all players have a potential spawnpoint
         assert len(self.tilemap.sprite_lists["players"]) >= len(self.player_sprite_list), "Too many players for tilemap"
@@ -312,7 +334,7 @@ class GameView(arcade.View):
             for e in self.tilemap.sprite_lists["exits"]:
                 if arcade.check_for_collision(p, e):
                     print("A player is on an EXIT!")
-                    view = LevelFinishView(self.level)
+                    view = LevelFinishView(self.level, self.player_sprite_list)
                     self.window.show_view(view)
 
             # Pick up weapons from tilemap if the players are standing on any
@@ -385,8 +407,6 @@ class IntroView(arcade.View):
         # to reset the viewport back to the start so we can see what we draw.
         arcade.set_viewport(0, self.window.width, 0, self.window.height)
 
-        self.player_amount = 1
-
         button_scaling = 1.6
 
         # Make the title Sprite
@@ -407,8 +427,8 @@ class IntroView(arcade.View):
             y=125,
             width=100,
             height=100,
-            texture=arcade.load_texture("images/GUI/one_player.png"),
-            texture_hovered=arcade.load_texture("images/GUI/one_player_chosen.png"),
+            texture=arcade.load_texture("images/GUI/button_players_one.png"),
+            texture_hovered=arcade.load_texture("images/GUI/button_players_one_chosen.png"),
             scale=button_scaling*2,
             style=None
         )
@@ -418,8 +438,8 @@ class IntroView(arcade.View):
             y=125,
             width=100,
             height=100,
-            texture=arcade.load_texture("images/GUI/two_players.png"),
-            texture_hovered=arcade.load_texture("images/GUI/two_player_chosen.png"),
+            texture=arcade.load_texture("images/GUI/button_players_two.png"),
+            texture_hovered=arcade.load_texture("images/GUI/button_players_two_chosen.png"),
             scale=button_scaling*2,
             style=None
         )
@@ -492,9 +512,15 @@ class IntroView(arcade.View):
         """
         Starts the game.
         """
+
+        self.player_sprite_list = arcade.SpriteList()
+
+        self.player_sprite_list = create_players(self.player_amount)
+
+        # Prevent the sound from playing after the game starts
         self.opening_sound.stop(self.opening_sound_player)
         print("The amount of Players are:", self.player_amount)
-        game_view = GameView(0)
+        game_view = GameView(level=0, player_sprite_list=self.player_sprite_list)
         self.window.show_view(game_view)
 
 
@@ -615,11 +641,12 @@ class LevelFinishView(arcade.View):
     View to show when the game is over
     """
 
-    def __init__(self, level, window=None):
+    def __init__(self, level, player_sprite_list, window=None):
         """
         Create a Game Over-view. Pass the final score to display.
         """
         self.level = level
+        self.player_sprite_list = player_sprite_list
 
         # Set all movements to false so there's no auto-moving when the next level starts.
         for p in player_sprite_list:
@@ -683,7 +710,7 @@ class LevelFinishView(arcade.View):
             # Turns to the next level.
             next_level = self.level + 1
 
-            game_view = GameView(level=next_level)
+            game_view = GameView(level=next_level, player_sprite_list=self.player_sprite_list)
             self.window.show_view(game_view)
 
 
