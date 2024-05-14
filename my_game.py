@@ -621,6 +621,10 @@ class LevelFinishView(arcade.View):
         """
         self.level = level
 
+        # Set all movements to false so there's no auto-moving when the next level starts.
+        for p in player_sprite_list:
+            p.all_keys_off()
+
         super().__init__(window)
 
     def setup_old(self, score: int):
