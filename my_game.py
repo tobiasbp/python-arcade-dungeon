@@ -183,8 +183,8 @@ class GameView(arcade.View):
 
         for i in range(len(self.player_sprite_list)):
             self.player_sprite_list[i].position = (
-                self.tilemap.sprite_lists["players"][0].center_x + random.randint(1,8) * TILE_SIZE * SCALING,
-                self.tilemap.sprite_lists["players"][0].center_y
+                self.tilemap.sprite_lists["players"][i].center_x + random.randint(1,8) * TILE_SIZE * SCALING,
+                self.tilemap.sprite_lists["players"][i].center_y
             )
 
 
