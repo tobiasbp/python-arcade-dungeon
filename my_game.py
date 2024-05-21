@@ -61,6 +61,7 @@ PLAYER_KEYS = [
 # line_of_sight: Should sprites only be drawn if they are visible to a player?
 # draw: Should the sprites on this layer be drawn?. Config layers, like spawn points, should probably not be drawn
 # passable: Can players and enemies can move through sprites on this layer?
+# Players: Are spawn points, that's why it doesn't need to be drawn.
 MAP_LAYER_CONFIG = {
     "background": {"line_of_sight": False, "draw": True, "passable": True},
     "impassable": {"line_of_sight": False, "draw": True, "passable": False},
@@ -68,7 +69,7 @@ MAP_LAYER_CONFIG = {
     "objects-impassable": {"line_of_sight": True, "draw": True, "passable": False},
     "pressure-plates": {"line_of_sight": True, "draw": True, "passable": True},
     "weapons": {"line_of_sight": True, "draw": True, "passable": True},
-    "players": {"line_of_sight": False, "draw": True, "passable": True},
+    "players": {"line_of_sight": False, "draw": False, "passable": True},
     "enemies": {"line_of_sight": False, "draw": True, "passable": True},
     "exits": {"line_of_sight": False, "draw": False, "passable": True},
 }
