@@ -182,7 +182,6 @@ class GameView(arcade.View):
                 self.tilemap.sprite_lists["players"][i].center_x,
                 self.tilemap.sprite_lists["players"][i].center_y
             )
-            print(self.player_sprite_list[i].position)
 
         # Assert that all players have a potential spawnpoint
         assert len(self.tilemap.sprite_lists["players"]) >= len(self.player_sprite_list), "Too many players for tilemap"
