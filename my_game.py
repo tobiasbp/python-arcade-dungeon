@@ -195,7 +195,7 @@ class GameView(arcade.View):
             )
 
             self.physics_engine.add_sprite(e,
-                                           collision_type="player",
+                                           collision_type="enemy",
                                            damping=0,
                                            moment=arcade.PymunkPhysicsEngine.MOMENT_INF)
 
