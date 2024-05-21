@@ -110,7 +110,11 @@ class GameView(arcade.View):
     """
     
     def __init__(self, level, player_sprite_list):
-        
+        """
+        level: The level number to load
+        player_sprite_list: The Players to add to the level
+        """
+
         super(GameView, self).__init__()
 
         self.level = level
