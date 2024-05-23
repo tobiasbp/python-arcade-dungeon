@@ -75,7 +75,7 @@ MAP_LAYER_CONFIG = {
 }
 
 
-def create_players(number_of_players: int):
+def create_players(number_of_players: int, physics_engine: arcade.PymunkPhysicsEngine):
     """
     Create the players
     """
@@ -90,6 +90,7 @@ def create_players(number_of_players: int):
             max_hp=20,  # FIXME: add some kind of config for the player to avoid magic numbers
             speed=3,
             window=None,
+            physics_engine=physics_engine,
             equipped_weapon=Weapon(type=WeaponType.SWORD_SHORT),
             scale=SCALING,
             key_up=PLAYER_KEYS[i]["up"],
@@ -101,6 +102,11 @@ def create_players(number_of_players: int):
         # Create Player spritelist
         player_sprite_list.append(p)
 
+        physics_engine.add_sprite(p,
+                                  collision_type="player",
+                                  damping=0,
+                                  moment=arcade.PymunkPhysicsEngine.MOMENT_INF)
+
     return player_sprite_list
 
 
@@ -108,8 +114,8 @@ class GameView(arcade.View):
     """
     The view with the game itself
     """
-    
-    def __init__(self, level, player_sprite_list):
+
+    def __init__(self, level, player_sprite_list, physics_engine: arcade.PymunkPhysicsEngine):
         """
         level: The level number to load
         player_sprite_list: The Players to add to the level
@@ -119,6 +125,7 @@ class GameView(arcade.View):
 
         self.level = level
         self.player_sprite_list = player_sprite_list
+        self.physics_engine = physics_engine
 
         # A format string where you can change the variable in the {}.
         map_path_template = "data/rooms/dungeon/room_{}.tmx"
@@ -163,7 +170,6 @@ class GameView(arcade.View):
                     # Tiles are unseen by default
                     s.seen = False
 
-        self.physics_engine = arcade.PymunkPhysicsEngine(gravity=(0, 0))
         self.physics_engine.add_sprite_list(self.tilemap.sprite_lists["impassable"],
                                             collision_type="wall",
                                             body_type=arcade.PymunkPhysicsEngine.STATIC)
@@ -220,13 +226,6 @@ class GameView(arcade.View):
 
             # Replace the spawn point with the new enemy
             self.tilemap.sprite_lists["enemies"][enemy_index] = e
-
-        # Register player with physics engine
-        for p in self.player_sprite_list:
-            self.physics_engine.add_sprite(p,
-                                           collision_type="player",
-                                           damping=0,
-                                           moment=arcade.PymunkPhysicsEngine.MOMENT_INF)
 
         # Get list of joysticks
         joysticks = arcade.get_joysticks()
@@ -520,12 +519,14 @@ class IntroView(arcade.View):
 
         self.player_sprite_list = arcade.SpriteList()
 
-        self.player_sprite_list = create_players(self.player_amount)
+        self.physics_engine = arcade.PymunkPhysicsEngine(gravity=(0, 0))
+
+        self.player_sprite_list = create_players(self.player_amount, self.physics_engine)
 
         # Prevent the sound from playing after the game starts
         self.opening_sound.stop(self.opening_sound_player)
         print("The amount of Players are:", self.player_amount)
-        game_view = GameView(level=0, player_sprite_list=self.player_sprite_list)
+        game_view = GameView(level=0, player_sprite_list=self.player_sprite_list, physics_engine=self.physics_engine)
         self.window.show_view(game_view)
 
 
