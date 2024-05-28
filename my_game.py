@@ -468,33 +468,15 @@ class IntroView(arcade.View):
 
         # Info how to also start the game.
         arcade.draw_text(
-            "Or press Space to start!",
-            self.window.width / 2,
-            110,
-            arcade.color.BLACK,
-            font_size=15,
-            font_name=MAIN_FONT_NAME,
-            anchor_x="center",
-            bold=True
-        )
-        # Info how to also start the game.
-        arcade.draw_text(
             "Press One of the buttons to start!",
             self.window.width / 2,
-            210,
+            60,
             arcade.color.BLACK,
             font_size=15,
             font_name=MAIN_FONT_NAME,
             anchor_x="center",
             bold=True
         )
-
-    def on_key_press(self, key: int, modifiers: int):
-        """
-        Start the game when any key is pressed
-        """
-        if key == arcade.key.SPACE:
-            self.start_game()
 
     def set_one_player(self, event=None):
         """
