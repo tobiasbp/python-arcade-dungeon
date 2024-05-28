@@ -339,6 +339,7 @@ class Entity(arcade.Sprite):
     @hp.setter
     def hp(self, new_hp):
         self._hp = max(0, min(new_hp, self.max_hp))
+        self.health_bar.health = self._hp
 
     @property
     def equipped_weapon(self):
@@ -446,8 +447,7 @@ class Entity(arcade.Sprite):
             if self.equipped_weapon.attacks_left <= 0:
                 self._equipped_weapon = None
 
-        # update the health bar
-        self.health_bar.health = self._hp
+        # Health bar moves with Entity
         self.health_bar.position = self.position
 
         # death
@@ -1049,13 +1049,15 @@ class HealthBar(arcade.Sprite):
         """
         Updates health if health is a value over zero and under max_health
         """
-        if 0 < new_health < self._max_health:
-            self._current_health = new_health
+        if new_health == self._current_health:
+            return
 
-        """
-        calculates ratio of current health and max health and multiplies it with max bar width to get new bar width
-        """
-        self._foreground_bar.width = int((self._current_health / self._max_health) * self._bar_width)
+        # Health can never go lower than 0
+        self._current_health = max(0, new_health)
+
+        # Update with of the green foreground bar
+        self._foreground_bar.width = self._current_health / self._max_health * self._bar_width
+
 
     @property
     def position(self):
@@ -1063,6 +1065,7 @@ class HealthBar(arcade.Sprite):
 
     @position.setter
     def position(self, new_position):
+        # self.position = new_position
         self.center_x = new_position[0]
         self.center_y = new_position[1]
 
