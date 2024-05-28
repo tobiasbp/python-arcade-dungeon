@@ -10,10 +10,12 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 import arcade
 import arcade.gui
 import random
-from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
 from my_sprites import Player, Enemy, Reaction, Weapon, WeaponType, EntityType
+
+# Import tools from local file my_tools.py
+from my_tools import create_players, load_tilemap
 
 # Set the scaling of all sprites in the game
 SCALING = 1
@@ -75,40 +77,11 @@ MAP_LAYER_CONFIG = {
 }
 
 
-def create_players(number_of_players: int):
-    """
-    Create the players
-    """
-
-    player_sprite_list = arcade.SpriteList()
-
-    # replace all sprites on layer "players" with actual player objects
-    for i in range(number_of_players):
-        # Creates Player object
-        p = Player(
-            position=(0, 0),
-            max_hp=20,  # FIXME: add some kind of config for the player to avoid magic numbers
-            speed=3,
-            window=None,
-            equipped_weapon=Weapon(type=WeaponType.SWORD_SHORT),
-            scale=SCALING,
-            key_up=PLAYER_KEYS[i]["up"],
-            key_down=PLAYER_KEYS[i]["down"],
-            key_left=PLAYER_KEYS[i]["left"],
-            key_right=PLAYER_KEYS[i]["right"],
-            key_attack=PLAYER_KEYS[i]["attack"],
-        )
-        # Create Player spritelist
-        player_sprite_list.append(p)
-
-    return player_sprite_list
-
-
 class GameView(arcade.View):
     """
     The view with the game itself
     """
-    
+
     def __init__(self, level, player_sprite_list):
         """
         level: The level number to load
@@ -123,45 +96,7 @@ class GameView(arcade.View):
         # A format string where you can change the variable in the {}.
         map_path_template = "data/rooms/dungeon/room_{}.tmx"
 
-        # Checks if the next level exists.
-        try:
-            open(map_path_template.format(self.level))
-        except FileNotFoundError:
-            print("Level Cannot Be Loaded, returning to level 0. 🤖")
-            self.level = 0
-        else:
-            pass
-
-        # Create a TileMap with walls, objects etc.
-        # Spatial hashing is good for calculating collisions for static sprites (like the ones in this map)
-        self.tilemap = arcade.tilemap.TileMap(
-            map_file=map_path_template.format(self.level),
-            use_spatial_hash=True,
-            scaling=SCALING,
-            offset=Vec2(0,0)
-        )
-
-        # Make sure the map we load is as expected
-        assert self.tilemap.tile_width == TILE_SIZE, f"Width of tiles in map is {self.tilemap.tile_width}, it should be {TILE_SIZE}."
-        assert self.tilemap.tile_height == TILE_SIZE, f"Heigh of tiles in map is {self.tilemap.tile_height}, it should be {TILE_SIZE}."
-        assert self.tilemap.width == MAP_WIDTH_TILES, f"Width of map is {self.tilemap.width}, it should be {MAP_WIDTH_TILES}."
-        assert self.tilemap.height == MAP_HEIGHT_TILES, f"Height of map is {self.tilemap.width}, it should be {MAP_HEIGHT_TILES}."
-        for layer_name in MAP_LAYER_CONFIG.keys():
-            assert layer_name in self.tilemap.sprite_lists.keys(), f"Layer name '{layer_name}' not in tilemap."
-
-        # Ensure that no tile on the background layer collides with the impassibles layer
-        # We want to be able to spawn enemies on the backgrounds layer, so we must ensure
-        # that the spawn point is not impassable
-        for background_tile in self.tilemap.sprite_lists["background"]:
-            colliding_tiles = background_tile.collides_with_list(self.tilemap.sprite_lists["impassable"])
-            assert len(colliding_tiles) == 0, f"A tile on layer 'background' collides with a tile on layer 'impassable' at position {background_tile.position}"
-
-        # Add variable 'seen' to all tiles that has player line of sight. This will be used later on.
-        for layer_name in MAP_LAYER_CONFIG.keys():
-            if MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
-                for s in self.tilemap.sprite_lists[layer_name]:
-                    # Tiles are unseen by default
-                    s.seen = False
+        self.tilemap = load_tilemap(map_path_template, MAP_LAYER_CONFIG, self.level)
 
     def on_show_view(self):
         """
@@ -519,7 +454,7 @@ class IntroView(arcade.View):
 
         self.player_sprite_list = arcade.SpriteList()
 
-        self.player_sprite_list = create_players(self.player_amount)
+        self.player_sprite_list = create_players(self.player_amount, PLAYER_KEYS)
 
         # Prevent the sound from playing after the game starts
         self.opening_sound.stop(self.opening_sound_player)
