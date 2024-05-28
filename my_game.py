@@ -468,62 +468,51 @@ class IntroView(arcade.View):
 
         # Info how to also start the game.
         arcade.draw_text(
-            "Or press Space to start!",
+            "Select number of players.",
             self.window.width / 2,
-            110,
+            60,
             arcade.color.BLACK,
             font_size=15,
             font_name=MAIN_FONT_NAME,
             anchor_x="center",
             bold=True
         )
-        # Info how to also start the game.
-        arcade.draw_text(
-            "Press One of the buttons to start!",
-            self.window.width / 2,
-            210,
-            arcade.color.BLACK,
-            font_size=15,
-            font_name=MAIN_FONT_NAME,
-            anchor_x="center",
-            bold=True
-        )
-
-    def on_key_press(self, key: int, modifiers: int):
-        """
-        Start the game when any key is pressed
-        """
-        if key == arcade.key.SPACE:
-            self.start_game()
 
     def set_one_player(self, event=None):
         """
         Sets the normal value of players to one.
         """
-
-        self.player_amount = 1
-        self.start_game()
+        self.start_game(1)
 
     def set_two_players(self, event=None):
         """
         Sets the normal value of players to two.
         """
+        self.start_game(2)
 
-        self.player_amount = 2
-        self.start_game()
+    def on_key_press(self, key: int, modifiers: int):
+        """
+        Start the game when any key is pressed
+        """
+        if key == arcade.key.KEY_1:
+            self.start_game(1)
 
-    def start_game(self, event=None):
+        if key == arcade.key.KEY_2:
+            self.start_game(2)
+
+
+    def start_game(self, no_of_players):
         """
         Starts the game.
         """
 
         self.player_sprite_list = arcade.SpriteList()
 
-        self.player_sprite_list = create_players(self.player_amount)
+        self.player_sprite_list = create_players(no_of_players)
 
         # Prevent the sound from playing after the game starts
         self.opening_sound.stop(self.opening_sound_player)
-        print("The amount of Players are:", self.player_amount)
+        print("The number of players is:", no_of_players)
         game_view = GameView(level=0, player_sprite_list=self.player_sprite_list)
         self.window.show_view(game_view)
 
