@@ -13,7 +13,7 @@ import random
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
-from my_sprites import Player, Enemy, Reaction, Weapon, WeaponType, EntityType
+from my_sprites import Player, Enemy, Reaction, Weapon, WeaponType, EntityType, EnemyState
 
 # Set the scaling of all sprites in the game
 SCALING = 1
@@ -102,6 +102,18 @@ def create_players(number_of_players: int):
         player_sprite_list.append(p)
 
     return player_sprite_list
+
+
+def enemy_enemy_collision_handler(enemy1: Enemy, enemy2: Enemy, _arbiter, _space, _data) -> None:
+    """
+    what to do when two enemies collide
+    """
+
+    # if enemies are stuck walking into each other, move seperate ways
+    if enemy1.state == EnemyState.RANDOM_WALK:
+        enemy1.physics_engines[0].apply_force(enemy1, (-2000, -2000))
+    if enemy2.state == EnemyState.RANDOM_WALK:
+        enemy2.physics_engines[0].apply_force(enemy2, (2000, 2000))
 
 
 class GameView(arcade.View):
@@ -252,6 +264,8 @@ class GameView(arcade.View):
                                             damping=0,
                                             collision_type="enemy",
                                             moment_of_intertia=arcade.PymunkPhysicsEngine.MOMENT_INF)
+
+        self.physics_engine.add_collision_handler("enemy", "enemy", post_handler=enemy_enemy_collision_handler)
 
         # Set the background color
         arcade.set_background_color(arcade.color.BLACK)
