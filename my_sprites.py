@@ -274,6 +274,8 @@ class Weapon(arcade.Sprite):
             return True
 
     def update(self):
+        self.attack_point = None
+
         if not self.is_idle:
             # FIXME: Just to illustrate an attack
             self.angle += 4
