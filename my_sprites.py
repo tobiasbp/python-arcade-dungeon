@@ -261,14 +261,14 @@ class Weapon(arcade.Sprite):
                 return False
 
             self._attacks_left -= 1
-            self.position = position
-            self.attack_point = position
             self._time_to_idle = self.rate
 
             distance = Weapon.data[self.type]["range"]
 
-            self.center_x = position[0] + (math.sin(angle) * distance)
-            self.center_y = position[1] + (math.cos(angle) * distance)
+            self.center_x = position[0] + (math.sin(math.radians(angle)) * distance)
+            self.center_y = position[1] + (math.cos(math.radians(angle)) * distance)
+
+            self.attack_point = self.position
 
             self._time_to_idle = Weapon.data[self.type]["rate"]
             return True
@@ -391,8 +391,6 @@ class Entity(arcade.Sprite):
         Perform an attack using the equiped weapon
         """
         if self.equipped_weapon is not None and self.equipped_weapon.is_idle:
-
-            self.equipped_weapon.attack
 
             # FIXME: Remove the weapon if it has no attacks left
 
