@@ -413,7 +413,7 @@ class Entity(arcade.Sprite):
         else:
             return False
 
-    def draw_sprites(self, draw_hitbox: bool=False, draw_attack_hitboxes: bool=False, pixelated: bool=True):
+    def draw_sprites(self, draw_hitbox: bool=False, draw_attack_points: bool=False, pixelated: bool=True):
         """
         draw related sprites (emotes and attacks)
         """
@@ -424,8 +424,13 @@ class Entity(arcade.Sprite):
             self.draw_hit_box(arcade.color.NEON_GREEN, line_thickness=2)
 
         if self.equipped_weapon is not None:
-            if draw_attack_hitboxes:
-                self.equipped_weapon.draw_hit_box(arcade.color.NEON_GREEN, line_thickness=2)
+            if draw_attack_points and self.equipped_weapon.attack_point:
+                arcade.draw_circle_filled(
+                    center_x=self.equipped_weapon.attack_point[0],
+                    center_y=self.equipped_weapon.attack_point[1],
+                    radius=2,
+                    color=arcade.color.NEON_GREEN
+                )
             if not self.equipped_weapon.is_idle:
                 self.equipped_weapon.draw()
 
