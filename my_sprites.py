@@ -263,10 +263,10 @@ class Weapon(arcade.Sprite):
             self._attacks_left -= 1
             self._time_to_idle = self.rate
 
-            distance = Weapon.data[self.type]["range"]
+            weapon_range = Weapon.data[self.type]["range"]
 
-            self.center_x = position[0] + (math.sin(math.radians(angle)) * distance)
-            self.center_y = position[1] + (math.cos(math.radians(angle)) * distance)
+            self.center_x = position[0] + (math.sin(math.radians(angle)) * weapon_range)
+            self.center_y = position[1] + (math.cos(math.radians(angle)) * weapon_range)
 
             self.attack_point = self.position
 
