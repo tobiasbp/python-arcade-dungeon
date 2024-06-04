@@ -261,19 +261,21 @@ class Weapon(arcade.Sprite):
                 return False
 
             self._attacks_left -= 1
-            self.position = position
-            self.attack_point = position
             self._time_to_idle = self.rate
 
-            distance = Weapon.data[self.type]["range"]
+            weapon_range = Weapon.data[self.type]["range"]
 
-            self.center_x = position[0] + (math.sin(angle) * distance)
-            self.center_y = position[1] + (math.cos(angle) * distance)
+            self.center_x = position[0] + (math.sin(math.radians(angle)) * weapon_range)
+            self.center_y = position[1] + (math.cos(math.radians(angle)) * weapon_range)
+
+            self.attack_point = self.position
 
             self._time_to_idle = Weapon.data[self.type]["rate"]
             return True
 
     def update(self):
+        self.attack_point = None
+
         if not self.is_idle:
             # FIXME: Just to illustrate an attack
             self.angle += 4
@@ -392,8 +394,6 @@ class Entity(arcade.Sprite):
         """
         if self.equipped_weapon is not None and self.equipped_weapon.is_idle:
 
-            self.equipped_weapon.attack
-
             # FIXME: Remove the weapon if it has no attacks left
 
             success = self.equipped_weapon.attack(
@@ -413,7 +413,7 @@ class Entity(arcade.Sprite):
         else:
             return False
 
-    def draw_sprites(self, draw_hitbox: bool=False, draw_attack_hitboxes: bool=False, pixelated: bool=True):
+    def draw_sprites(self, draw_hitbox: bool=False, draw_attack_points: bool=False, pixelated: bool=True):
         """
         draw related sprites (emotes and attacks)
         """
@@ -424,8 +424,13 @@ class Entity(arcade.Sprite):
             self.draw_hit_box(arcade.color.NEON_GREEN, line_thickness=2)
 
         if self.equipped_weapon is not None:
-            if draw_attack_hitboxes:
-                self.equipped_weapon.draw_hit_box(arcade.color.NEON_GREEN, line_thickness=2)
+            if draw_attack_points and self.equipped_weapon.attack_point:
+                arcade.draw_circle_filled(
+                    center_x=self.equipped_weapon.attack_point[0],
+                    center_y=self.equipped_weapon.attack_point[1],
+                    radius=2,
+                    color=arcade.color.NEON_GREEN
+                )
             if not self.equipped_weapon.is_idle:
                 self.equipped_weapon.draw()
 
