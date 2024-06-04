@@ -13,7 +13,7 @@ import random
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
-from my_sprites import Player, Enemy, Reaction, Weapon, WeaponType, EntityType
+from my_sprites import Player, Enemy, Reaction, Weapon, WeaponType, EntityType, EnemyState
 
 # Set the scaling of all sprites in the game
 SCALING = 1
@@ -42,7 +42,7 @@ SCREEN_WIDTH = MAP_WIDTH_TILES * TILE_SIZE * SCALING
 SCREEN_HEIGHT = MAP_HEIGHT_TILES * TILE_SIZE * SCALING + GUI_HEIGHT
 
 # Variables controlling the player
-PLAYER_SPEED = 5
+PLAYER_SPEED = 6000
 PLAYER_SHOT_SPEED = 300
 PLAYER_SIGHT_RANGE = SCREEN_WIDTH/4 # How far can the player see?
 
@@ -88,7 +88,7 @@ def create_players(number_of_players: int):
         p = Player(
             position=(0, 0),
             max_hp=20,  # FIXME: add some kind of config for the player to avoid magic numbers
-            speed=3,
+            speed=PLAYER_SPEED,
             window=None,
             equipped_weapon=Weapon(type=WeaponType.SWORD_SHORT),
             scale=SCALING,
@@ -102,6 +102,18 @@ def create_players(number_of_players: int):
         player_sprite_list.append(p)
 
     return player_sprite_list
+
+
+def enemy_enemy_collision_handler(enemy1: Enemy, enemy2: Enemy, _arbiter, _space, _data) -> None:
+    """
+    what to do when two enemies collide
+    """
+
+    # if enemies are stuck walking into each other, move seperate ways
+    if enemy1.state == EnemyState.RANDOM_WALK:
+        enemy1.physics_engines[0].apply_force(enemy1, (-2000, -2000))
+    if enemy2.state == EnemyState.RANDOM_WALK:
+        enemy2.physics_engines[0].apply_force(enemy2, (2000, 2000))
 
 
 class GameView(arcade.View):
@@ -163,6 +175,9 @@ class GameView(arcade.View):
                     # Tiles are unseen by default
                     s.seen = False
 
+        self.physics_engine = arcade.PymunkPhysicsEngine()
+
+
     def on_show_view(self):
         """
         This is run once when we switch to this view
@@ -188,6 +203,7 @@ class GameView(arcade.View):
                 self.tilemap.sprite_lists["players"][i].center_y
             )
 
+
         # Assert that all players have a potential spawnpoint
         assert len(self.tilemap.sprite_lists["players"]) >= len(self.player_sprite_list), "Too many players for tilemap"
 
@@ -197,7 +213,7 @@ class GameView(arcade.View):
             e = Enemy(
                 position=enemy_position,
                 max_hp=5,
-                speed=1,
+                speed=4500,
                 window=self.window,
                 graphics_type=EntityType.VIKING,
                 impassables=self.tilemap.sprite_lists["impassable"],
@@ -209,20 +225,6 @@ class GameView(arcade.View):
 
             # Replace the spawn point with the new enemy
             self.tilemap.sprite_lists["enemies"][enemy_index] = e
-
-
-        # We need a physics engine for each player since
-        # the one we ar eusing can anly handle a single player
-        self.physics_engines = []
-
-        # Create a physics engine for each player.
-        # Register player and walls with physics engine
-        for p in self.player_sprite_list:
-            pe = arcade.PhysicsEngineSimple(
-                player_sprite=p,
-                walls=self.tilemap.sprite_lists["impassable"]
-            )
-            self.physics_engines.append(pe)
 
         # Get list of joysticks
         joysticks = arcade.get_joysticks()
@@ -245,6 +247,25 @@ class GameView(arcade.View):
         else:
             print("No joysticks found")
             self.joystick = None
+
+        # add all sprites to physics engine
+        self.physics_engine.add_sprite_list(self.player_sprite_list,
+                                            damping=0,
+                                            collision_type="player",
+                                            moment_of_intertia=arcade.PymunkPhysicsEngine.MOMENT_INF)
+
+        self.physics_engine.add_sprite_list(self.tilemap.sprite_lists["impassable"],
+                                            damping=0,
+                                            collision_type="impassable",
+                                            body_type=arcade.PymunkPhysicsEngine.STATIC,
+                                            moment_of_intertia=arcade.PymunkPhysicsEngine.MOMENT_INF)
+
+        self.physics_engine.add_sprite_list(self.tilemap.sprite_lists["enemies"],
+                                            damping=0,
+                                            collision_type="enemy",
+                                            moment_of_intertia=arcade.PymunkPhysicsEngine.MOMENT_INF)
+
+        self.physics_engine.add_collision_handler("enemy", "enemy", post_handler=enemy_enemy_collision_handler)
 
         # Set the background color
         arcade.set_background_color(arcade.color.BLACK)
@@ -354,13 +375,10 @@ class GameView(arcade.View):
             # Updates the player_sprite_list.
             p.update()
 
-        # Update the physics engine for each player
-        # Return all sprites involved in collissions
-        for pe in self.physics_engines:
-            colliding_sprites = pe.update()
-
         # Update the enemies
         self.tilemap.sprite_lists["enemies"].update()
+
+        self.physics_engine.step()
 
     def game_over(self):
         """
