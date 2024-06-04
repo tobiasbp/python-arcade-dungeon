@@ -339,6 +339,7 @@ class Entity(arcade.Sprite):
     @hp.setter
     def hp(self, new_hp):
         self._hp = max(0, min(new_hp, self.max_hp))
+        self.health_bar.health = self._hp
 
     @property
     def equipped_weapon(self):
@@ -446,8 +447,7 @@ class Entity(arcade.Sprite):
             if self.equipped_weapon.attacks_left <= 0:
                 self._equipped_weapon = None
 
-        # update the health bar
-        self.health_bar.health = self._hp
+        # Health bar moves with Entity
         self.health_bar.position = self.position
 
         # death
@@ -567,11 +567,8 @@ class Enemy(Entity):
             # calculate distance
             distance_to_dest = arcade.get_distance(dest_pos[0], dest_pos[1], self.center_x, self.center_y)
 
-            # this is so we don't move too far
-            this_move_length = min(self.speed, distance_to_dest)
-
             # if we are there, set the next position to move to
-            if distance_to_dest <= self.speed:
+            if distance_to_dest <= self.width:
                 self.cur_path_position += 1
 
                 # if we are finished with this path, stand still
@@ -580,8 +577,9 @@ class Enemy(Entity):
 
             else:
                 # testing shows that we need to reverse the direction...
-                self.center_x += -math.sin(angle_to_dest) * this_move_length
-                self.center_y += -math.cos(angle_to_dest) * this_move_length
+                force_x = -math.sin(angle_to_dest) * self.speed
+                force_y = -math.cos(angle_to_dest) * self.speed
+                self.physics_engines[0].apply_force(self, (force_x, force_y))
 
     #FIXME: typehint should state that we need a player object, but player is defined below this class. Probably dont move the classes
     def get_closest_visible_sprite(self, sprites: arcade.SpriteList, max_dist=math.inf) -> Optional[Entity]:
@@ -609,29 +607,22 @@ class Enemy(Entity):
         # State machine
         match self.state:
             case EnemyState.CHASING_PLAYER:
-                # move directly towards the target sprite
+                # move directly towards the target sprite, and attack
 
                 self.path = []
 
-                angle_to_target = arcade.get_angle_degrees(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
+                self._direction = arcade.get_angle_degrees(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
+
+                force_x = math.sin(math.radians(self._direction)) * self.speed
+                force_y = math.cos(math.radians(self._direction)) * self.speed
+                self.physics_engines[0].apply_force(self, (force_x, force_y))
 
                 # stop when within weapon range of the player
                 if self.equipped_weapon is not None:
 
                     distance_to_target = arcade.get_distance(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
-                    if distance_to_target > self.equipped_weapon.range:
-
-                        # FIXME: we should only calculate this once
-                        self.center_x += math.sin(math.radians(angle_to_target)) * self.speed
-                        self.center_y += math.cos(math.radians(angle_to_target)) * self.speed
-
-                    else:
-
+                    if distance_to_target < self.equipped_weapon.range + self.width / 2:
                         self.attack(self._direction)
-
-                else:
-                    self.center_x += math.sin(math.radians(angle_to_target)) * self.speed
-                    self.center_y += math.cos(math.radians(angle_to_target)) * self.speed
 
                 # when we lose LOS to our target, move to its last known position
                 if not arcade.has_line_of_sight(self.cur_target.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
@@ -892,10 +883,10 @@ class Player(Entity):
         # Update speed based on held keys
 
         if self.up_pressed or self.right_pressed or self.down_pressed or self.left_pressed:
-            self.change_x = math.sin(math.radians(self._direction))
-            self.change_y = math.cos(math.radians(self._direction))
-            self.change_x *= self.speed
-            self.change_y *= self.speed
+            self.change_x = math.sin(math.radians(self._direction)) * self.speed
+            self.change_y = math.cos(math.radians(self._direction)) * self.speed
+
+        self.physics_engines[0].apply_force(self, (self.change_x, self.change_y))
 
         # Rotate the sprite a bit when it's moving
         if (self.change_x != 0 or self.change_y != 0) and random.random() <= self.jitter_likelihood:
@@ -1049,13 +1040,15 @@ class HealthBar(arcade.Sprite):
         """
         Updates health if health is a value over zero and under max_health
         """
-        if 0 < new_health < self._max_health:
-            self._current_health = new_health
+        if new_health == self._current_health:
+            return
 
-        """
-        calculates ratio of current health and max health and multiplies it with max bar width to get new bar width
-        """
-        self._foreground_bar.width = int((self._current_health / self._max_health) * self._bar_width)
+        # Health can never go lower than 0
+        self._current_health = max(0, new_health)
+
+        # Update with of the green foreground bar
+        self._foreground_bar.width = self._current_health / self._max_health * self._bar_width
+
 
     @property
     def position(self):
@@ -1063,6 +1056,7 @@ class HealthBar(arcade.Sprite):
 
     @position.setter
     def position(self, new_position):
+        # self.position = new_position
         self.center_x = new_position[0]
         self.center_y = new_position[1]
 
