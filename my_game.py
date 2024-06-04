@@ -51,6 +51,9 @@ NUM_OF_PLAYERS = 2
 
 FIRE_KEY = arcade.key.SPACE
 
+BLOOD_TEXTURES = [arcade.make_soft_circle_texture(25, arcade.color.RED),
+                  arcade.make_soft_circle_texture(25, arcade.color.RED_BROWN)]
+
 # The keys to control player 1 & 2
 PLAYER_KEYS = [
     {"up": arcade.key.UP, "down": arcade.key.DOWN, "left": arcade.key.LEFT, "right": arcade.key.RIGHT, "attack": arcade.key.SPACE},
@@ -117,6 +120,7 @@ class GameView(arcade.View):
 
         super(GameView, self).__init__()
 
+        self.death_emitter = None
         self.level = level
         self.player_sprite_list = player_sprite_list
 
@@ -162,6 +166,19 @@ class GameView(arcade.View):
                 for s in self.tilemap.sprite_lists[layer_name]:
                     # Tiles are unseen by default
                     s.seen = False
+
+    def enemy_death_explosion(self, position, textures, amount, speed):
+
+        self.death_emitter = arcade.make_burst_emitter(
+            center_xy=position,
+            filenames_and_textures=textures,
+            particle_count=amount,
+            particle_speed=speed,
+            particle_lifetime_min=0.4,
+            particle_lifetime_max=1,
+            particle_scale=0.2)
+
+        return self.death_emitter
 
     def on_show_view(self):
         """
@@ -210,6 +227,7 @@ class GameView(arcade.View):
             # Replace the spawn point with the new enemy
             self.tilemap.sprite_lists["enemies"][enemy_index] = e
 
+        self.particles_list = []
 
         # We need a physics engine for each player since
         # the one we ar eusing can anly handle a single player
@@ -315,6 +333,9 @@ class GameView(arcade.View):
         for p in self.player_sprite_list:
             p.health_bar.draw()
 
+        if self.death_emitter is not None:
+            self.death_emitter.draw()
+
     def on_update(self, delta_time: float = 1/60):
         """
         Movement and game logic
@@ -333,6 +354,12 @@ class GameView(arcade.View):
                     if e.collides_with_point(p.equipped_weapon.attack_point):
                         e.hp -= p.equipped_weapon.strength
                         p.equipped_weapon.attack_point = None
+                        if e.hp < 1:
+                            self.enemy_death_explosion(position=e.position,
+                                                       amount=15,
+                                                       speed=5,
+                                                       textures=BLOOD_TEXTURES)
+                            e.kill()
 
             # Checks after collision with the exit layer.
             for e in self.tilemap.sprite_lists["exits"]:
@@ -353,6 +380,9 @@ class GameView(arcade.View):
 
             # Updates the player_sprite_list.
             p.update()
+
+        if self.death_emitter is not None:
+            self.death_emitter.update()
 
         # Update the physics engine for each player
         # Return all sprites involved in collissions
