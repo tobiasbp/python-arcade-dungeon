@@ -13,7 +13,7 @@ import random
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
-from my_sprites import Player, Enemy, Reaction, Weapon, WeaponType, EntityType, EnemyState
+from my_sprites import Enemy, Weapon, WeaponType, EntityType, EnemyState
 from my_helpers import load_level, validate_level, create_players
 
 # Set the scaling of all sprites in the game
