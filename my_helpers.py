@@ -28,40 +28,29 @@ MAP_LAYER_CONFIG = {
 
 class GameState:
 
-    def __init__(self, no_of_players:int, window:arcade.Window, player_speed:int=6000, map_no:int=0, scaling:int=1):
-        self.window = window
+    def __init__(self, no_of_players:int, window:arcade.Window, map_width_tiles:int, map_height_tiles:int, player_speed:int=6000, map_no:int=0, scaling:int=1, tile_size:int=16):
         self.scaling = scaling
         self.players = arcade.SpriteList()
         self.enemies = arcade.SpriteList()
-        self.tilemap = None
+        self.tile_size = tile_size
         self.map_no = map_no
-        self.physics_engine = arcade.PymunkPhysicsEngine()
+        self.map_width_tiles = map_width_tiles
+        self.map_height_tiles = map_height_tiles
+
+        self.window = window
+
+        self.physics_engine = None
+        self.tilemap = None
 
         self._create_players(no_of_players, player_speed)
 
         self._load_tilemap(self.map_no)
         self._setup_physics_engine()
-        #self._add_map_layers()
-        #self._add_enemies()
-        #self._add_players()
-        #self._position_players()
 
     def next_map(self):
         self.map_no += 1
-
-        
-        #for e in self.tilemap.sprite_lists["enemies"]:
-        #    self.physics_engine.remove_sprite(e)
-
         self._load_tilemap(self.map_no)
         self._setup_physics_engine()
-
-        # self._add_enemies()
-        # self._add_players()
-        # self._position_players()
-        # self.players[0].position = (30,30)
-        
-        #self.physics_engine.resync_sprites()
 
     def _load_tilemap(self, map_no:int,):
         """
@@ -103,17 +92,8 @@ class GameState:
         print(f"INFO: Loaded map '{map_file}'")
 
     def _setup_physics_engine(self):
-        
-        # Remove player sprites from current physics engine
-        # The player sprites reference the physics engine, so we need to remove.
-        for p in self.players:
-            try:
-                self.physics_engine.remove_sprite(p)
-            except KeyError:
-                print("Could not remove player from PE")
-                pass
 
-
+        self._validate_level()
         self._position_players()
 
         self.physics_engine = arcade.PymunkPhysicsEngine()
@@ -230,24 +210,28 @@ class GameState:
             self.players.append(p)    
 
 
-def validate_level(tilemap:arcade.tilemap,tile_size:int, map_config:dict, map_width:int, map_height:int ) -> bool:
-    # Make sure the map we load is as expected
-    assert tilemap.tile_width == tile_size, f"Width of tiles in map is {tilemap.tile_width}, it should be {tile_size}."
-    assert tilemap.tile_height == tile_size, f"Heigh of tiles in map is {tilemap.tile_height}, it should be {tile_size}."
-    assert tilemap.width == map_width, f"Width of map is {tilemap.width}, it should be {map_width}."
-    assert tilemap.height == map_height, f"Height of map is {tilemap.width}, it should be {map_height}."
-    for layer_name in map_config.keys():
-        assert layer_name in tilemap.sprite_lists.keys(), f"Layer name '{layer_name}' not in tilemap."
+    def _validate_level(self):
+        # FIXME: Level must have at least as many player spawn points as we have players
 
-    # Ensure that no tile on the background layer collides with the impassibles layer
-    # We want to be able to spawn enemies on the backgrounds layer, so we must ensure
-    # that the spawn point is not impassable
-    for background_tile in tilemap.sprite_lists["background"]:
-        colliding_tiles = background_tile.collides_with_list(tilemap.sprite_lists["impassable"])
-        assert len(colliding_tiles) == 0, f"A tile on layer 'background' collides with a tile on layer 'impassable' at position {background_tile.position}"
+        # Make sure the map we load is as expected
+        assert self.tilemap.tile_width == self.tile_size, f"Width of tiles in map is {self.tilemap.tile_width}, it should be {self.tile_size}."
+        assert self.tilemap.tile_height == self.tile_size, f"Heigh of tiles in map is {self.tilemap.tile_height}, it should be {self.tile_size}."
+        assert self.tilemap.width == self.map_width_tiles, f"Width of map is {self.tilemap.width}, it should be {self.map_width_tiles}."
+        assert self.tilemap.height == self.map_height_tiles, f"Height of map is {self.tilemap.width}, it should be {self.map_height_tiles}."
 
-    print("INFO: Level verified")
+        # All layers in config must be in map
+        for layer_name in MAP_LAYER_CONFIG.keys():
+            assert layer_name in self.tilemap.sprite_lists.keys(), f"Layer name '{layer_name}' not in tilemap."
 
-    return True
+        # Ensure that no tile on the background layer collides with the impassibles layer
+        # We want to be able to spawn enemies on the backgrounds layer, so we must ensure
+        # that the spawn point is not impassable
+        for background_tile in self.tilemap.sprite_lists["background"]:
+            colliding_tiles = background_tile.collides_with_list(self.tilemap.sprite_lists["impassable"])
+            assert len(colliding_tiles) == 0, f"A tile on layer 'background' collides with a tile on layer 'impassable' at position {background_tile.position}"
+
+        print("INFO: Level verified")
+
+        return True
 
 
