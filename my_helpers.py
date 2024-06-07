@@ -40,16 +40,16 @@ class GameState:
 
         self._load_tilemap(self.map_no)
         self._add_enemies()
-        self._position_players()
         self._add_players()
+        self._position_players()
 
     def next_map(self):
         self.map_no += 1
-        self.physics_engine = arcade.PymunkPhysicsEngine()
+        # self.physics_engine = arcade.PymunkPhysicsEngine()
         self._load_tilemap(self.map_no)
         self._add_enemies()
         self._position_players()
-        self._add_players()
+        # self._add_players()
 
     def _load_tilemap(self, map_no:int,):
         """
@@ -136,10 +136,19 @@ class GameState:
         Position the players on the current maps start positions
         """
         for i in range(len(self.players)):
+            spawn_pos = (
+                self.tilemap.sprite_lists["players"][i].center_x,
+                self.tilemap.sprite_lists["players"][i].center_y
+            )
+
+            self.physics_engine.set_position(self.players[i], spawn_pos)
+
+            """
             self.players[i].position = (
                 self.tilemap.sprite_lists["players"][i].center_x,
                 self.tilemap.sprite_lists["players"][i].center_y
             )
+            """
 
     def _add_players(self):
         """
