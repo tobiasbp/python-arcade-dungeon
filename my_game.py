@@ -219,11 +219,11 @@ class GameView(arcade.View):
             p.draw(pixelated=DRAW_PIXELATED)
             p.draw_sprites(pixelated=DRAW_PIXELATED)
 
-        for s in self.game_state.tilemap.sprite_lists["enemies"]:
-            s.draw(pixelated=DRAW_PIXELATED)
-            s.draw_sprites(draw_attack_hitboxes=DEBUG_MODE, pixelated=DRAW_PIXELATED)
+        for e in self.game_state.enemies:
+            e.draw(pixelated=DRAW_PIXELATED)
+            e.draw_sprites(draw_attack_hitboxes=DEBUG_MODE, pixelated=DRAW_PIXELATED)
 
-        for e in self.game_state.tilemap.sprite_lists["enemies"]:
+        for e in self.game_state.enemies:
             e.health_bar.draw()
 
         for p in self.game_state.players:
@@ -236,7 +236,7 @@ class GameView(arcade.View):
 
         # Check for player collisions
         for p in self.game_state.players:
-            for e in self.game_state.tilemap.sprite_lists["enemies"]:
+            for e in self.game_state.enemies:
                 # Check if the enemy's weapon has hit the player
                 if e.equipped_weapon is not None and e.equipped_weapon.attack_point is not None:
                     if p.collides_with_point(e.equipped_weapon.attack_point):
@@ -269,7 +269,7 @@ class GameView(arcade.View):
             p.update()
 
         # Update the enemies
-        self.game_state.tilemap.sprite_lists["enemies"].update()
+        self.game_state.enemies.update()
 
         self.game_state.physics_engine.step()
 
@@ -613,9 +613,8 @@ class LevelFinishView(arcade.View):
 
         if key == arcade.key.SPACE:
             self.game_state.next_map()
-            self.window.show_view(
-                GameView(self.game_state)
-            )
+            v = GameView(self.game_state)
+            self.window.show_view(v)
 
 
 def main():

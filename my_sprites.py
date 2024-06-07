@@ -740,7 +740,6 @@ class Player(Entity):
         """
         Track the state of the control keys
         """
-
         if key == self.key_left:
             self.left_pressed = True
             # Turns the sprite to the left side.
@@ -886,7 +885,8 @@ class Player(Entity):
             self.change_x = math.sin(math.radians(self._direction)) * self.speed
             self.change_y = math.cos(math.radians(self._direction)) * self.speed
 
-        self.physics_engines[0].apply_force(self, (self.change_x, self.change_y))
+        # Can have more than one because we cycle through engines. Always use latest
+        self.physics_engines[-1].apply_force(self, (self.change_x, self.change_y))
 
         # Rotate the sprite a bit when it's moving
         if (self.change_x != 0 or self.change_y != 0) and random.random() <= self.jitter_likelihood:

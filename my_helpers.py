@@ -32,6 +32,7 @@ class GameState:
         self.window = window
         self.scaling = scaling
         self.players = arcade.SpriteList()
+        self.enemies = arcade.SpriteList()
         self.tilemap = None
         self.map_no = map_no
         self.physics_engine = arcade.PymunkPhysicsEngine()
@@ -39,17 +40,28 @@ class GameState:
         self._create_players(no_of_players, player_speed)
 
         self._load_tilemap(self.map_no)
-        self._add_enemies()
-        self._add_players()
-        self._position_players()
+        self._setup_physics_engine()
+        #self._add_map_layers()
+        #self._add_enemies()
+        #self._add_players()
+        #self._position_players()
 
     def next_map(self):
         self.map_no += 1
-        # self.physics_engine = arcade.PymunkPhysicsEngine()
+
+        
+        #for e in self.tilemap.sprite_lists["enemies"]:
+        #    self.physics_engine.remove_sprite(e)
+
         self._load_tilemap(self.map_no)
-        self._add_enemies()
-        self._position_players()
+        self._setup_physics_engine()
+
+        # self._add_enemies()
         # self._add_players()
+        # self._position_players()
+        # self.players[0].position = (30,30)
+        
+        #self.physics_engine.resync_sprites()
 
     def _load_tilemap(self, map_no:int,):
         """
@@ -88,6 +100,37 @@ class GameState:
                     # Tiles are unseen by default
                     s.seen = False
 
+        print(f"INFO: Loaded map '{map_file}'")
+
+    def _setup_physics_engine(self):
+        
+        # Remove player sprites from current physics engine
+        # The player sprites reference the physics engine, so we need to remove.
+        for p in self.players:
+            try:
+                self.physics_engine.remove_sprite(p)
+            except KeyError:
+                print("Could not remove player from PE")
+                pass
+
+
+        self._position_players()
+
+        self.physics_engine = arcade.PymunkPhysicsEngine()
+
+        self._add_players()
+
+        self._create_enemies(len(self.tilemap.sprite_lists["enemies"]))
+        self._position_enemies()
+        self.physics_engine.add_sprite_list(
+            self.players,
+            damping=0,
+            collision_type="enemies",
+            moment_of_intertia=arcade.PymunkPhysicsEngine.MOMENT_INF
+        )
+        self._add_enemies()
+
+
         # Add impassable tiles to the physics engine
         self.physics_engine.add_sprite_list(
             self.tilemap.sprite_lists["impassable"],
@@ -97,18 +140,16 @@ class GameState:
             moment_of_intertia=arcade.PymunkPhysicsEngine.MOMENT_INF
         )
 
-        print(f"INFO: Loaded map '{map_file}'")
-
-
-    def _add_enemies(self):
+    def _create_enemies(self, no_of_enemies):
         """
-        Replace all tiles in the 'enemies' layer in the tilemap with Enemy objects.
-        This should happen whenever a tilemap is loaded.
+        Create as many enemies as there are tiles in the 'enemies' layer in the current tilemap
         """
-        for enemy_index, enemy_position in enumerate([ s.position for s in self.tilemap.sprite_lists["enemies"]]):
+        self.enemies = arcade.SpriteList()
+
+        for tile in range(no_of_enemies):
             # Create the enemy
             e = Enemy(
-                position=enemy_position,
+                position=(0,0),
                 max_hp=5,
                 speed=4500,
                 window=self.window,
@@ -120,35 +161,38 @@ class GameState:
                 scale=self.scaling
             )
 
-            # Replace the spawn point with the new enemy
-            self.tilemap.sprite_lists["enemies"][enemy_index] = e
+            self.enemies.append(e)
 
-        # Add the enemies to the physics engine
-        self.physics_engine.add_sprite_list(
-            self.tilemap.sprite_lists["enemies"],
-            damping=0,
-            collision_type="enemy",
-            moment_of_intertia=arcade.PymunkPhysicsEngine.MOMENT_INF
-        )
+    def _position_enemies(self):
+        """
+        Position the players on the current maps start positions
+        """
+        for i in range(len(self.enemies)):
+            self.enemies[i].position = (
+                self.tilemap.sprite_lists["enemies"][i].center_x,
+                self.tilemap.sprite_lists["enemies"][i].center_y
+            )
 
     def _position_players(self):
         """
         Position the players on the current maps start positions
         """
         for i in range(len(self.players)):
-            spawn_pos = (
-                self.tilemap.sprite_lists["players"][i].center_x,
-                self.tilemap.sprite_lists["players"][i].center_y
-            )
-
-            self.physics_engine.set_position(self.players[i], spawn_pos)
-
-            """
             self.players[i].position = (
                 self.tilemap.sprite_lists["players"][i].center_x,
                 self.tilemap.sprite_lists["players"][i].center_y
             )
-            """
+
+    def _add_enemies(self):
+        """
+        Position the players on the current maps start positions
+        """
+        self.physics_engine.add_sprite_list(
+            self.enemies,
+            damping=0,
+            collision_type="player",
+            moment_of_intertia=arcade.PymunkPhysicsEngine.MOMENT_INF
+        )
 
     def _add_players(self):
         """
