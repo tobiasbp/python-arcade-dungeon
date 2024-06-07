@@ -14,7 +14,7 @@ from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
 from my_sprites import Enemy, Weapon, WeaponType, EntityType, EnemyState
-from my_helpers import load_level, validate_level, create_players
+from my_helpers import GameState, MAP_LAYER_CONFIG
 
 # Set the scaling of all sprites in the game
 SCALING = 1
@@ -52,26 +52,9 @@ NUM_OF_PLAYERS = 2
 
 FIRE_KEY = arcade.key.SPACE
 
-# All layers configured must exist in the map file.
-# line_of_sight: Should sprites only be drawn if they are visible to a player?
-# draw: Should the sprites on this layer be drawn?. Config layers, like spawn points, should probably not be drawn
-# passable: Can players and enemies can move through sprites on this layer?
-# Players: Are spawn points, that's why it doesn't need to be drawn.
-MAP_LAYER_CONFIG = {
-    "background": {"line_of_sight": False, "draw": True, "passable": True},
-    "impassable": {"line_of_sight": False, "draw": True, "passable": False},
-    "objects-passable": {"line_of_sight": True, "draw": True, "passable": True},
-    "objects-impassable": {"line_of_sight": True, "draw": True, "passable": False},
-    "pressure-plates": {"line_of_sight": True, "draw": True, "passable": True},
-    "weapons": {"line_of_sight": True, "draw": True, "passable": True},
-    "players": {"line_of_sight": False, "draw": False, "passable": True},
-    "enemies": {"line_of_sight": False, "draw": True, "passable": True},
-    "exits": {"line_of_sight": False, "draw": False, "passable": True},
-}
-
 def enemy_enemy_collision_handler(enemy1: Enemy, enemy2: Enemy, _arbiter, _space, _data) -> None:
     """
-    what to do when two enemies collide
+    The physics engine will call this when two enemies collide
     """
 
     # if enemies are stuck walking into each other, move seperate ways
@@ -86,7 +69,7 @@ class GameView(arcade.View):
     The view with the game itself
     """
     
-    def __init__(self, level_no, player_sprite_list):
+    def __init__(self, game_state: GameState):
         """
         level: The level number to load
         player_sprite_list: The Players to add to the level
@@ -94,13 +77,15 @@ class GameView(arcade.View):
 
         super(GameView, self).__init__()
 
-        self.level_no = level_no
-        self.player_sprite_list = player_sprite_list
+        self.game_state = game_state
 
-        self.tilemap = load_level(self.level_no, SCALING, MAP_LAYER_CONFIG)
-        validate_level(self.tilemap, TILE_SIZE,MAP_LAYER_CONFIG,MAP_WIDTH_TILES,MAP_HEIGHT_TILES)
+        # self.level_no = level_no
+        # self.player_sprite_list = player_sprite_list
 
-        self.physics_engine = arcade.PymunkPhysicsEngine()
+        # self.tilemap = load_level(self.level_no, SCALING, MAP_LAYER_CONFIG, self.player_sprite_list, self.window)
+        # validate_level(self.tilemap, TILE_SIZE,MAP_LAYER_CONFIG,MAP_WIDTH_TILES,MAP_HEIGHT_TILES)
+
+        # self.physics_engine = arcade.PymunkPhysicsEngine()
 
 
     def on_show_view(self):
@@ -122,34 +107,15 @@ class GameView(arcade.View):
 
         self.player_score = 0
 
-        for i in range(len(self.player_sprite_list)):
-            self.player_sprite_list[i].position = (
-                self.tilemap.sprite_lists["players"][i].center_x,
-                self.tilemap.sprite_lists["players"][i].center_y
-            )
+        #for i in range(len(self.player_sprite_list)):
+        #    self.player_sprite_list[i].position = (
+        #        self.tilemap.sprite_lists["players"][i].center_x,
+        #        self.tilemap.sprite_lists["players"][i].center_y
+        #    )
 
 
         # Assert that all players have a potential spawnpoint
-        assert len(self.tilemap.sprite_lists["players"]) >= len(self.player_sprite_list), "Too many players for tilemap"
-
-        # Change all tiles in the 'enemies' layer to Enemies
-        for enemy_index, enemy_position in enumerate([ s.position for s in self.tilemap.sprite_lists["enemies"]]):
-            # Create the enemy
-            e = Enemy(
-                position=enemy_position,
-                max_hp=5,
-                speed=4500,
-                window=self.window,
-                graphics_type=EntityType.VIKING,
-                impassables=self.tilemap.sprite_lists["impassable"],
-                grid_size=int(self.tilemap.tile_width),
-                potential_targets_list=self.player_sprite_list,
-                equipped_weapon=Weapon(type=WeaponType.SWORD_SHORT),
-                scale=SCALING
-            )
-
-            # Replace the spawn point with the new enemy
-            self.tilemap.sprite_lists["enemies"][enemy_index] = e
+        # assert len(self.tilemap.sprite_lists["players"]) >= len(self.player_sprite_list), "Too many players for tilemap"
 
         # Get list of joysticks
         joysticks = arcade.get_joysticks()
@@ -174,6 +140,7 @@ class GameView(arcade.View):
             self.joystick = None
 
         # add all sprites to physics engine
+        """
         self.physics_engine.add_sprite_list(self.player_sprite_list,
                                             damping=0,
                                             collision_type="player",
@@ -191,6 +158,7 @@ class GameView(arcade.View):
                                             moment_of_intertia=arcade.PymunkPhysicsEngine.MOMENT_INF)
 
         self.physics_engine.add_collision_handler("enemy", "enemy", post_handler=enemy_enemy_collision_handler)
+        """
 
         # Set the background color
         arcade.set_background_color(arcade.color.BLACK)
@@ -204,7 +172,7 @@ class GameView(arcade.View):
         self.clear()
 
         # Draw the sprite list from the map if configured to be drawn
-        for layer_name, layer_sprites in self.tilemap.sprite_lists.items():
+        for layer_name, layer_sprites in self.game_state.tilemap.sprite_lists.items():
             if MAP_LAYER_CONFIG[layer_name].get("draw", True):
                 if not MAP_LAYER_CONFIG[layer_name].get("line_of_sight", False):
                     # If the layer is not configured as line_of_sight, all tiles will be drawn
@@ -220,8 +188,8 @@ class GameView(arcade.View):
                             try:
                                 if arcade.has_line_of_sight(
                                         point_1 = s.position,
-                                        point_2 = self.player_sprite_list[0].position,
-                                        walls = self.tilemap.sprite_lists["impassable"],
+                                        point_2 = self.game_state.players[0].position,
+                                        walls = self.game_state.tilemap.sprite_lists["impassable"],
                                         check_resolution = TILE_SIZE*2,
                                         max_distance = PLAYER_SIGHT_RANGE
                                 ):
@@ -245,20 +213,20 @@ class GameView(arcade.View):
 
         # Draw the player sprite and its objects (weapon & emotes)
 
-        for p in self.player_sprite_list:
+        for p in self.game_state.players:
             # Draw the player sprite
             # Draw the player sprite and its attacks and emotes
             p.draw(pixelated=DRAW_PIXELATED)
             p.draw_sprites(pixelated=DRAW_PIXELATED)
 
-        for s in self.tilemap.sprite_lists["enemies"]:
+        for s in self.game_state.tilemap.sprite_lists["enemies"]:
             s.draw(pixelated=DRAW_PIXELATED)
             s.draw_sprites(draw_attack_hitboxes=DEBUG_MODE, pixelated=DRAW_PIXELATED)
 
-        for e in self.tilemap.sprite_lists["enemies"]:
+        for e in self.game_state.tilemap.sprite_lists["enemies"]:
             e.health_bar.draw()
 
-        for p in self.player_sprite_list:
+        for p in self.game_state.players:
             p.health_bar.draw()
 
     def on_update(self, delta_time: float = 1/60):
@@ -267,8 +235,8 @@ class GameView(arcade.View):
         """
 
         # Check for player collisions
-        for p in self.player_sprite_list:
-            for e in self.tilemap.sprite_lists["enemies"]:
+        for p in self.game_state.players:
+            for e in self.game_state.tilemap.sprite_lists["enemies"]:
                 # Check if the enemy's weapon has hit the player
                 if e.equipped_weapon is not None and e.equipped_weapon.attack_point is not None:
                     if p.collides_with_point(e.equipped_weapon.attack_point):
@@ -281,14 +249,14 @@ class GameView(arcade.View):
                         p.equipped_weapon.attack_point = None
 
             # Checks after collision with the exit layer.
-            for e in self.tilemap.sprite_lists["exits"]:
+            for e in self.game_state.tilemap.sprite_lists["exits"]:
                 if arcade.check_for_collision(p, e):
                     print("A player is on an EXIT!")
-                    view = LevelFinishView(self.level_no, self.player_sprite_list)
+                    view = LevelFinishView(self.game_state)
                     self.window.show_view(view)
 
             # Pick up weapons from tilemap if the players are standing on any
-            for w in self.tilemap.sprite_lists["weapons"]:
+            for w in self.game_state.tilemap.sprite_lists["weapons"]:
                 if arcade.check_for_collision(p, w):
                     # create a weapon type based on the tile id. If the tile is not a weapon, raise an error
                     new_weapon_type = WeaponType(w.properties["tile_id"])
@@ -301,9 +269,9 @@ class GameView(arcade.View):
             p.update()
 
         # Update the enemies
-        self.tilemap.sprite_lists["enemies"].update()
+        self.game_state.tilemap.sprite_lists["enemies"].update()
 
-        self.physics_engine.step()
+        self.game_state.physics_engine.step()
 
     def game_over(self):
         """
@@ -317,7 +285,7 @@ class GameView(arcade.View):
         self.window.show_view(game_over_view)
 
     def on_key_press(self, key, modifiers):
-        for p in self.player_sprite_list:
+        for p in self.game_state.players:
             p.on_key_press(key, modifiers)
 
         # End the game if the escape key is pressed
@@ -330,7 +298,7 @@ class GameView(arcade.View):
             print("Game Reset! 🔁 -- Turn Debug mode off to remove this feature! ✔")
 
     def on_key_release(self, key, modifiers):
-        for p in self.player_sprite_list:
+        for p in self.game_state.players:
             p.on_key_release(key, modifiers)
 
 
@@ -449,14 +417,18 @@ class IntroView(arcade.View):
         Starts the game.
         """
 
-        # Create the Players that will be playing the game
-        self.player_sprite_list = create_players(no_of_players, SCALING)
+        # The initial game state
+        game_state = GameState(
+            no_of_players=no_of_players,
+            window=self.window,
+            map_no=0,
+            )
 
         # Prevent the sound from playing after the game starts
         self.opening_sound.stop(self.opening_sound_player)
         print("INFO: Number of players:", no_of_players)
 
-        game_view = GameView(level_no=0, player_sprite_list=self.player_sprite_list)
+        game_view = GameView(game_state)
         self.window.show_view(game_view)
 
 
@@ -577,18 +549,18 @@ class LevelFinishView(arcade.View):
     View to show when the game is over
     """
 
-    def __init__(self, level, player_sprite_list, window=None):
+    def __init__(self, game_state:GameState):
         """
         Create a Game Over-view. Pass the final score to display.
         """
-        self.level = level
-        self.player_sprite_list = player_sprite_list
+        self.game_state = game_state
+        # self.player_sprite_list = player_sprite_list
 
         # Set all movements to false so there's no auto-moving when the next level starts.
-        for p in player_sprite_list:
+        for p in self.game_state.players:
             p.all_keys_off()
 
-        super().__init__(window)
+        super().__init__(self.game_state.window)
 
     def setup_old(self, score: int):
         """
@@ -636,18 +608,14 @@ class LevelFinishView(arcade.View):
 
     def on_key_press(self, key: int, modifiers: int):
         """
-        Return to intro screen when any key is pressed.
+        Go to the next map when SPACE key is pressed.
         """
 
-        # Remember to add onto the self.max_level everytime a person
-        # adds a new level/stage.
-
         if key == arcade.key.SPACE:
-            # Turns to the next level.
-            next_level = self.level + 1
-
-            game_view = GameView(level_no=next_level, player_sprite_list=self.player_sprite_list)
-            self.window.show_view(game_view)
+            self.game_state.next_map()
+            self.window.show_view(
+                GameView(self.game_state)
+            )
 
 
 def main():
