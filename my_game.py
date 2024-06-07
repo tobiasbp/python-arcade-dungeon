@@ -79,15 +79,6 @@ class GameView(arcade.View):
 
         self.game_state = game_state
 
-        # self.level_no = level_no
-        # self.player_sprite_list = player_sprite_list
-
-        # self.tilemap = load_level(self.level_no, SCALING, MAP_LAYER_CONFIG, self.player_sprite_list, self.window)
-        # validate_level(self.tilemap, TILE_SIZE,MAP_LAYER_CONFIG,MAP_WIDTH_TILES,MAP_HEIGHT_TILES)
-
-        # self.physics_engine = arcade.PymunkPhysicsEngine()
-
-
     def on_show_view(self):
         """
         This is run once when we switch to this view
@@ -106,16 +97,6 @@ class GameView(arcade.View):
             joystick = None
 
         self.player_score = 0
-
-        #for i in range(len(self.player_sprite_list)):
-        #    self.player_sprite_list[i].position = (
-        #        self.tilemap.sprite_lists["players"][i].center_x,
-        #        self.tilemap.sprite_lists["players"][i].center_y
-        #    )
-
-
-        # Assert that all players have a potential spawnpoint
-        # assert len(self.tilemap.sprite_lists["players"]) >= len(self.player_sprite_list), "Too many players for tilemap"
 
         # Get list of joysticks
         joysticks = arcade.get_joysticks()
@@ -138,27 +119,6 @@ class GameView(arcade.View):
         else:
             print("No joysticks found")
             self.joystick = None
-
-        # add all sprites to physics engine
-        """
-        self.physics_engine.add_sprite_list(self.player_sprite_list,
-                                            damping=0,
-                                            collision_type="player",
-                                            moment_of_intertia=arcade.PymunkPhysicsEngine.MOMENT_INF)
-
-        self.physics_engine.add_sprite_list(self.tilemap.sprite_lists["impassable"],
-                                            damping=0,
-                                            collision_type="impassable",
-                                            body_type=arcade.PymunkPhysicsEngine.STATIC,
-                                            moment_of_intertia=arcade.PymunkPhysicsEngine.MOMENT_INF)
-
-        self.physics_engine.add_sprite_list(self.tilemap.sprite_lists["enemies"],
-                                            damping=0,
-                                            collision_type="enemy",
-                                            moment_of_intertia=arcade.PymunkPhysicsEngine.MOMENT_INF)
-
-        self.physics_engine.add_collision_handler("enemy", "enemy", post_handler=enemy_enemy_collision_handler)
-        """
 
         # Set the background color
         arcade.set_background_color(arcade.color.BLACK)
@@ -422,6 +382,9 @@ class IntroView(arcade.View):
             no_of_players=no_of_players,
             window=self.window,
             map_no=0,
+            map_width_tiles=MAP_WIDTH_TILES,
+            map_height_tiles=MAP_HEIGHT_TILES,
+            tile_size=TILE_SIZE,
             )
 
         # Prevent the sound from playing after the game starts
