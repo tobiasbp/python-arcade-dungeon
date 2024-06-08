@@ -211,7 +211,8 @@ class GameState:
 
 
     def _validate_level(self):
-        # FIXME: Level must have at least as many player spawn points as we have players
+        # Level must have at least as many player spawn points as we have players
+        assert len(self.players) <= len(self.tilemap.sprite_lists["players"]), f"Map does not support {len(self.players)}."
 
         # Make sure the map we load is as expected
         assert self.tilemap.tile_width == self.tile_size, f"Width of tiles in map is {self.tilemap.tile_width}, it should be {self.tile_size}."
