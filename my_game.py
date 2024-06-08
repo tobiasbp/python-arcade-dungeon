@@ -181,7 +181,7 @@ class GameView(arcade.View):
 
         for e in self.game_state.enemies:
             e.draw(pixelated=DRAW_PIXELATED)
-            e.draw_sprites(draw_attack_hitboxes=DEBUG_MODE, pixelated=DRAW_PIXELATED)
+            e.draw_sprites(draw_attack_points=DEBUG_MODE, pixelated=DRAW_PIXELATED)
 
         for e in self.game_state.enemies:
             e.health_bar.draw()
