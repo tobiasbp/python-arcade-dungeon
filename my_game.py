@@ -183,6 +183,12 @@ class GameView(arcade.View):
         Movement and game logic
         """
 
+        # Change view if current level has been cleared
+        if self.game_state.level_clear:
+            print("INFO: Level cleared")
+            view = LevelFinishView(self.game_state)
+            self.window.show_view(view)
+
         # Check for player collisions
         for p in self.game_state.players:
             for e in self.game_state.enemies:
@@ -197,12 +203,6 @@ class GameView(arcade.View):
                         e.hp -= p.equipped_weapon.strength
                         p.equipped_weapon.attack_point = None
 
-            # Checks after collision with the exit layer.
-            for e in self.game_state.tilemap.sprite_lists["exits"]:
-                if arcade.check_for_collision(p, e):
-                    print("A player is on an EXIT!")
-                    view = LevelFinishView(self.game_state)
-                    self.window.show_view(view)
 
             # Pick up weapons from tilemap if the players are standing on any
             for w in self.game_state.tilemap.sprite_lists["weapons"]:

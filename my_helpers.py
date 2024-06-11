@@ -44,11 +44,16 @@ class GameState:
 
         self.physics_engine = None
         self.tilemap = None
+        self._level_clear = False
 
         self._create_players(no_of_players, player_speed)
 
         self._load_tilemap(self.map_no)
         self._setup_physics_engine()
+
+    @property
+    def level_clear(self):
+        return self._level_clear
 
     def next_map(self):
         """
@@ -102,6 +107,7 @@ class GameState:
         Based on the currently loaded map:
         Create a new physics engine. Then add map, players and enemies.
         """
+        self._level_clear = False
 
         # Make sure the loaded map is valid
         self._validate_level()
@@ -113,22 +119,36 @@ class GameState:
             "enemy",
             post_handler=handler_enemy_enemy
         )
+        self.physics_engine.add_collision_handler(
+            "player",
+            "exit",
+            post_handler=self._handler_player_exit
+        )
 
         # Add players
         self._position_players()
         self._add_players()
 
-        # Add enemies
+        # Add enemies to match number of
+        # sprites in the enemies layer of the map
         self._create_enemies(len(self.tilemap.sprite_lists["enemies"]))
         self._position_enemies()
         self._add_enemies()
-
 
         # Add impassable tiles to the physics engine
         self.physics_engine.add_sprite_list(
             self.tilemap.sprite_lists["impassable"],
             damping=0,
             collision_type="impassable",
+            body_type=arcade.PymunkPhysicsEngine.STATIC,
+            moment_of_intertia=arcade.PymunkPhysicsEngine.MOMENT_INF
+        )
+
+        # Add exits to the physics engine
+        self.physics_engine.add_sprite_list(
+            self.tilemap.sprite_lists["exits"],
+            damping=0,
+            collision_type="exit",
             body_type=arcade.PymunkPhysicsEngine.STATIC,
             moment_of_intertia=arcade.PymunkPhysicsEngine.MOMENT_INF
         )
@@ -227,6 +247,9 @@ class GameState:
         """
         Make sure the loaded map has the features needed by the game.
         """
+        # Map must have exits
+        assert len(self.tilemap.sprite_lists.get("exits", [])) > 0, "Map does not have any sprites on layer 'exits'"
+
         # Level must have at least as many player spawn points as we have players
         assert len(self.players) <= len(self.tilemap.sprite_lists["players"]), f"Map does not support {len(self.players)}."
 
@@ -251,6 +274,12 @@ class GameState:
 
         return True
 
+    def _handler_player_exit(self, _1, _2, _3 , _4, _5):
+        """
+        If a player collides with an exit, the level is cleared.
+        In a future scenario, the win condition could be based on attributes i the map file.
+        """
+        self._level_clear = True
 
 def handler_enemy_enemy(enemy1: Enemy, enemy2: Enemy, _arbiter, _space, _data) -> None:
     """
