@@ -180,6 +180,9 @@ class GameState:
         """
         Position the players on the current maps start positions
         """
+        for e in self.enemies:
+            e.physics_engines = [self.physics_engine]
+
         self.physics_engine.add_sprite_list(
             self.enemies,
             damping=0,
@@ -191,6 +194,9 @@ class GameState:
         """
         Position the players on the current maps start positions
         """
+        for p in self.players:
+            p.physics_engines = [self.physics_engine]
+
         self.physics_engine.add_sprite_list(
             self.players,
             damping=0,
