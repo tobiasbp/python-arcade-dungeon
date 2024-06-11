@@ -27,7 +27,10 @@ MAP_LAYER_CONFIG = {
 }
 
 class GameState:
-
+    """
+    This class keeps track of players, levels (maps) & phyiscs engines.
+    It will be sent through arcade views as the game progresses through levels.
+    """
     def __init__(self, no_of_players:int, window:arcade.Window, map_width_tiles:int, map_height_tiles:int, player_speed:int=6000, map_no:int=0, scaling:int=1, tile_size:int=16):
         self.scaling = scaling
         self.players = arcade.SpriteList()
@@ -48,6 +51,9 @@ class GameState:
         self._setup_physics_engine()
 
     def next_map(self):
+        """
+        Load the next map
+        """
         self.map_no += 1
         self._load_tilemap(self.map_no)
         self._setup_physics_engine()
@@ -92,6 +98,10 @@ class GameState:
         print(f"INFO: Loaded map '{map_file}'")
 
     def _setup_physics_engine(self):
+        """
+        Based on the currently loaded map:
+        Create a new physics engine. Then add map, players and enemies.
+        """
 
         self._validate_level()
         self._position_players()
@@ -120,9 +130,9 @@ class GameState:
             moment_of_intertia=arcade.PymunkPhysicsEngine.MOMENT_INF
         )
 
-    def _create_enemies(self, no_of_enemies):
+    def _create_enemies(self, no_of_enemies:int):
         """
-        Create as many enemies as there are tiles in the 'enemies' layer in the current tilemap
+        Add enemies to the the self.enemies SpriteList.
         """
         self.enemies = arcade.SpriteList()
 
@@ -211,6 +221,9 @@ class GameState:
 
 
     def _validate_level(self):
+        """
+        Make sure the loaded map has the features needed by the game.
+        """
         # Level must have at least as many player spawn points as we have players
         assert len(self.players) <= len(self.tilemap.sprite_lists["players"]), f"Map does not support {len(self.players)}."
 
@@ -234,5 +247,3 @@ class GameState:
         print("INFO: Level verified")
 
         return True
-
-

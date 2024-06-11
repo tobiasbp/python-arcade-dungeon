@@ -517,7 +517,6 @@ class LevelFinishView(arcade.View):
         Create a Game Over-view. Pass the final score to display.
         """
         self.game_state = game_state
-        # self.player_sprite_list = player_sprite_list
 
         # Set all movements to false so there's no auto-moving when the next level starts.
         for p in self.game_state.players:
