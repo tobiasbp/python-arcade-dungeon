@@ -52,17 +52,6 @@ NUM_OF_PLAYERS = 2
 
 FIRE_KEY = arcade.key.SPACE
 
-def enemy_enemy_collision_handler(enemy1: Enemy, enemy2: Enemy, _arbiter, _space, _data) -> None:
-    """
-    The physics engine will call this when two enemies collide
-    """
-
-    # if enemies are stuck walking into each other, move seperate ways
-    if enemy1.state == EnemyState.RANDOM_WALK:
-        enemy1.physics_engines[0].apply_force(enemy1, (-2000, -2000))
-    if enemy2.state == EnemyState.RANDOM_WALK:
-        enemy2.physics_engines[0].apply_force(enemy2, (2000, 2000))
-
 
 class GameView(arcade.View):
     """

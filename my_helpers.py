@@ -1,7 +1,7 @@
 import arcade
 from pyglet.math import Vec2
 
-from my_sprites import Enemy, EntityType, Player, Weapon, WeaponType
+from my_sprites import Enemy, EntityType, Player, Weapon, WeaponType, EnemyState
 
 # The keys to control player 1 & 2
 PLAYER_KEYS = [
@@ -103,21 +103,24 @@ class GameState:
         Create a new physics engine. Then add map, players and enemies.
         """
 
+        # Make sure the loaded map is valid
         self._validate_level()
-        self._position_players()
 
         self.physics_engine = arcade.PymunkPhysicsEngine()
 
+        self.physics_engine.add_collision_handler(
+            "enemy",
+            "enemy",
+            post_handler=handler_enemy_enemy
+        )
+
+        # Add players
+        self._position_players()
         self._add_players()
 
+        # Add enemies
         self._create_enemies(len(self.tilemap.sprite_lists["enemies"]))
         self._position_enemies()
-        self.physics_engine.add_sprite_list(
-            self.players,
-            damping=0,
-            collision_type="enemies",
-            moment_of_intertia=arcade.PymunkPhysicsEngine.MOMENT_INF
-        )
         self._add_enemies()
 
 
@@ -180,7 +183,7 @@ class GameState:
         self.physics_engine.add_sprite_list(
             self.enemies,
             damping=0,
-            collision_type="player",
+            collision_type="enemy",
             moment_of_intertia=arcade.PymunkPhysicsEngine.MOMENT_INF
         )
 
@@ -247,3 +250,15 @@ class GameState:
         print("INFO: Level verified")
 
         return True
+
+
+def handler_enemy_enemy(enemy1: Enemy, enemy2: Enemy, _arbiter, _space, _data) -> None:
+    """
+    The physics engine will call this when two enemies collide
+    """
+
+    # If enemies are stuck walking into each other, push them apart.
+    if enemy1.state == EnemyState.RANDOM_WALK:
+        enemy1.physics_engines[-1].apply_force(enemy1, (-2000, -2000))
+    if enemy2.state == EnemyState.RANDOM_WALK:
+        enemy2.physics_engines[-1].apply_force(enemy2, (2000, 2000))
