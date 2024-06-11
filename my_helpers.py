@@ -191,6 +191,10 @@ class GameState:
         """
         Position the players on the current maps start positions
         """
+        # prevent accumulation of physics engines from past levels, though we only care about the latest one
+        for p in self.players:
+            p.physics_engines = [self.physics_engine]
+
         self.physics_engine.add_sprite_list(
             self.players,
             damping=0,
