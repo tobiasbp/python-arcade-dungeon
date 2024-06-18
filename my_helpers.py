@@ -144,7 +144,7 @@ class GameState:
             e = Enemy(
                 position=(0,0),
                 max_hp=5,
-                speed=4500,
+                speed=45,
                 window=self.window,
                 graphics_type=EntityType.VIKING,
                 impassables=self.tilemap.sprite_lists["impassable"],
@@ -182,7 +182,7 @@ class GameState:
         """
         self.physics_engine.add_sprite_list(
             self.enemies,
-            damping=0,
+            damping=0.5,
             collision_type="enemy",
             moment_of_intertia=arcade.PymunkPhysicsEngine.MOMENT_INF
         )

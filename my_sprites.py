@@ -590,7 +590,8 @@ class Enemy(Entity):
                 # testing shows that we need to reverse the direction...
                 force_x = -math.sin(angle_to_dest) * self.speed
                 force_y = -math.cos(angle_to_dest) * self.speed
-                self.physics_engines[0].apply_force(self, (force_x, force_y))
+                #self.physics_engines[0].apply_force(self, (force_x, force_y))
+                self.physics_engines[-1].set_velocity(self, (force_x, force_y))
 
     #FIXME: typehint should state that we need a player object, but player is defined below this class. Probably dont move the classes
     def get_closest_visible_sprite(self, sprites: arcade.SpriteList, max_dist=math.inf) -> Optional[Entity]:
@@ -629,7 +630,8 @@ class Enemy(Entity):
 
                 force_x = math.sin(math.radians(self._direction)) * self.speed
                 force_y = math.cos(math.radians(self._direction)) * self.speed
-                self.physics_engines[0].apply_force(self, (force_x, force_y))
+                #self.physics_engines[0].apply_force(self, (force_x, force_y))
+                self.physics_engines[-1].set_velocity(self, (force_x, force_y))
 
                 # stop when within weapon range of the player
                 if self.equipped_weapon is not None:
@@ -904,8 +906,6 @@ class Player(Entity):
 
         # Can have more than one because we cycle through engines. Always use latest
         #self.physics_engines[-1].apply_force(self, (self.change_x, self.change_y))
-        #my_physics_obj = self.physics_engines[-1].get_physics_object(self)
-        #if my_physics_obj.body.velocity == (0.0, 0.0):
         self.physics_engines[-1].set_velocity(self, (self.velocity_x, self.velocity_y))
 
         # Rotate the sprite a bit when it's moving
