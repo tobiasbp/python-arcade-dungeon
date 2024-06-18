@@ -745,37 +745,38 @@ class Player(Entity):
         """
         Track the state of the control keys
         """
-        if key == self.key_left:
-            self.left_pressed = True
-            # Turns the sprite to the left side.
-            self.texture = self.textures[1]
-            self._direction = Direction.LEFT
-            return
-        elif key == self.key_right:
-            self.right_pressed = True
-            # Turns the sprite to the Right side
-            self.texture = self.textures[0]
-            self._direction = Direction.RIGHT
-            return
-        elif key == self.key_up:
-            self.up_pressed = True
-            self._direction = Direction.UP
-        elif key == self.key_down:
-            self.down_pressed = True
-            self._direction = Direction.DOWN
-        elif key == self.key_atttack:
-            self.atttack_pressed = True
-            self.attack(self._direction)
+        if self.weapon is not None and self.equipped_weapon.is_idle:
+            if key == self.key_left:
+                self.left_pressed = True
+                # Turns the sprite to the left side.
+                self.texture = self.textures[1]
+                self._direction = Direction.LEFT
+                return
+            elif key == self.key_right:
+                self.right_pressed = True
+                # Turns the sprite to the Right side
+                self.texture = self.textures[0]
+                self._direction = Direction.RIGHT
+                return
+            elif key == self.key_up:
+                self.up_pressed = True
+                self._direction = Direction.UP
+            elif key == self.key_down:
+                self.down_pressed = True
+                self._direction = Direction.DOWN
+            elif key == self.key_atttack:
+                self.atttack_pressed = True
+                self.attack(self._direction)
 
-        # diagonal movement
-        if self.up_pressed and self.right_pressed:
-            self._direction = Direction.UP_RIGHT
-        elif self.right_pressed and self.down_pressed:
-            self._direction = Direction.RIGHT_DOWN
-        elif self.down_pressed and self.left_pressed:
-            self._direction = Direction.DOWN_LEFT
-        elif self.left_pressed and self.up_pressed:
-            self._direction = Direction.LEFT_UP
+            # diagonal movement
+            if self.up_pressed and self.right_pressed:
+                self._direction = Direction.UP_RIGHT
+            elif self.right_pressed and self.down_pressed:
+                self._direction = Direction.RIGHT_DOWN
+            elif self.down_pressed and self.left_pressed:
+                self._direction = Direction.DOWN_LEFT
+            elif self.left_pressed and self.up_pressed:
+                self._direction = Direction.LEFT_UP
 
         # horizontal and vertical movement
         elif self.left_pressed and not self.right_pressed:
@@ -886,10 +887,9 @@ class Player(Entity):
 
         # Update speed based on held keys
 
-        if self.equipped_weapon.is_idle:
-            if self.up_pressed or self.right_pressed or self.down_pressed or self.left_pressed:
-                self.change_x = math.sin(math.radians(self._direction)) * self.speed
-                self.change_y = math.cos(math.radians(self._direction)) * self.speed
+        if self.up_pressed or self.right_pressed or self.down_pressed or self.left_pressed:
+            self.change_x = math.sin(math.radians(self._direction)) * self.speed
+            self.change_y = math.cos(math.radians(self._direction)) * self.speed
 
         # Can have more than one because we cycle through engines. Always use latest
         self.physics_engines[-1].apply_force(self, (self.change_x, self.change_y))
