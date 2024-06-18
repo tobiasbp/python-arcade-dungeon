@@ -14,7 +14,7 @@ from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
 from my_sprites import Enemy, Weapon, WeaponType, EntityType, EnemyState
-from my_helpers import GameState, MAP_LAYER_CONFIG
+from my_helpers import GameState, MAP_LAYER_CONFIG, Gore
 
 # Set the scaling of all sprites in the game
 SCALING = 1
@@ -84,6 +84,9 @@ class GameView(arcade.View):
         else:
             print("No joysticks found")
             joystick = None
+
+        # Emitters like Gore
+        self.emitters = []
 
         self.player_score = 0
 
@@ -178,6 +181,9 @@ class GameView(arcade.View):
         for p in self.game_state.players:
             p.health_bar.draw()
 
+        for e in self.emitters:
+            e.draw()
+
     def on_update(self, delta_time: float = 1/60):
         """
         Movement and game logic
@@ -203,6 +209,14 @@ class GameView(arcade.View):
                         e.hp -= p.equipped_weapon.strength
                         p.equipped_weapon.attack_point = None
 
+                        # When enemy health drops below 1 then kill.
+                        if e.hp < 1:
+                            # Fast splat.
+                            self.emitters.append(Gore(e.position, amount=300, speed=1, lifetime=1, start_fade=250, scale=1.2))
+                            # Slow blood spot.
+                            self.emitters.append(Gore(e.position, amount=100, speed=0.1, lifetime=3, start_fade=20, scale=1.4))
+                            # Kill the enemy.
+                            e.kill()
 
             # Pick up weapons from tilemap if the players are standing on any
             for w in self.game_state.tilemap.sprite_lists["weapons"]:
@@ -221,6 +235,9 @@ class GameView(arcade.View):
         self.game_state.enemies.update()
 
         self.game_state.physics_engine.step()
+
+        for e in self.emitters:
+            e.update()
 
     def game_over(self):
         """
