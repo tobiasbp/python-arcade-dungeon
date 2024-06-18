@@ -267,7 +267,7 @@ class Weapon(arcade.Sprite):
             self._time_to_idle = self.rate
 
             weapon_range = Weapon.data[self.type]["range"]
-            knock_back = self.strength * 150
+            knock_back = self.strength * 30
 
             self.center_x = position[0] + (math.sin(math.radians(angle)) * weapon_range)
             self.center_y = position[1] + (math.cos(math.radians(angle)) * weapon_range)
@@ -611,6 +611,9 @@ class Enemy(Entity):
 
         super().update()
 
+        if self.pause_timer > 0:
+            return
+
         # set our target to the closest visible target, if present - don't change target from something to none
         if self.get_closest_visible_sprite(self.potential_targets_list):
             self.cur_target = self.get_closest_visible_sprite(self.potential_targets_list)
@@ -882,23 +885,28 @@ class Player(Entity):
 
         super().update()
 
+        if self.pause_timer > 0:
+            return
+
         if self.is_walking and random.randint(1, 20) == 1:
             s = random.choice([s for s in Sound if s.name.startswith("FOOTSTEP_")])
             arcade.play_sound(s.value)
 
         # Assume no keys are held
-        self.change_x = 0
-        self.change_y = 0
+        self.velocity_x = 0
+        self.velocity_y = 0
 
         # Update speed based on held keys
 
         if self.up_pressed or self.right_pressed or self.down_pressed or self.left_pressed:
-            self.change_x = math.sin(math.radians(self._direction)) * self.speed
-            self.change_y = math.cos(math.radians(self._direction)) * self.speed
+            self.velocity_x = math.sin(math.radians(self._direction)) * self.speed
+            self.velocity_y = math.cos(math.radians(self._direction)) * self.speed
 
         # Can have more than one because we cycle through engines. Always use latest
-        self.physics_engines[-1].apply_force(self, (self.change_x, self.change_y))
-
+        #self.physics_engines[-1].apply_force(self, (self.change_x, self.change_y))
+        #my_physics_obj = self.physics_engines[-1].get_physics_object(self)
+        #if my_physics_obj.body.velocity == (0.0, 0.0):
+        self.physics_engines[-1].set_velocity(self, (self.velocity_x, self.velocity_y))
 
         # Rotate the sprite a bit when it's moving
         if (self.change_x != 0 or self.change_y != 0) and random.random() <= self.jitter_likelihood:
