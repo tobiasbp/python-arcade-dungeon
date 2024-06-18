@@ -14,7 +14,7 @@ from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
 from my_sprites import Enemy, Weapon, WeaponType, EntityType, EnemyState
-from my_helpers import GameState, MAP_LAYER_CONFIG
+from my_helpers import GameState, MAP_LAYER_CONFIG, gore
 
 # Set the scaling of all sprites in the game
 SCALING = 1
@@ -84,6 +84,9 @@ class GameView(arcade.View):
         else:
             print("No joysticks found")
             joystick = None
+
+        # Emitters like Gore
+        self.emitters = []
 
         self.player_score = 0
 
@@ -178,6 +181,9 @@ class GameView(arcade.View):
         for p in self.game_state.players:
             p.health_bar.draw()
 
+        for e in self.emitters:
+            e.draw()
+
     def on_update(self, delta_time: float = 1/60):
         """
         Movement and game logic
@@ -202,6 +208,10 @@ class GameView(arcade.View):
                     if e.collides_with_point(p.equipped_weapon.attack_point):
                         e.hp -= p.equipped_weapon.strength
                         p.equipped_weapon.attack_point = None
+                        if e.hp < 1:
+                            self.emitters.append(gore(e.position, amount=300, speed=1, lifetime=1, start_fade=250))
+                            self.emitters.append(gore(e.position, amount=300, speed=0.08, lifetime=3, start_fade=150))
+                            e.kill()
 
 
             # Pick up weapons from tilemap if the players are standing on any
@@ -221,6 +231,9 @@ class GameView(arcade.View):
         self.game_state.enemies.update()
 
         self.game_state.physics_engine.step()
+
+        for e in self.emitters:
+            e.update()
 
     def game_over(self):
         """
