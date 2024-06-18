@@ -191,11 +191,13 @@ class GameView(arcade.View):
                     if p.collides_with_point(e.equipped_weapon.attack_point):
                         p.hp -= e.equipped_weapon.strength
                         e.equipped_weapon.attack_point = None
+                        self.game_state.physics_engine.apply_impulse(p, e.equipped_weapon.knockback_force)
                 # Check if the player's weapon has hit the enemy
                 if p.equipped_weapon is not None and p.equipped_weapon.attack_point is not None:
                     if e.collides_with_point(p.equipped_weapon.attack_point):
                         e.hp -= p.equipped_weapon.strength
                         p.equipped_weapon.attack_point = None
+                        self.game_state.physics_engine.apply_impulse(e, p.equipped_weapon.knockback_force)
 
             # Checks after collision with the exit layer.
             for e in self.game_state.tilemap.sprite_lists["exits"]:

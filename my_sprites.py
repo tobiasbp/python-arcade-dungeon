@@ -117,6 +117,7 @@ class Weapon(arcade.Sprite):
             "range": 25,
             "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 40,
+            "knock_back": 800,
             "rate": 4.5,
             "max_usage": math.inf
         },
@@ -125,6 +126,7 @@ class Weapon(arcade.Sprite):
             "range": 20,
             "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 25,
+            "knock_back": 800,
             "rate": 3,
             "max_usage": math.inf
         },
@@ -133,6 +135,7 @@ class Weapon(arcade.Sprite):
             "range": 15,
             "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 30,
+            "knock_back": 800,
             "rate": 2.5,
             "max_usage": 30
         },
@@ -141,6 +144,7 @@ class Weapon(arcade.Sprite):
             "range": 40,
             "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 20,
+            "knock_back": 800,
             "rate": 1,
             "max_usage": math.inf
         },
@@ -149,6 +153,7 @@ class Weapon(arcade.Sprite):
             "range": 15,
             "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 15,
+            "knock_back": 800,
             "rate": 1,
             "max_usage": math.inf
         },
@@ -156,6 +161,7 @@ class Weapon(arcade.Sprite):
             "range": 15,
             "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 10,
+            "knock_back": 800,
             "rate": 1,
             "max_usage": math.inf
         },
@@ -164,6 +170,7 @@ class Weapon(arcade.Sprite):
             "range": 30,
             "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 15,
+            "knock_back": 800,
             "rate": 1,
             "max_usage": 15
         },
@@ -172,6 +179,7 @@ class Weapon(arcade.Sprite):
             "range": 20,
             "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 25,
+            "knock_back": 800,
             "rate": 3.2,
             "max_usage": math.inf
         },
@@ -180,6 +188,7 @@ class Weapon(arcade.Sprite):
             "range": 35,
             "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 15,
+            "knock_back": 800,
             "rate": 3,
             "max_usage": math.inf
         },
@@ -188,6 +197,7 @@ class Weapon(arcade.Sprite):
             "range": 30,
             "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 10,
+            "knock_back": 800,
             "rate": 1.2,
             "max_usage": math.inf
         },
@@ -196,6 +206,7 @@ class Weapon(arcade.Sprite):
             "range": 15,
             "hit_box": [(10, 10), (10, -10), (-10, -10), (-10, 10)],
             "strength": 7,
+            "knock_back": 800,
             "rate": 0.8,
             "max_usage": 10
         }
@@ -216,6 +227,9 @@ class Weapon(arcade.Sprite):
 
         # 'Lethal' point which hits target during attack
         self.attack_point = None
+
+        # the vector to use when calculating knockback
+        self.knockback_force = None
 
         # Time in seconds left until weapon can be used again
         self._time_to_idle = 0.0
@@ -238,6 +252,10 @@ class Weapon(arcade.Sprite):
     @property
     def strength(self):
         return Weapon.data[self.type]["strength"]
+
+    @property
+    def knock_back(self):
+        return Weapon.data[self.type]["knock_back"]
 
     @property
     def rate(self):
@@ -267,6 +285,8 @@ class Weapon(arcade.Sprite):
 
             self.center_x = position[0] + (math.sin(math.radians(angle)) * weapon_range)
             self.center_y = position[1] + (math.cos(math.radians(angle)) * weapon_range)
+
+            self.knockback_force = (math.sin(math.radians(angle)) * self.knock_back, math.cos(math.radians(angle)) * self.knock_back)
 
             self.attack_point = self.position
 
@@ -892,6 +912,7 @@ class Player(Entity):
 
         # Can have more than one because we cycle through engines. Always use latest
         self.physics_engines[-1].apply_force(self, (self.change_x, self.change_y))
+
 
         # Rotate the sprite a bit when it's moving
         if (self.change_x != 0 or self.change_y != 0) and random.random() <= self.jitter_likelihood:
