@@ -299,7 +299,7 @@ def handler_enemy_enemy(enemy1: Enemy, enemy2: Enemy, _arbiter, _space, _data) -
         enemy2.physics_engines[-1].apply_force(enemy2, (2000, 2000))
 
 
-def gore(position, amount, speed, lifetime, start_fade):
+def Gore(position, amount, speed, lifetime, start_fade, scale):
     """
     Makes Gore and bloody particles.
     """
@@ -314,7 +314,7 @@ def gore(position, amount, speed, lifetime, start_fade):
             filename_or_texture=random.choice(textures),
             change_xy=arcade.rand_in_circle((0.0, 0.0), speed),
             lifetime=lifetime,
-            scale=1.2,
+            scale=scale,
             start_alpha=start_fade,
             end_alpha=0
         )

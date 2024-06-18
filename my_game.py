@@ -14,7 +14,7 @@ from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
 from my_sprites import Enemy, Weapon, WeaponType, EntityType, EnemyState
-from my_helpers import GameState, MAP_LAYER_CONFIG, gore
+from my_helpers import GameState, MAP_LAYER_CONFIG, Gore
 
 # Set the scaling of all sprites in the game
 SCALING = 1
@@ -208,11 +208,15 @@ class GameView(arcade.View):
                     if e.collides_with_point(p.equipped_weapon.attack_point):
                         e.hp -= p.equipped_weapon.strength
                         p.equipped_weapon.attack_point = None
-                        if e.hp < 1:
-                            self.emitters.append(gore(e.position, amount=300, speed=1, lifetime=1, start_fade=250))
-                            self.emitters.append(gore(e.position, amount=300, speed=0.08, lifetime=3, start_fade=150))
-                            e.kill()
 
+                        # When enemy health drops below 1 then kill.
+                        if e.hp < 1:
+                            # Fast splat.
+                            self.emitters.append(Gore(e.position, amount=300, speed=1, lifetime=1, start_fade=250, scale=1.2))
+                            # Slow blood spot.
+                            self.emitters.append(Gore(e.position, amount=100, speed=0.1, lifetime=3, start_fade=20, scale=1.4))
+                            # Kill the enemy.
+                            e.kill()
 
             # Pick up weapons from tilemap if the players are standing on any
             for w in self.game_state.tilemap.sprite_lists["weapons"]:
