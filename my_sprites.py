@@ -886,9 +886,10 @@ class Player(Entity):
 
         # Update speed based on held keys
 
-        if self.up_pressed or self.right_pressed or self.down_pressed or self.left_pressed:
-            self.change_x = math.sin(math.radians(self._direction)) * self.speed
-            self.change_y = math.cos(math.radians(self._direction)) * self.speed
+        if self.equipped_weapon.is_idle:
+            if self.up_pressed or self.right_pressed or self.down_pressed or self.left_pressed:
+                self.change_x = math.sin(math.radians(self._direction)) * self.speed
+                self.change_y = math.cos(math.radians(self._direction)) * self.speed
 
         # Can have more than one because we cycle through engines. Always use latest
         self.physics_engines[-1].apply_force(self, (self.change_x, self.change_y))
