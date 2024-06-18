@@ -1,3 +1,5 @@
+import random
+
 import arcade
 from pyglet.math import Vec2
 
@@ -262,3 +264,26 @@ def handler_enemy_enemy(enemy1: Enemy, enemy2: Enemy, _arbiter, _space, _data) -
         enemy1.physics_engines[-1].apply_force(enemy1, (-2000, -2000))
     if enemy2.state == EnemyState.RANDOM_WALK:
         enemy2.physics_engines[-1].apply_force(enemy2, (2000, 2000))
+
+
+def gore(position, amount, speed, lifetime, start_fade):
+    """
+    Makes Gore and bloody particles.
+    """
+
+    textures = [arcade.make_soft_circle_texture(10, arcade.color.RED),
+                arcade.make_soft_circle_texture(10, arcade.color.RED_BROWN)]
+
+    e = arcade.Emitter(
+        center_xy=position,
+        emit_controller=arcade.EmitBurst(amount),
+        particle_factory=lambda emitter: arcade.FadeParticle(
+            filename_or_texture=random.choice(textures),
+            change_xy=arcade.rand_in_circle((0.0, 0.0), speed),
+            lifetime=lifetime,
+            scale=1.2,
+            start_alpha=start_fade,
+            end_alpha=0
+        )
+    )
+    return e
