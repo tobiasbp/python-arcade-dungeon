@@ -745,7 +745,7 @@ class Player(Entity):
         """
         Track the state of the control keys
         """
-        if self.equipped_weapon is not None and not self.equipped_weapon.is_idle:
+        if self.equipped_weapon is not None and not self.equipped_weapon.is_idle and not self.is_walking:
             return
 
         if key == self.key_left:
