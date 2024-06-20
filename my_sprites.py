@@ -745,28 +745,30 @@ class Player(Entity):
         """
         Track the state of the control keys
         """
-        if self.weapon is not None and self.equipped_weapon.is_idle:
-            if key == self.key_left:
-                self.left_pressed = True
-                # Turns the sprite to the left side.
-                self.texture = self.textures[1]
-                self._direction = Direction.LEFT
-                return
-            elif key == self.key_right:
-                self.right_pressed = True
-                # Turns the sprite to the Right side
-                self.texture = self.textures[0]
-                self._direction = Direction.RIGHT
-                return
-            elif key == self.key_up:
-                self.up_pressed = True
-                self._direction = Direction.UP
-            elif key == self.key_down:
-                self.down_pressed = True
-                self._direction = Direction.DOWN
-            elif key == self.key_atttack:
-                self.atttack_pressed = True
-                self.attack(self._direction)
+        if self.equipped_weapon is not None and not self.equipped_weapon.is_idle:
+            return
+
+        if key == self.key_left:
+            self.left_pressed = True
+            # Turns the sprite to the left side.
+            self.texture = self.textures[1]
+            self._direction = Direction.LEFT
+            return
+        elif key == self.key_right:
+            self.right_pressed = True
+            # Turns the sprite to the Right side
+            self.texture = self.textures[0]
+            self._direction = Direction.RIGHT
+            return
+        elif key == self.key_up:
+            self.up_pressed = True
+            self._direction = Direction.UP
+        elif key == self.key_down:
+            self.down_pressed = True
+            self._direction = Direction.DOWN
+        elif key == self.key_atttack:
+            self.atttack_pressed = True
+            self.attack(self._direction)
 
             # diagonal movement
             if self.up_pressed and self.right_pressed:
