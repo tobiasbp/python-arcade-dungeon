@@ -745,7 +745,9 @@ class Player(Entity):
         """
         Track the state of the control keys
         """
-        if self.equipped_weapon is not None and not self.equipped_weapon.is_idle and not self.is_walking:
+
+        if self.equipped_weapon is not None and not self.equipped_weapon.is_idle:
+            # End function if an attack is underway
             return
 
         if key == self.key_left:
@@ -795,6 +797,7 @@ class Player(Entity):
         """
         Track the state of the control keys
         """
+
         if key == self.key_left:
             self.left_pressed = False
         if key == self.key_right:
@@ -882,6 +885,10 @@ class Player(Entity):
         if self.is_walking and random.randint(1, 20) == 1:
             s = random.choice([s for s in Sound if s.name.startswith("FOOTSTEP_")])
             arcade.play_sound(s.value)
+
+        # Stop player from walking while attacking
+        if self.is_walking and self.equipped_weapon is not None and not self.equipped_weapon.is_idle:
+            self.all_keys_off()
 
         # Assume no keys are held
         self.change_x = 0
