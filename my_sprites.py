@@ -772,15 +772,15 @@ class Player(Entity):
             self.atttack_pressed = True
             self.attack(self._direction)
 
-            # diagonal movement
-            if self.up_pressed and self.right_pressed:
-                self._direction = Direction.UP_RIGHT
-            elif self.right_pressed and self.down_pressed:
-                self._direction = Direction.RIGHT_DOWN
-            elif self.down_pressed and self.left_pressed:
-                self._direction = Direction.DOWN_LEFT
-            elif self.left_pressed and self.up_pressed:
-                self._direction = Direction.LEFT_UP
+        # diagonal movement
+        if self.up_pressed and self.right_pressed:
+            self._direction = Direction.UP_RIGHT
+        elif self.right_pressed and self.down_pressed:
+            self._direction = Direction.RIGHT_DOWN
+        elif self.down_pressed and self.left_pressed:
+            self._direction = Direction.DOWN_LEFT
+        elif self.left_pressed and self.up_pressed:
+            self._direction = Direction.LEFT_UP
 
         # horizontal and vertical movement
         elif self.left_pressed and not self.right_pressed:
