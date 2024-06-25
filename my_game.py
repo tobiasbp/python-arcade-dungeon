@@ -175,14 +175,6 @@ class GameView(arcade.View):
             e.draw(pixelated=DRAW_PIXELATED)
             e.draw_sprites(draw_attack_points=DEBUG_MODE, pixelated=DRAW_PIXELATED)
 
-        for e in self.game_state.enemies:
-            e.health_bar.draw()
-
-        for p in self.game_state.players:
-            p.health_bar.draw()
-
-        for e in self.emitters:
-            e.draw()
 
     def on_update(self, delta_time: float = 1/60):
         """
@@ -209,6 +201,7 @@ class GameView(arcade.View):
                 if p.equipped_weapon is not None and p.equipped_weapon.attack_point is not None:
                     if e.collides_with_point(p.equipped_weapon.attack_point):
                         e.hp -= p.equipped_weapon.strength
+                        p.equipped_weapon.attack_point = None
                         p.equipped_weapon.attack_point = None
                         e.pause_timer = 0.2
                         self.game_state.physics_engine.apply_impulse(e, p.equipped_weapon.knock_back_force)
