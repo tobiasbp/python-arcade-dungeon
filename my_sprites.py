@@ -442,10 +442,6 @@ class Entity(arcade.Sprite):
 
     def update(self):
 
-        if self.pause_timer > 0:
-            self.pause_timer -= 1/60  # default value for delta time
-            return
-
         if self.equipped_weapon is not None:
             self.equipped_weapon.update()
 
@@ -467,6 +463,10 @@ class Entity(arcade.Sprite):
             pass
 
         self._emotes.update()
+
+        if self.pause_timer > 0:
+            self.pause_timer -= 1/60  # default value for delta time
+            return
 
 
 class Enemy(Entity):
