@@ -176,14 +176,6 @@ class GameView(arcade.View):
             e.draw(pixelated=DRAW_PIXELATED)
             e.draw_sprites(draw_attack_points=DEBUG_MODE, pixelated=DRAW_PIXELATED)
 
-        for e in self.game_state.enemies:
-            e.health_bar.draw()
-
-        for p in self.game_state.players:
-            p.health_bar.draw()
-
-        for e in self.emitters:
-            e.draw()
 
     def on_update(self, delta_time: float = 1/60):
         """

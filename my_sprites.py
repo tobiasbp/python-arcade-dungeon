@@ -302,7 +302,8 @@ class Entity(arcade.Sprite):
                  window: arcade.Window,
                  graphics_type: EntityType=None,
                  equipped_weapon: Weapon=None,
-                 scale=1.0
+                 scale=1.0,
+                 health_bar_timer_max=3
                  ):
 
         super().__init__(scale=scale,
@@ -322,6 +323,8 @@ class Entity(arcade.Sprite):
         self._max_hp = max_hp
         self._hp = max_hp
         self._health_bar = HealthBar(max_health=max_hp)
+        self._health_bar_timer = 0
+        self._health_bar_timer_max = health_bar_timer_max
 
         self.speed = speed
         self.window = window
@@ -348,6 +351,7 @@ class Entity(arcade.Sprite):
     def hp(self, new_hp):
         self._hp = max(0, min(new_hp, self.max_hp))
         self.health_bar.health = self._hp
+        self._health_bar_timer = self._health_bar_timer_max
 
     @property
     def equipped_weapon(self):
@@ -426,6 +430,10 @@ class Entity(arcade.Sprite):
 
         self._emotes.draw(pixelated=pixelated)
 
+        # draws health_bar if timer is over zero
+        if self._health_bar_timer > 0:
+            self._health_bar.draw(pixelated=pixelated)
+
         if draw_hitbox:
             self.draw_hit_box(arcade.color.NEON_GREEN, line_thickness=2)
 
@@ -445,6 +453,9 @@ class Entity(arcade.Sprite):
         if self.pause_timer > 0:
             self.pause_timer -= 1/60  # default value for delta time
             return
+
+        if self._health_bar_timer > 0:
+            self._health_bar_timer -= 1/60  # default value for delta time
 
         if self.equipped_weapon is not None:
             self.equipped_weapon.update()
@@ -1084,6 +1095,6 @@ class HealthBar(arcade.Sprite):
         self._foreground_bar.left = self._background_bar.left
         self._foreground_bar.center_y = self.center_y + self._offset
 
-    def draw(self):
-        self._background_bar.draw()
-        self._foreground_bar.draw()
+    def draw(self, pixelated=True):
+        self._background_bar.draw(pixelated=pixelated)
+        self._foreground_bar.draw(pixelated=pixelated)
