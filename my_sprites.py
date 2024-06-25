@@ -641,7 +641,7 @@ class Enemy(Entity):
                         self.attack(self._direction)
                         # stun self for a time based on weapon strength
                         self.physics_engines[-1].set_velocity(self, (0, 0))
-                        self.pause_timer = Weapon.data[self.equipped_weapon.type]["strength"] * 0.1
+                        self.pause_timer = Weapon.data[self.equipped_weapon.type]["strength"] * 0.05
 
                 # when we lose LOS to our target, move to its last known position
                 if not arcade.has_line_of_sight(self.cur_target.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
@@ -759,6 +759,10 @@ class Player(Entity):
         """
         Track the state of the control keys
         """
+
+        if self.pause_timer > 0:
+            return
+
         if key == self.key_left:
             self.left_pressed = True
             # Turns the sprite to the left side.
@@ -782,7 +786,8 @@ class Player(Entity):
             self.attack(self._direction)
             # stun self for a time based on weapon strength
             self.physics_engines[-1].set_velocity(self, (0, 0))
-            self.pause_timer = Weapon.data[self.equipped_weapon.type]["strength"] * 0.1
+            self.pause_timer = Weapon.data[self.equipped_weapon.type]["strength"] * 0.05
+            #self.all_keys_off()
 
         # diagonal movement
         if self.up_pressed and self.right_pressed:
