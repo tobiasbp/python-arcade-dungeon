@@ -361,6 +361,13 @@ class Entity(arcade.Sprite):
         return self._health_bar
 
     @property
+    def is_incapacitated(self):
+        """
+        The entity cannot update or recieve inputs
+        """
+        return self.pause_timer > 0
+
+    @property
     def weapons(self):
         return self._weapons.keys()
 
