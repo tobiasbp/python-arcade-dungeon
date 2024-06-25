@@ -164,8 +164,8 @@ class GameState:
         for tile in range(no_of_enemies):
             # Create the enemy
             e = Enemy(
-                position=(0,0),
-                max_hp=5,
+                position=(0, 0),
+                max_hp=14,
                 speed=45,
                 window=self.window,
                 graphics_type=EntityType.VIKING,

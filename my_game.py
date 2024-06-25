@@ -10,6 +10,7 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 import arcade
 import arcade.gui
 import random
+import time
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
@@ -175,14 +176,6 @@ class GameView(arcade.View):
             e.draw(pixelated=DRAW_PIXELATED)
             e.draw_sprites(draw_attack_points=DEBUG_MODE, pixelated=DRAW_PIXELATED)
 
-        for e in self.game_state.enemies:
-            e.health_bar.draw()
-
-        for p in self.game_state.players:
-            p.health_bar.draw()
-
-        for e in self.emitters:
-            e.draw()
 
     def on_update(self, delta_time: float = 1/60):
         """
@@ -195,8 +188,14 @@ class GameView(arcade.View):
             view = LevelFinishView(self.game_state)
             self.window.show_view(view)
 
+        sum_of_all_players_hp = 0
+
         # Check for player collisions
         for p in self.game_state.players:
+            sum_of_all_players_hp += p.hp
+            # Ignore dead Players.
+            if p.hp == 0:
+                continue
             for e in self.game_state.enemies:
                 # Check if the enemy's weapon has hit the player
                 if e.equipped_weapon is not None and e.equipped_weapon.attack_point is not None:
@@ -205,6 +204,7 @@ class GameView(arcade.View):
                         e.equipped_weapon.attack_point = None
                         p.pause_timer = 0.2
                         self.game_state.physics_engine.apply_impulse(p, e.equipped_weapon.knock_back_force)
+
                 # Check if the player's weapon has hit the enemy
                 if p.equipped_weapon is not None and p.equipped_weapon.attack_point is not None:
                     if e.collides_with_point(p.equipped_weapon.attack_point):
@@ -216,7 +216,7 @@ class GameView(arcade.View):
                         # When enemy health drops below 1 then kill.
                         if e.hp < 1:
                             # Fast splat.
-                            self.emitters.append(Gore(e.position, amount=300, speed=1, lifetime=1, start_fade=250, scale=1.2))
+                            self.emitters.append(Gore(e.position, amount=300, speed=3, lifetime=0.5, start_fade=250, scale=1.2))
                             # Slow blood spot.
                             self.emitters.append(Gore(e.position, amount=100, speed=0.1, lifetime=3, start_fade=20, scale=1.4))
                             # Kill the enemy.
@@ -235,6 +235,10 @@ class GameView(arcade.View):
             # Updates the player_sprite_list.
             p.update()
 
+        # When all players HP drops below 1 then GAME OVER.
+        if sum_of_all_players_hp == 0:
+            self.game_over()
+
         # Update the enemies
         self.game_state.enemies.update()
 
@@ -247,6 +251,9 @@ class GameView(arcade.View):
         """
         Call this when the game is over
         """
+
+        # Freeze to see how the player/players died.
+        time.sleep(2)
 
         # Create a game over view
         game_over_view = GameOverView(score=self.player_score)
@@ -488,17 +495,6 @@ class GameOverView(arcade.View):
 
         # Draws the manager.
         self.manager.draw()
-
-        # Draw player's score.
-        arcade.draw_text(
-            f"Your score: {self.score}",
-            self.window.width / 2,
-            self.window.height - 75,
-            arcade.color.WHITE,
-            font_size=20,
-            font_name=MAIN_FONT_NAME,
-            anchor_x="center",
-        )
 
     def on_key_press(self, key: int, modifiers: int):
         """
