@@ -639,6 +639,9 @@ class Enemy(Entity):
                     distance_to_target = arcade.get_distance(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
                     if distance_to_target < self.equipped_weapon.range + self.width / 2:
                         self.attack(self._direction)
+                        # stun self for a time based on weapon strength
+                        self.physics_engines[-1].set_velocity(self, (0, 0))
+                        self.pause_timer = Weapon.data[self.equipped_weapon.type]["strength"] * 0.1
 
                 # when we lose LOS to our target, move to its last known position
                 if not arcade.has_line_of_sight(self.cur_target.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
@@ -777,6 +780,9 @@ class Player(Entity):
         elif key == self.key_atttack:
             self.atttack_pressed = True
             self.attack(self._direction)
+            # stun self for a time based on weapon strength
+            self.physics_engines[-1].set_velocity(self, (0, 0))
+            self.pause_timer = Weapon.data[self.equipped_weapon.type]["strength"] * 0.1
 
         # diagonal movement
         if self.up_pressed and self.right_pressed:
