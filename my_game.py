@@ -10,6 +10,7 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 import arcade
 import arcade.gui
 import random
+import time
 from pyglet.math import Vec2
 
 # Import sprites from local file my_sprites.py
@@ -258,6 +259,9 @@ class GameView(arcade.View):
         """
         Call this when the game is over
         """
+
+        # Freeze to see how the player/players died.
+        time.sleep(2)
 
         # Create a game over view
         game_over_view = GameOverView(score=self.player_score)
