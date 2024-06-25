@@ -202,7 +202,6 @@ class GameView(arcade.View):
                     if e.collides_with_point(p.equipped_weapon.attack_point):
                         e.hp -= p.equipped_weapon.strength
                         p.equipped_weapon.attack_point = None
-                        p.equipped_weapon.attack_point = None
                         e.pause_timer = 0.2
                         self.game_state.physics_engine.apply_impulse(e, p.equipped_weapon.knock_back_force)
 
