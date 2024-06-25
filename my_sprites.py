@@ -365,6 +365,13 @@ class Entity(arcade.Sprite):
         return self._health_bar
 
     @property
+    def is_incapacitated(self):
+        """
+        The entity cannot update or recieve inputs
+        """
+        return self.pause_timer > 0
+
+    @property
     def weapons(self):
         return self._weapons.keys()
 
@@ -478,6 +485,10 @@ class Entity(arcade.Sprite):
             pass
 
         self._emotes.update()
+
+        if self.pause_timer > 0:
+            self.pause_timer -= 1/60  # default value for delta time
+            return
 
 
 class Enemy(Entity):
@@ -650,6 +661,9 @@ class Enemy(Entity):
                     distance_to_target = arcade.get_distance(self.center_x, self.center_y, self.cur_target.center_x, self.cur_target.center_y)
                     if distance_to_target < self.equipped_weapon.range + self.width / 2:
                         self.attack(self._direction)
+                        # stun self for a time based on weapon strength
+                        self.physics_engines[-1].set_velocity(self, (0, 0))
+                        self.pause_timer = Weapon.data[self.equipped_weapon.type]["strength"] * 0.05
 
                 # when we lose LOS to our target, move to its last known position
                 if not arcade.has_line_of_sight(self.cur_target.position, self.position, self.barriers.blocking_sprites, check_resolution=16):
@@ -767,6 +781,10 @@ class Player(Entity):
         """
         Track the state of the control keys
         """
+
+        if self.pause_timer > 0:
+            return
+
         if key == self.key_left:
             self.left_pressed = True
             # Turns the sprite to the left side.
@@ -788,6 +806,10 @@ class Player(Entity):
         elif key == self.key_atttack:
             self.atttack_pressed = True
             self.attack(self._direction)
+            # stun self for a time based on weapon strength
+            self.physics_engines[-1].set_velocity(self, (0, 0))
+            self.pause_timer = Weapon.data[self.equipped_weapon.type]["strength"] * 0.05
+            #self.all_keys_off()
 
         # diagonal movement
         if self.up_pressed and self.right_pressed:
