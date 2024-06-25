@@ -494,17 +494,6 @@ class GameOverView(arcade.View):
         # Draws the manager.
         self.manager.draw()
 
-        # Draw player's score.
-        arcade.draw_text(
-            f"Your score: {self.score}",
-            self.window.width / 2,
-            self.window.height - 75,
-            arcade.color.WHITE,
-            font_size=20,
-            font_name=MAIN_FONT_NAME,
-            anchor_x="center",
-        )
-
     def on_key_press(self, key: int, modifiers: int):
         """
         Return to intro screen when any key is pressed.
