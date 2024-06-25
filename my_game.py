@@ -205,6 +205,11 @@ class GameView(arcade.View):
                         e.equipped_weapon.attack_point = None
                         p.pause_timer = 0.2
                         self.game_state.physics_engine.apply_impulse(p, e.equipped_weapon.knock_back_force)
+
+                        # When player HP drops below 1 then GAME OVER.
+                        if p.hp < 1:
+                            self.game_over()
+
                 # Check if the player's weapon has hit the enemy
                 if p.equipped_weapon is not None and p.equipped_weapon.attack_point is not None:
                     if e.collides_with_point(p.equipped_weapon.attack_point):
