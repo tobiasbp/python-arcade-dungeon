@@ -217,6 +217,9 @@ class Weapon(arcade.Sprite):
         # 'Lethal' point which hits target during attack
         self.attack_point = None
 
+        # the vector to use when calculating knockback
+        self.knock_back_force = None
+
         # Time in seconds left until weapon can be used again
         self._time_to_idle = 0.0
 
@@ -264,9 +267,12 @@ class Weapon(arcade.Sprite):
             self._time_to_idle = self.rate
 
             weapon_range = Weapon.data[self.type]["range"]
+            knock_back = self.strength * 30
 
             self.center_x = position[0] + (math.sin(math.radians(angle)) * weapon_range)
             self.center_y = position[1] + (math.cos(math.radians(angle)) * weapon_range)
+
+            self.knock_back_force = (math.sin(math.radians(angle)) * knock_back, math.cos(math.radians(angle)) * knock_back)
 
             self.attack_point = self.position
 
@@ -584,7 +590,8 @@ class Enemy(Entity):
                 # testing shows that we need to reverse the direction...
                 force_x = -math.sin(angle_to_dest) * self.speed
                 force_y = -math.cos(angle_to_dest) * self.speed
-                self.physics_engines[0].apply_force(self, (force_x, force_y))
+                #self.physics_engines[0].apply_force(self, (force_x, force_y))
+                self.physics_engines[-1].set_velocity(self, (force_x, force_y))
 
     #FIXME: typehint should state that we need a player object, but player is defined below this class. Probably dont move the classes
     def get_closest_visible_sprite(self, sprites: arcade.SpriteList, max_dist=math.inf) -> Optional[Entity]:
@@ -605,6 +612,9 @@ class Enemy(Entity):
 
         super().update()
 
+        if self.pause_timer > 0:
+            return
+
         # set our target to the closest visible target, if present - don't change target from something to none
         if self.get_closest_visible_sprite(self.potential_targets_list):
             self.cur_target = self.get_closest_visible_sprite(self.potential_targets_list)
@@ -620,7 +630,8 @@ class Enemy(Entity):
 
                 force_x = math.sin(math.radians(self._direction)) * self.speed
                 force_y = math.cos(math.radians(self._direction)) * self.speed
-                self.physics_engines[0].apply_force(self, (force_x, force_y))
+                #self.physics_engines[0].apply_force(self, (force_x, force_y))
+                self.physics_engines[-1].set_velocity(self, (force_x, force_y))
 
                 # stop when within weapon range of the player
                 if self.equipped_weapon is not None:
@@ -876,22 +887,26 @@ class Player(Entity):
 
         super().update()
 
+        if self.pause_timer > 0:
+            return
+
         if self.is_walking and random.randint(1, 20) == 1:
             s = random.choice([s for s in Sound if s.name.startswith("FOOTSTEP_")])
             arcade.play_sound(s.value)
 
         # Assume no keys are held
-        self.change_x = 0
-        self.change_y = 0
+        self.velocity_x = 0
+        self.velocity_y = 0
 
         # Update speed based on held keys
 
         if self.up_pressed or self.right_pressed or self.down_pressed or self.left_pressed:
-            self.change_x = math.sin(math.radians(self._direction)) * self.speed
-            self.change_y = math.cos(math.radians(self._direction)) * self.speed
+            self.velocity_x = math.sin(math.radians(self._direction)) * self.speed
+            self.velocity_y = math.cos(math.radians(self._direction)) * self.speed
 
         # Can have more than one because we cycle through engines. Always use latest
-        self.physics_engines[-1].apply_force(self, (self.change_x, self.change_y))
+        #self.physics_engines[-1].apply_force(self, (self.change_x, self.change_y))
+        self.physics_engines[-1].set_velocity(self, (self.velocity_x, self.velocity_y))
 
         # Rotate the sprite a bit when it's moving
         if (self.change_x != 0 or self.change_y != 0) and random.random() <= self.jitter_likelihood:
