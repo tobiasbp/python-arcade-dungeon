@@ -33,7 +33,7 @@ class GameState:
     This class keeps track of players, levels (maps) & phyiscs engines.
     It will be sent through arcade views as the game progresses through levels.
     """
-    def __init__(self, no_of_players:int, window:arcade.Window, map_width_tiles:int, map_height_tiles:int, player_speed:int=6000, map_no:int=0, scaling:int=1, tile_size:int=16):
+    def __init__(self, no_of_players:int, window:arcade.Window, map_width_tiles:int, map_height_tiles:int, player_speed:int=60, map_no:int=0, scaling:int=1, tile_size:int=16):
         self.scaling = scaling
         self.players = arcade.SpriteList()
         self.enemies = arcade.SpriteList()
@@ -166,7 +166,7 @@ class GameState:
             e = Enemy(
                 position=(0,0),
                 max_hp=5,
-                speed=4500,
+                speed=45,
                 window=self.window,
                 graphics_type=EntityType.VIKING,
                 impassables=self.tilemap.sprite_lists["impassable"],
@@ -204,7 +204,7 @@ class GameState:
         """
         self.physics_engine.add_sprite_list(
             self.enemies,
-            damping=0,
+            damping=0.5,
             collision_type="enemy",
             moment_of_intertia=arcade.PymunkPhysicsEngine.MOMENT_INF
         )
@@ -219,7 +219,7 @@ class GameState:
 
         self.physics_engine.add_sprite_list(
             self.players,
-            damping=0,
+            damping=0.1,
             collision_type="player",
             moment_of_intertia=arcade.PymunkPhysicsEngine.MOMENT_INF
         )
