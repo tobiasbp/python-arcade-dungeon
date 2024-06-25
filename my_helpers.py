@@ -285,7 +285,8 @@ class GameState:
         If a player collides with an exit, the level is cleared.
         In a future scenario, the win condition could be based on attributes i the map file.
         """
-        self._level_clear = True
+        if len(self.enemies) == 0:
+            self._level_clear = True
 
 def handler_enemy_enemy(enemy1: Enemy, enemy2: Enemy, _arbiter, _space, _data) -> None:
     """
