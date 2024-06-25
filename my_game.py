@@ -216,7 +216,7 @@ class GameView(arcade.View):
                         # When enemy health drops below 1 then kill.
                         if e.hp < 1:
                             # Fast splat.
-                            self.emitters.append(Gore(e.position, amount=300, speed=1, lifetime=1, start_fade=250, scale=1.2))
+                            self.emitters.append(Gore(e.position, amount=300, speed=3, lifetime=0.5, start_fade=250, scale=1.2))
                             # Slow blood spot.
                             self.emitters.append(Gore(e.position, amount=100, speed=0.1, lifetime=3, start_fade=20, scale=1.4))
                             # Kill the enemy.
